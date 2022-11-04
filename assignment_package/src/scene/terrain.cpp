@@ -117,7 +117,7 @@ void Terrain::setBlockAt(int x, int y, int z, BlockType t)
 }
 
 Chunk* Terrain::instantiateChunkAt(int x, int z) {
-    uPtr<Chunk> chunk = mkU<Chunk>();
+    uPtr<Chunk> chunk = mkU<Chunk>(this->mp_context);
     Chunk *cPtr = chunk.get();
     m_chunks[toKey(x, z)] = move(chunk);
     // Set the neighbor pointers of itself and its neighbors
@@ -149,6 +149,7 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
     m_geomCube.clearColorBuf();
 
     std::vector<glm::vec3> offsets, colors;
+    // TODO: remove the following loop => draw each chunk instead
 
     for(int x = minX; x < maxX; x += 16) {
         for(int z = minZ; z < maxZ; z += 16) {
