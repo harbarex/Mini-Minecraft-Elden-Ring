@@ -1,10 +1,14 @@
 #include "chunk.h"
 
 
-Chunk::Chunk() : m_blocks(), m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}}
+Chunk::Chunk(OpenGLContext *context)
+    : Drawable(context),
+      m_blocks(),
+      m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}}
 {
     std::fill_n(m_blocks.begin(), 65536, EMPTY);
 }
+
 
 // Does bounds checking with at()
 BlockType Chunk::getBlockAt(unsigned int x, unsigned int y, unsigned int z) const {
@@ -37,3 +41,21 @@ void Chunk::linkNeighbor(uPtr<Chunk> &neighbor, Direction dir) {
         neighbor->m_neighbors[oppositeDirection.at(dir)] = this;
     }
 }
+
+
+/**
+ * @brief Chunk::createVBOdata
+ * TODO: Generate the buffer for chunk rendering.
+ */
+void Chunk::createVBOdata()
+{
+    // TODO: Iterate through each block inside a chunk
+    // TODO: update m_count
+    // TODO: single VBO buffer
+    // TODO: only blBindBuffer & glBufferData once
+    // TODO: check handles (in ohther cpp file)
+    // make sure they read this buffer data correctly
+    return;
+}
+
+Chunk::~Chunk(){}
