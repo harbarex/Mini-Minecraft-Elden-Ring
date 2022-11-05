@@ -14,7 +14,7 @@
 std::array<BlockFace, 6> Block::createBlockFaces(std::array<glm::vec2, 6> uvOffsets)
 {
     // each texture : 16 x 16
-    float length = 1/16;
+    float length = 1.f /16.f;
     return {
         BlockFace(XPOS, glm::vec4( 1,  0,  0, 0),
                   VertexData(glm::vec4(1, 0, 1, 1), uvOffsets[0]),
