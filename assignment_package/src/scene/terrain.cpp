@@ -117,6 +117,7 @@ void Terrain::setBlockAt(int x, int y, int z, BlockType t)
 }
 
 Chunk* Terrain::instantiateChunkAt(int x, int z) {
+    // each instantiated chunk is a drawable item
     uPtr<Chunk> chunk = mkU<Chunk>(this->mp_context);
     Chunk *cPtr = chunk.get();
     m_chunks[toKey(x, z)] = move(chunk);
@@ -138,18 +139,18 @@ Chunk* Terrain::instantiateChunkAt(int x, int z) {
         cPtr->linkNeighbor(chunkWest, XNEG);
     }
     return cPtr;
-    return cPtr;
 }
 
 // TODO: When you make Chunk inherit from Drawable, change this code so
 // it draws each Chunk with the given ShaderProgram, remembering to set the
 // model matrix to the proper X and Z translation!
 void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shaderProgram) {
+
+    // TODO: remove the following loop => draw each chunk instead
     m_geomCube.clearOffsetBuf();
     m_geomCube.clearColorBuf();
 
     std::vector<glm::vec3> offsets, colors;
-    // TODO: remove the following loop => draw each chunk instead
 
     for(int x = minX; x < maxX; x += 16) {
         for(int z = minZ; z < maxZ; z += 16) {
@@ -191,6 +192,25 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
 
     m_geomCube.createInstancedVBOdata(offsets, colors);
     shaderProgram->drawInstanced(m_geomCube);
+
+//    // TODO:
+//    // - Iterate through each chunk
+//    // - Set the model matrix based on new X, Z
+//    // - Let each chunk draw itself
+//    for (int x = minX; x < maxX; x += 16) {
+//        for (int z = minZ; z < maxZ; z += 16) {
+//            // get the pointer of the chunk at (x, z)
+//            const uPtr<Chunk> &chunk = getChunkAt(x, z);
+//            // create VBO data of each chun
+//            chunk->createVBOdata();
+//            // set model matrix
+//            glm::mat4 translation = glm::mat4(1.f);
+//            translation[3] = glm::vec4(x, 0, z, 1);
+//            shaderProgram->setModelMatrix(translation);
+//            // let it draw it self
+//            shaderProgram->draw(*chunk.get());
+//        }
+//    }
 }
 
 void Terrain::CreateTestScene()
