@@ -146,12 +146,12 @@ Chunk* Terrain::instantiateChunkAt(int x, int z) {
 // model matrix to the proper X and Z translation!
 void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shaderProgram) {
 
-    // TODO:
     // - Iterate through each chunk
     // - Set the model matrix based on new X, Z
     // - Let each chunk draw itself
     for (int x = minX; x < maxX; x += 16) {
         for (int z = minZ; z < maxZ; z += 16) {
+            // TODO: check has a chunk or not
             // get the pointer of the chunk at (x, z)
             const uPtr<Chunk> &chunk = getChunkAt(x, z);
             // create VBO data of each chun
@@ -161,61 +161,14 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
             translation[3] = glm::vec4(x, 0, z, 1);
             shaderProgram->setModelMatrix(translation);
             // let it draw it self
-            shaderProgram->draw(*chunk);
+            shaderProgram->drawInterleaved(*chunk);
         }
     }
-
-//    // TODO: remove the following loop => draw each chunk instead
-//    m_geomCube.clearOffsetBuf();
-//    m_geomCube.clearColorBuf();
-
-//    std::vector<glm::vec3> offsets, colors;
-
-//    for(int x = minX; x < maxX; x += 16) {
-//        for(int z = minZ; z < maxZ; z += 16) {
-//            const uPtr<Chunk> &chunk = getChunkAt(x, z);
-//            for(int i = 0; i < 16; ++i) {
-//                for(int j = 0; j < 256; ++j) {
-//                    for(int k = 0; k < 16; ++k) {
-//                        BlockType t = chunk->getBlockAt(i, j, k);
-
-//                        if(t != EMPTY) {
-//                            offsets.push_back(glm::vec3(i+x, j, k+z));
-//                            switch(t) {
-//                            case GRASS:
-//                                colors.push_back(glm::vec3(95.f, 159.f, 53.f) / 255.f);
-//                                break;
-//                            case DIRT:
-//                                colors.push_back(glm::vec3(121.f, 85.f, 58.f) / 255.f);
-//                                break;
-//                            case STONE:
-//                                colors.push_back(glm::vec3(0.5f));
-//                                break;
-//                            case WATER:
-//                                colors.push_back(glm::vec3(0.f, 0.f, 0.75f));
-//                                break;
-//                            default:
-//                                // Other block types are not yet handled, so we default to debug purple
-//                                colors.push_back(glm::vec3(1.f, 0.f, 1.f));
-//                                break;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-
-//    m_geomCube.createInstancedVBOdata(offsets, colors);
-//    shaderProgram->drawInstanced(m_geomCube);
-
 
 }
 
 void Terrain::CreateTestScene()
 {
-    // TODO: DELETE THIS LINE WHEN YOU DELETE m_geomCube!
-    // m_geomCube.createVBOdata();
 
     // Create the Chunks that will
     // store the blocks for our
