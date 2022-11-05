@@ -26,9 +26,18 @@ private:
     // These allow us to properly determine
     std::unordered_map<Direction, Chunk*, EnumHash> m_neighbors;
 
-    // The helpers to get VBO data
-    void fillBuffer(std::vector<GLuint> &indices, std::vector<glm::vec4> &buffer, std::vector<glm::vec2> &uvs);
+    std::vector<GLuint> indices;
+    std::vector<glm::vec4> buffer;
+    std::vector<glm::vec2> uvs;
+
+    // fill the VBO data
+    void fillVBOData();
+
+    // get neighboring block
     BlockType getNeighborBlock(int x, int y, int z, glm::vec4 dirVec) const;
+
+    // used to see if VBO data is created or not
+    bool vboCreated;
 
 public:
     // constructor as a subclass of Drawable
@@ -41,6 +50,9 @@ public:
     // createVBOData needs to be implemented as a subclass of Drawable
     // since chunk's drawMode is still GL_TRIANGLES, no need to implement drawMode() here.
     virtual void createVBOdata() override;
+
+    void clearVBOData();
+    bool isVBOCreated();
 
     virtual ~Chunk();
 };

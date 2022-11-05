@@ -6,7 +6,11 @@
 Chunk::Chunk(OpenGLContext *context)
     : Drawable(context),
       m_blocks(),
-      m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}}
+      m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}},
+      indices(),
+      buffer(),
+      uvs(),
+      vboCreated(false)
 {
     std::fill_n(m_blocks.begin(), 65536, EMPTY);
 }
@@ -109,13 +113,28 @@ BlockType Chunk::getNeighborBlock(int x, int y, int z, glm::vec4 dirVec) const
 
 
 /**
+ * @brief Chunk::clearVBOData
+ *  Remove existing buffer data
+ */
+void Chunk::clearVBOData()
+{
+    indices.clear();
+    buffer.clear();
+    uvs.clear();
+    vboCreated = false;
+}
+
+/**
  * @brief Chunk::fillBuffer
  *  The private helper used to fill the buffer data.
  * @param indices
  * @param buffer : std::vector<glm::vec4>, the order - pos, normal, color
  */
-void Chunk::fillBuffer(std::vector<GLuint> &indices, std::vector<glm::vec4> &buffer, std::vector<glm::vec2> &uvs)
+void Chunk::fillVBOData()
 {
+    // clear existing buffer at first
+    clearVBOData();
+
     // basically, iterate through all the blocks contained in a chunk
     // each chunk : 16 x 256 x 16
     // each chunk contains the whole y axis [0-256)
@@ -166,6 +185,9 @@ void Chunk::fillBuffer(std::vector<GLuint> &indices, std::vector<glm::vec4> &buf
         }
 
     }
+
+    // set vboCreated to true
+    vboCreated = true;
 }
 
 /**
@@ -175,12 +197,7 @@ void Chunk::fillBuffer(std::vector<GLuint> &indices, std::vector<glm::vec4> &buf
  */
 void Chunk::createVBOdata()
 {
-    // single buffer
-    std::vector<GLuint> indices = std::vector<GLuint>();
-    std::vector<glm::vec4> buffer = std::vector<glm::vec4>();
-    std::vector<glm::vec2> uvs = std::vector<glm::vec2>();
-
-    fillBuffer(indices, buffer, uvs);
+    fillVBOData();
 
     // bind buffer & pass to gpu
     m_count = indices.size();
