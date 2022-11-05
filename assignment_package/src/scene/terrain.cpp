@@ -141,7 +141,7 @@ Chunk* Terrain::instantiateChunkAt(int x, int z) {
     return cPtr;
 }
 
-// TODO: When you make Chunk inherit from Drawable, change this code so
+// When you make Chunk inherit from Drawable, change this code so
 // it draws each Chunk with the given ShaderProgram, remembering to set the
 // model matrix to the proper X and Z translation!
 void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shaderProgram) {
@@ -151,30 +151,41 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
     // - Let each chunk draw itself
     for (int x = minX; x < maxX; x += 16) {
         for (int z = minZ; z < maxZ; z += 16) {
-            // TODO: check has a chunk or not
+
+            // check has a chunk or not
+            if (!hasChunkAt(x, z)) {
+                // do nothing if no chunk at (x, z)
+                continue;
+            }
             // get the pointer of the chunk at (x, z)
             const uPtr<Chunk> &chunk = getChunkAt(x, z);
+
             // create VBO data of each chun
             chunk->createVBOdata();
+
             // set model matrix
             glm::mat4 translation = glm::mat4(1.f);
             translation[3] = glm::vec4(x, 0, z, 1);
+
             shaderProgram->setModelMatrix(translation);
-            // let it draw it self
+            // use drawInterleaved to draw the interleaved buffer data
             shaderProgram->drawInterleaved(*chunk);
         }
     }
 
 }
 
+
+
 void Terrain::CreateTestScene()
 {
 
+    int size = 64;
     // Create the Chunks that will
     // store the blocks for our
     // initial world space
-    for(int x = 0; x < 64; x += 16) {
-        for(int z = 0; z < 64; z += 16) {
+    for(int x = 0; x < size; x += 16) {
+        for(int z = 0; z < size; z += 16) {
             instantiateChunkAt(x, z);
         }
     }
@@ -184,8 +195,8 @@ void Terrain::CreateTestScene()
     m_generatedTerrain.insert(toKey(0, 0));
 
     // Create the basic terrain floor
-    for(int x = 0; x < 64; ++x) {
-        for(int z = 0; z < 64; ++z) {
+    for(int x = 0; x < size; ++x) {
+        for(int z = 0; z < size; ++z) {
             if((x + z) % 2 == 0) {
                 setBlockAt(x, 128, z, STONE);
             }
@@ -195,7 +206,7 @@ void Terrain::CreateTestScene()
         }
     }
     // Add "walls" for collision testing
-    for(int x = 0; x < 64; ++x) {
+    for(int x = 0; x < size; ++x) {
         setBlockAt(x, 129, 0, GRASS);
         setBlockAt(x, 130, 0, GRASS);
         setBlockAt(x, 129, 63, GRASS);
