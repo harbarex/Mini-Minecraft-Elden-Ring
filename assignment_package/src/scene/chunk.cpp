@@ -144,6 +144,7 @@ void Chunk::createVBOdata()
     // each chunk : 16 x 256 x 16
     // each chunk contains the whole y axis [0-256)
     // basically, iterate through all the blocks contained in a chunk
+    int nPos = 0;
     for (int x = 0; x < 16; x++) {
         for (int y = 0; y < 256; y++) {
             for (int z = 0; z < 16; z++) {
@@ -159,28 +160,29 @@ void Chunk::createVBOdata()
                         switch (blockType)
                         {
                         case GRASS:
-                            colors.push_back(glm::vec4(95.f, 159.f, 53.f, 0.f) / 255.f);
+                            colors.push_back(glm::vec4(95.f, 159.f, 53.f, 255.f) / 255.f);
                             break;
                         case DIRT:
-                            colors.push_back(glm::vec4(121.f, 85.f, 58.f, 0.f) / 255.f);
+                            colors.push_back(glm::vec4(121.f, 85.f, 58.f, 255.f) / 255.f);
                             break;
                         case STONE:
-                            colors.push_back(glm::vec4(0.5f, 0.5f, 0.5f, 0.f));
+                            colors.push_back(glm::vec4(0.5f, 0.5f, 0.5f, 1.f));
                             break;
                         case WATER:
-                            colors.push_back(glm::vec4(0.f, 0.f, 0.75f, 0.f));
+                            colors.push_back(glm::vec4(0.f, 0.f, 0.75f, 1.f));
                             break;
                         default:
                             // Other block types are not yet handled, so we default to debug purple
-                            colors.push_back(glm::vec4(1.f, 0.f, 1.f, 0.f));
+                            colors.push_back(glm::vec4(1.f, 0.f, 1.f, 1.f));
                             break;
                         }
                     }
                     // add indices
-                    int offset = indices.size();
+
                     for (int idx : cube.indices) {
-                        indices.push_back(offset + idx);
+                        indices.push_back(nPos + idx);
                     }
+                    nPos = pos.size();
                 }
                 // TODO: only the face (check opague -> add faces)
             }
@@ -188,7 +190,6 @@ void Chunk::createVBOdata()
 
     }
 
-    std::cout << "n indices: " << indices.size() << std::endl;
     // bind buffer & pass to gpu
     m_count = indices.size();
 
