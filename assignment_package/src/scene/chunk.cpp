@@ -150,6 +150,8 @@ void Chunk::fillBuffer(std::vector<GLuint> &indices, std::vector<glm::vec4> &buf
                                 buffer.push_back(face.normal);
                                 // add temporary colors (for MS1)
                                 buffer.push_back(Block::getColors(blockType));
+                                // add uvs
+                                uvs.push_back(vert.uv);
                             }
                             // add indices for each face (4 vertices)
                             for (int index : faceIndices) {
@@ -200,7 +202,10 @@ void Chunk::createVBOdata()
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufCol);
     mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(glm::vec4), buffer.data(), GL_STATIC_DRAW);
 
-    // TODO: uv
+    // additionally for uv
+    generateUV();
+    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufUV);
+    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), uvs.data(), GL_STATIC_DRAW);
 
     return;
 }
