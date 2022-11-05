@@ -2,37 +2,11 @@
 #include "drawable.h"
 #include "smartpointerhelp.h"
 #include "glm_includes.h"
+#include "block.h"
 #include <array>
 #include <unordered_map>
 #include <cstddef>
 #include <openglcontext.h>
-
-
-//using namespace std;
-
-// C++ 11 allows us to define the size of an enum. This lets us use only one byte
-// of memory to store our different block types. By default, the size of a C++ enum
-// is that of an int (so, usually four bytes). This *does* limit us to only 256 different
-// block types, but in the scope of this project we'll never get anywhere near that many.
-enum BlockType : unsigned char
-{
-    EMPTY, GRASS, DIRT, STONE, WATER, SNOW
-};
-
-// The six cardinal directions in 3D space
-enum Direction : unsigned char
-{
-    XPOS, XNEG, YPOS, YNEG, ZPOS, ZNEG
-};
-
-// Lets us use any enum class as the key of a
-// std::unordered_map
-struct EnumHash {
-    template <typename T>
-    size_t operator()(T t) const {
-        return static_cast<size_t>(t);
-    }
-};
 
 // One Chunk is a 16 x 256 x 16 section of the world,
 // containing all the Minecraft blocks in that area.
@@ -52,6 +26,10 @@ private:
     // These allow us to properly determine
     std::unordered_map<Direction, Chunk*, EnumHash> m_neighbors;
 
+    // The helpers to get VBO data
+    void fillBuffer(std::vector<GLuint> &indices, std::vector<glm::vec4> &buffer, std::vector<glm::vec2> &uvs);
+    BlockType getNeighborBlock(int x, int y, int z, glm::vec4 dirVec) const;
+
 public:
     // constructor as a subclass of Drawable
     Chunk(OpenGLContext *context);
@@ -66,3 +44,7 @@ public:
 
     virtual ~Chunk();
 };
+
+
+
+
