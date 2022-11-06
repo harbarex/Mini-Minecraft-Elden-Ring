@@ -10,7 +10,7 @@ Chunk::Chunk(OpenGLContext *context)
       indices(),
       buffer(),
       uvs(),
-      vboCreated(false)
+      vboLoaded(false)
 {
     std::fill_n(m_blocks.begin(), 65536, EMPTY);
 }
@@ -83,12 +83,10 @@ BlockType Chunk::getNeighborBlock(int x, int y, int z, glm::vec4 dirVec) const
     for (int i = 0; i < 2; i++) {
         if (nx == std::get<0>(xBoundaryInfo[i])) {
             Direction dir = std::get<1>(xBoundaryInfo[i]);
-            if (m_neighbors.find(dir) != m_neighbors.end()) {
-                Chunk *neighborChunk = m_neighbors.at(dir);
-                return neighborChunk != nullptr ? neighborChunk->getBlockAt(std::get<2>(xBoundaryInfo[i]), y, z)
-                                                : block;
-            }
-            return block;
+            // note: each dir is already instantiated in m_neighbors (to nullptr)
+            Chunk *neighborChunk = m_neighbors.at(dir);
+            return neighborChunk != nullptr ? neighborChunk->getBlockAt(std::get<2>(xBoundaryInfo[i]), y, z)
+                                            : block;
         }
     }
 
@@ -98,12 +96,10 @@ BlockType Chunk::getNeighborBlock(int x, int y, int z, glm::vec4 dirVec) const
     for (int i = 0; i < 2; i++) {
         if (nz == std::get<0>(zBoundaryInfo[i])) {
             Direction dir = std::get<1>(zBoundaryInfo[i]);
-            if (m_neighbors.find(dir) != m_neighbors.end()) {
-                Chunk *neighborChunk = m_neighbors.at(dir);
-                return neighborChunk != nullptr ? neighborChunk->getBlockAt(x, y, std::get<2>(zBoundaryInfo[i]))
-                                                : block;
-            }
-            return block;
+            // note: each dir is already instantiated in m_neighbors (to nullptr)
+            Chunk *neighborChunk = m_neighbors.at(dir);
+            return neighborChunk != nullptr ? neighborChunk->getBlockAt(x, y, std::get<2>(zBoundaryInfo[i]))
+                                            : block;
         }
     }
 
@@ -116,24 +112,23 @@ BlockType Chunk::getNeighborBlock(int x, int y, int z, glm::vec4 dirVec) const
  * @brief Chunk::clearVBOData
  *  Remove existing buffer data
  */
-void Chunk::clearVBOData()
+void Chunk::clearVBOdata()
 {
     indices.clear();
     buffer.clear();
     uvs.clear();
-    vboCreated = false;
+    vboLoaded = false;
+    destroyVBOdata();
 }
 
 /**
- * @brief Chunk::fillBuffer
- *  The private helper used to fill the buffer data.
- * @param indices
- * @param buffer : std::vector<glm::vec4>, the order - pos, normal, color
- */
-void Chunk::fillVBOData()
+ * @brief Chunk::fillVBOdata
+ *  Fill the vbo data (indices, buffer, uvs ...)
+ **/
+void Chunk::fillVBOdata()
 {
     // clear existing buffer at first
-    clearVBOData();
+    clearVBOdata();
 
     // basically, iterate through all the blocks contained in a chunk
     // each chunk : 16 x 256 x 16
@@ -186,8 +181,11 @@ void Chunk::fillVBOData()
 
     }
 
+    // indices count
+    m_count = indices.size();
+
     // set vboCreated to true
-    vboCreated = true;
+    vboLoaded = true;
 }
 
 /**
@@ -197,15 +195,14 @@ void Chunk::fillVBOData()
  */
 void Chunk::createVBOdata()
 {
-    fillVBOData();
+    fillVBOdata();
 
     // bind buffer & pass to gpu
-    m_count = indices.size();
     int bufferSize = buffer.size();
 
     generateIdx();
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufIdx);
-    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_count * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
     generatePos();
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufPos);
@@ -228,3 +225,4 @@ void Chunk::createVBOdata()
 }
 
 Chunk::~Chunk(){}
+
