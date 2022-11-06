@@ -30,14 +30,12 @@ private:
     std::vector<glm::vec4> buffer;
     std::vector<glm::vec2> uvs;
 
-    // fill the VBO data
-    void fillVBOData();
-
     // get neighboring block
     BlockType getNeighborBlock(int x, int y, int z, glm::vec4 dirVec) const;
 
-    // used to see if VBO data is created or not
-    bool vboCreated;
+    // used to see if VBO data is loaded into the array or not
+    // indices, buffer, uvs, ... etc.
+    bool vboLoaded;
 
 public:
     // constructor as a subclass of Drawable
@@ -51,8 +49,12 @@ public:
     // since chunk's drawMode is still GL_TRIANGLES, no need to implement drawMode() here.
     virtual void createVBOdata() override;
 
-    void clearVBOData();
-    bool isVBOCreated();
+    // fill & clear the VBO data (indices, buffer, uvs)
+    void fillVBOdata();
+    void clearVBOdata();
+    bool isVBOLoaded();
+
+    int getNNeighbors() const;
 
     virtual ~Chunk();
 };
