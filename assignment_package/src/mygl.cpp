@@ -6,7 +6,6 @@
 #include <QKeyEvent>
 #include <QDateTime>
 
-
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
@@ -104,7 +103,7 @@ void MyGL::tick() {
 
     // compute the delta-time
     long long currFrameTime = QDateTime::currentMSecsSinceEpoch();
-    long long deltaTime = currFrameTime - prevFrameTime;
+    long long deltaTime = (currFrameTime - prevFrameTime) * 0.001f;
     prevFrameTime = currFrameTime;
 
     // pass delta-time to Player::tick

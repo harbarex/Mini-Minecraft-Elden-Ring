@@ -23,31 +23,31 @@ void Player::processInputs(InputBundle &inputs) {
 
     // process WASD first (regardless of flight mode)
     if (inputs.wPressed) {
-        currAccUnit += m_forward;
+        currAccUnit += m_camera.getForward();
     }
     if (inputs.aPressed) {
-        currAccUnit -= m_right;
+        currAccUnit -= m_camera.getRight();
     }
     if (inputs.sPressed) {
-        currAccUnit -= m_forward;
+        currAccUnit -= m_camera.getForward();
     }
     if (inputs.dPressed) {
-        currAccUnit += m_right;
+        currAccUnit += m_camera.getRight();
     }
 
     if (flightMode) {
         if (inputs.ePressed) {
-            currAccUnit += m_up;
+            currAccUnit += m_camera.getUp();
         }
         if (inputs.qPressed) {
-            currAccUnit -= m_up;
+            currAccUnit -= m_camera.getUp();
         }
     } else {
         // the flight mode is inactive
     }
 
     // normalize acceleration and velocity vectors
-    if (bottonIsPressing(inputs)) {
+    if (buttonIsPressed(inputs)) {
         m_acceleration = glm::normalize(currAccUnit) * m_acceleration_val;
     } else if (playerIsMoving()) {
         // set acceleration as opposite unit vector compared to velocity if the player is moving and no button clicked
@@ -144,7 +144,7 @@ void Player::toggleFlightMode() {
     }
 }
 
-bool Player::bottonIsPressing(InputBundle &inputs) {
+bool Player::buttonIsPressed(InputBundle &inputs) {
     if (!flightMode) {
         return inputs.aPressed || inputs.dPressed || inputs.wPressed || inputs.sPressed || inputs.spacePressed;
     }
@@ -162,4 +162,15 @@ bool Player::playerIsMoving()
         }
     }
     return false;
+}
+
+VelocityCond Player::currVelocityCond(float dT) {
+    if (glm::length(m_velocity + m_acceleration * dT) >= m_velocity_val) {
+        return VelocityCond::max;
+    }
+//    if (glm::dot(m_velocity, m_acceleration) < 0 && !buttonIsPressed()) {
+//        return VelocityCond::stop;
+//    }
+
+    return VelocityCond::move;
 }

@@ -3,6 +3,8 @@
 #include "camera.h"
 #include "terrain.h"
 
+enum class VelocityCond {stop, max, move};
+
 class Player : public Entity {
 private:
     glm::vec3 m_velocity, m_acceleration;
@@ -55,8 +57,11 @@ public:
     void toggleFlightMode();
 
     // check if any key associated with player's movement is pressed
-    bool bottonIsPressing(InputBundle &inputs);
+    bool buttonIsPressed(InputBundle &inputs);
     // check if current player is moving or not (velocity)
     bool playerIsMoving();
+    // check the effect of acceleration on current velocity
+    VelocityCond currVelocityCond(float dT);
+
 };
 
