@@ -4,13 +4,15 @@
 #include <iostream>
 #include <QApplication>
 #include <QKeyEvent>
+#include <QDateTime>
 
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this), m_progInstanced(this),
-      m_terrain(this), m_player(glm::vec3(48.f, 129.f, 48.f), m_terrain)
+      m_terrain(this), m_player(glm::vec3(48.f, 129.f, 48.f), m_terrain),
+      prevFrameTime(QDateTime::currentMSecsSinceEpoch())
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
@@ -44,6 +46,9 @@ void MyGL::initializeGL()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    // The order DOES MATTER
+    // glEnable(GL_BLEND);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // Set the color with which the screen is filled at the start of each render call.
     glClearColor(0.37f, 0.74f, 1.0f, 1);
 
@@ -96,6 +101,14 @@ void MyGL::resizeGL(int w, int h) {
 void MyGL::tick() {
     update(); // Calls paintGL() as part of a larger QOpenGLWidget pipeline
     sendPlayerDataToGUI(); // Updates the info in the secondary window displaying player data
+
+    // compute the delta-time
+    long long currFrameTime = QDateTime::currentMSecsSinceEpoch();
+    long long deltaTime = currFrameTime - prevFrameTime;
+    prevFrameTime = currFrameTime;
+
+    // pass delta-time to Player::tick
+    m_player.tick(deltaTime, m_inputs);
 }
 
 void MyGL::sendPlayerDataToGUI() const {
@@ -148,6 +161,7 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
     // statement were used, but I really dislike their
     // syntax so I chose to be lazy and use a long
     // chain of if statements instead
+    m_inputs = InputBundle();
     if (e->key() == Qt::Key_Escape) {
         QApplication::quit();
     } else if (e->key() == Qt::Key_Right) {
@@ -159,7 +173,8 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
     } else if (e->key() == Qt::Key_Down) {
         m_player.rotateOnRightLocal(amount);
     } else if (e->key() == Qt::Key_W) {
-        m_player.moveForwardLocal(amount);
+        m_inputs.wPressed = true;
+        // m_player.moveForwardLocal(amount);
     } else if (e->key() == Qt::Key_S) {
         m_player.moveForwardLocal(-amount);
     } else if (e->key() == Qt::Key_D) {
@@ -171,6 +186,23 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
     } else if (e->key() == Qt::Key_E) {
         m_player.moveUpGlobal(amount);
     }
+}
+
+void MyGL::keyReleaseEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Right) {
+    } else if (e->key() == Qt::Key_Left) {
+    } else if (e->key() == Qt::Key_Up) {
+    } else if (e->key() == Qt::Key_Down) {
+    } else if (e->key() == Qt::Key_W) {
+        qDebug() << "W key released";
+    } else if (e->key() == Qt::Key_S) {
+    } else if (e->key() == Qt::Key_D) {
+    } else if (e->key() == Qt::Key_A) {
+    } else if (e->key() == Qt::Key_Q) {
+    } else if (e->key() == Qt::Key_E) {
+    }
+
 }
 
 void MyGL::mouseMoveEvent(QMouseEvent *e) {
