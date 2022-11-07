@@ -2,6 +2,7 @@
 #include "entity.h"
 #include "camera.h"
 #include "terrain.h"
+#include <iostream>
 
 enum class VelocityCond {stop, max, move};
 
@@ -15,7 +16,7 @@ private:
     bool flightMode; // determine the current mode
 
     void processInputs(InputBundle &inputs);
-    void computePhysics(float dT, const Terrain &terrain);
+    void computePhysics(float dT, const Terrain &terrain, InputBundle &inputs);
 
 public:
     // Readonly public reference to our camera
@@ -61,7 +62,7 @@ public:
     // check if current player is moving or not (velocity)
     bool playerIsMoving();
     // check the effect of acceleration on current velocity
-    VelocityCond currVelocityCond(float dT);
+    VelocityCond currVelocityCond(float dT, InputBundle &inputs);
 
 };
 

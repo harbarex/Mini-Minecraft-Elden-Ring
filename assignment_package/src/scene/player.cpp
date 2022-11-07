@@ -4,7 +4,7 @@
 Player::Player(glm::vec3 pos, const Terrain &terrain)
     : Entity(pos), m_velocity(0,0,0), m_acceleration(0,0,0),
       m_camera(pos + glm::vec3(0, 1.5f, 0)), mcr_terrain(terrain),
-      m_velocity_val(20.f), m_acceleration_val(5.f), flightMode(true), mcr_camera(m_camera)
+      m_velocity_val(20.f), m_acceleration_val(40.f), flightMode(true), mcr_camera(m_camera)
 {}
 
 Player::~Player()
@@ -12,7 +12,7 @@ Player::~Player()
 
 void Player::tick(float dT, InputBundle &input) {
     processInputs(input);
-    computePhysics(dT, mcr_terrain);
+    computePhysics(dT, mcr_terrain, input);
 }
 
 void Player::processInputs(InputBundle &inputs) {
@@ -57,9 +57,29 @@ void Player::processInputs(InputBundle &inputs) {
     }
 }
 
-void Player::computePhysics(float dT, const Terrain &terrain) {
+void Player::computePhysics(float dT, const Terrain &terrain, InputBundle &inputs) {
     // TODO: Update the Player's position based on its acceleration
     // and velocity, and also perform collision detection.
+
+    float dampingFactor = 0.9f;
+    glm::vec3 displacement(0.f);
+
+    switch (currVelocityCond(dT, inputs)){
+    case (VelocityCond::max):
+        m_velocity = glm::normalize(m_velocity + m_acceleration * dT) * m_velocity_val;
+        m_acceleration = glm::vec3(0.f);
+        break;
+    case (VelocityCond::stop):
+        m_velocity = glm::vec3(0.f);
+        break;
+    case (VelocityCond::move):
+        m_velocity += m_acceleration * dT;
+        break;
+    }
+
+    displacement = m_velocity * dampingFactor * dT;
+    moveAlongVector(displacement);
+
 }
 
 void Player::setCameraWidthHeight(unsigned int w, unsigned int h) {
@@ -164,13 +184,13 @@ bool Player::playerIsMoving()
     return false;
 }
 
-VelocityCond Player::currVelocityCond(float dT) {
+VelocityCond Player::currVelocityCond(float dT, InputBundle &inputs) {
     if (glm::length(m_velocity + m_acceleration * dT) >= m_velocity_val) {
         return VelocityCond::max;
     }
-//    if (glm::dot(m_velocity, m_acceleration) < 0 && !buttonIsPressed()) {
-//        return VelocityCond::stop;
-//    }
+    if (glm::dot(m_velocity, m_acceleration) < 0 && glm::length(m_acceleration * dT) > glm::length(m_velocity) && !buttonIsPressed(inputs)) {
+        return VelocityCond::stop;
+    }
 
     return VelocityCond::move;
 }

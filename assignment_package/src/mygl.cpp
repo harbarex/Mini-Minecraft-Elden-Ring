@@ -103,7 +103,7 @@ void MyGL::tick() {
 
     // compute the delta-time
     long long currFrameTime = QDateTime::currentMSecsSinceEpoch();
-    long long deltaTime = (currFrameTime - prevFrameTime) * 0.001f;
+    float deltaTime = (currFrameTime - prevFrameTime) / 1000.f;
     prevFrameTime = currFrameTime;
 
     // pass delta-time to Player::tick
@@ -173,22 +173,16 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
         m_player.rotateOnRightLocal(amount);
     } else if (e->key() == Qt::Key_W) {
         m_inputs.wPressed = true;
-        m_player.moveForwardLocal(amount);
     } else if (e->key() == Qt::Key_S) {
         m_inputs.sPressed = true;
-        m_player.moveForwardLocal(-amount);
     } else if (e->key() == Qt::Key_D) {
         m_inputs.dPressed = true;
-        m_player.moveRightLocal(amount);
     } else if (e->key() == Qt::Key_A) {
         m_inputs.aPressed = true;
-        m_player.moveRightLocal(-amount);
     } else if (e->key() == Qt::Key_Q) {
         m_inputs.qPressed = true;
-        m_player.moveUpGlobal(-amount);
     } else if (e->key() == Qt::Key_E) {
         m_inputs.ePressed = true;
-        m_player.moveUpGlobal(amount);
     } else if (e->key() == Qt::Key_Space) {
         m_inputs.spacePressed = true;
     } else if (e->key() == Qt::Key_F) {
