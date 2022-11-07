@@ -174,33 +174,47 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
         m_player.rotateOnRightLocal(amount);
     } else if (e->key() == Qt::Key_W) {
         m_inputs.wPressed = true;
-        // m_player.moveForwardLocal(amount);
+        m_player.moveForwardLocal(amount);
     } else if (e->key() == Qt::Key_S) {
+        m_inputs.sPressed = true;
         m_player.moveForwardLocal(-amount);
     } else if (e->key() == Qt::Key_D) {
+        m_inputs.dPressed = true;
         m_player.moveRightLocal(amount);
     } else if (e->key() == Qt::Key_A) {
+        m_inputs.aPressed = true;
         m_player.moveRightLocal(-amount);
     } else if (e->key() == Qt::Key_Q) {
+        m_inputs.qPressed = true;
         m_player.moveUpGlobal(-amount);
     } else if (e->key() == Qt::Key_E) {
+        m_inputs.ePressed = true;
         m_player.moveUpGlobal(amount);
+    } else if (e->key() == Qt::Key_Space) {
+        m_inputs.spacePressed = true;
+    } else if (e->key() == Qt::Key_F) {
+        m_player.toggleFlightMode();
     }
 }
 
 void MyGL::keyReleaseEvent(QKeyEvent *e)
 {
-    if (e->key() == Qt::Key_Right) {
-    } else if (e->key() == Qt::Key_Left) {
-    } else if (e->key() == Qt::Key_Up) {
-    } else if (e->key() == Qt::Key_Down) {
-    } else if (e->key() == Qt::Key_W) {
-        qDebug() << "W key released";
+    if (e->key() == Qt::Key_W) {
+        m_inputs.wPressed = false;
     } else if (e->key() == Qt::Key_S) {
+        m_inputs.sPressed = false;
     } else if (e->key() == Qt::Key_D) {
+        m_inputs.dPressed = false;
     } else if (e->key() == Qt::Key_A) {
+        m_inputs.aPressed = false;
     } else if (e->key() == Qt::Key_Q) {
+        m_inputs.qPressed = false;
     } else if (e->key() == Qt::Key_E) {
+        m_inputs.ePressed = false;
+    } else if (e->key() == Qt::Key_Space) {
+        m_inputs.spacePressed = false;
+    } else if (e->key() == Qt::Key_F) {
+        m_player.toggleFlightMode();
     }
 
 }

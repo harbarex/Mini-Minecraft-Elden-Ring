@@ -9,6 +9,9 @@ private:
     Camera m_camera;
     const Terrain &mcr_terrain;
 
+    float m_velocity_val, m_acceleration_val; // length of the vector
+    bool flightMode; // determine the current mode
+
     void processInputs(InputBundle &inputs);
     void computePhysics(float dT, const Terrain &terrain);
 
@@ -47,4 +50,13 @@ public:
     QString velAsQString() const;
     QString accAsQString() const;
     QString lookAsQString() const;
+
+    // toggle current flight mode
+    void toggleFlightMode();
+
+    // check if any key associated with player's movement is pressed
+    bool bottonIsPressing(InputBundle &inputs);
+    // check if current player is moving or not (velocity)
+    bool playerIsMoving();
 };
+

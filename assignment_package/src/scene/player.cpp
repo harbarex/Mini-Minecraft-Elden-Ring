@@ -4,7 +4,7 @@
 Player::Player(glm::vec3 pos, const Terrain &terrain)
     : Entity(pos), m_velocity(0,0,0), m_acceleration(0,0,0),
       m_camera(pos + glm::vec3(0, 1.5f, 0)), mcr_terrain(terrain),
-      mcr_camera(m_camera)
+      m_velocity_val(20.f), m_acceleration_val(5.f), flightMode(true), mcr_camera(m_camera)
 {}
 
 Player::~Player()
@@ -18,6 +18,43 @@ void Player::tick(float dT, InputBundle &input) {
 void Player::processInputs(InputBundle &inputs) {
     // TODO: Update the Player's velocity and acceleration based on the
     // state of the inputs.
+
+    glm::vec3 currAccUnit(0.f);
+
+    // process WASD first (regardless of flight mode)
+    if (inputs.wPressed) {
+        currAccUnit += m_forward;
+    }
+    if (inputs.aPressed) {
+        currAccUnit -= m_right;
+    }
+    if (inputs.sPressed) {
+        currAccUnit -= m_forward;
+    }
+    if (inputs.dPressed) {
+        currAccUnit += m_right;
+    }
+
+    if (flightMode) {
+        if (inputs.ePressed) {
+            currAccUnit += m_up;
+        }
+        if (inputs.qPressed) {
+            currAccUnit -= m_up;
+        }
+    } else {
+        // the flight mode is inactive
+    }
+
+    // normalize acceleration and velocity vectors
+    if (bottonIsPressing(inputs)) {
+        m_acceleration = glm::normalize(currAccUnit) * m_acceleration_val;
+    } else if (playerIsMoving()) {
+        // set acceleration as opposite unit vector compared to velocity if the player is moving and no button clicked
+        m_acceleration = glm::normalize(-m_velocity) * m_acceleration_val;
+    } else {
+        m_acceleration = glm::vec3(0.f);
+    }
 }
 
 void Player::computePhysics(float dT, const Terrain &terrain) {
@@ -97,4 +134,32 @@ QString Player::accAsQString() const {
 QString Player::lookAsQString() const {
     std::string str("( " + std::to_string(m_forward.x) + ", " + std::to_string(m_forward.y) + ", " + std::to_string(m_forward.z) + ")");
     return QString::fromStdString(str);
+}
+
+void Player::toggleFlightMode() {
+    if (flightMode) {
+        flightMode = false;
+    } else {
+        flightMode = true;
+    }
+}
+
+bool Player::bottonIsPressing(InputBundle &inputs) {
+    if (!flightMode) {
+        return inputs.aPressed || inputs.dPressed || inputs.wPressed || inputs.sPressed || inputs.spacePressed;
+    }
+
+    return inputs.aPressed || inputs.dPressed || inputs.wPressed || inputs.sPressed || inputs.ePressed || inputs.qPressed;
+
+}
+
+bool Player::playerIsMoving()
+{
+    float tolerance = 0.00001f;
+    for (int i = 0; i < 3; ++i) {
+        if (abs(m_velocity[i]) > tolerance) {
+            return true;
+        }
+    }
+    return false;
 }
