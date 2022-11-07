@@ -33,9 +33,12 @@ private:
 
     long long prevFrameTime; // time in previous frame, for calculating delta-time in player tick funciton
 
+<<<<<<< HEAD
     int prevMouseX;
     int prevMouseY;
 
+=======
+>>>>>>> 9d2eb2b (setup player tick and key release)
     void moveMouseToCenter(); // Forces the mouse position to the screen's center. You should call this
                               // from within a mouse move event after reading the mouse movement so that
                               // your mouse stays within the screen bounds and is always read.
