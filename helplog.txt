@@ -1,0 +1,3 @@
+Compile code based on operating system
+https://stackoverflow.com/questions/6649936/c-compiling-on-windows-and-linux-ifdef-switch
+

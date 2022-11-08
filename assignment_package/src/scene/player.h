@@ -70,5 +70,7 @@ public:
     // check the effect of acceleration on current velocity
     VelocityCond currVelocityCond(float dT, InputBundle &inputs);
 
+    bool gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, float *out_dist, glm::ivec3 *out_blockHit);
+
 };
 

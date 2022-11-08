@@ -48,6 +48,10 @@ glm::vec3 Camera::getUp() {
     return m_up;
 }
 
-glm::vec2 Camera::getCenterPos() {
+glm::vec2 Camera::getScreenCenterPos() {
     return glm::vec2(m_width/2, m_height/2);
+}
+
+glm::vec3 Camera::getCurrentPos() {
+    return m_position;
 }

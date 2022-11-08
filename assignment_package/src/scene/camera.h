@@ -28,5 +28,7 @@ public:
     glm::vec3 getUp();
 
     // get center position of the screen
-    glm::vec2 getCenterPos();
+    glm::vec2 getScreenCenterPos();
+    // get current camera position
+    glm::vec3 getCurrentPos();
 };
