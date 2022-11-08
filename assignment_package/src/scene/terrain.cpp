@@ -1,5 +1,7 @@
 #include "terrain.h"
+#include "noise.h"
 #include "cube.h"
+#include <algorithm>
 #include <stdexcept>
 #include <iostream>
 
@@ -171,6 +173,9 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
                             case WATER:
                                 colors.push_back(glm::vec3(0.f, 0.f, 0.75f));
                                 break;
+                            case SNOW:
+                                colors.push_back(glm::vec3(1.f, 1.f, 1.f));
+                                break;
                             default:
                                 // Other block types are not yet handled, so we default to debug purple
                                 colors.push_back(glm::vec3(1.f, 0.f, 1.f));
@@ -226,5 +231,53 @@ void Terrain::CreateTestScene()
     // Add a central column
     for(int y = 129; y < 140; ++y) {
         setBlockAt(32, y, 32, GRASS);
+    }
+}
+
+void Terrain::CreateTestGrassScene()
+{
+    // TODO: DELETE THIS LINE WHEN YOU DELETE m_geomCube!
+    m_geomCube.createVBOdata();
+
+    Noise terrainHeightMap;
+
+    int xMax = 256;
+    int zMax = 256;
+
+    // Create the Chunks that will store the blocks for our initial world space
+    for(int x = 0; x < xMax; x += 16) {
+        for(int z = 0; z < zMax; z += 16) {
+            instantiateChunkAt(x, z);
+        }
+    }
+    // Tell our existing terrain set that the "generated terrain zone" at (0,0) now exists.
+    m_generatedTerrain.insert(toKey(0, 0));
+
+    // Create the basic terrain floor
+    for(int x = 0; x < xMax; ++x) {
+        for(int z = 0; z < zMax; ++z) {
+
+            float y = terrainHeightMap.getHeight(x,z);
+
+            if( y < 135){
+                setBlockAt(x, y, z, GRASS);
+                for(int y_dirt=128; y_dirt<y; y_dirt++){
+                    setBlockAt(x, y_dirt, z, DIRT);
+                }
+            }
+            else if (y > 142){
+                setBlockAt(x, y, z, SNOW);
+                for(int y_stone=128; y_stone<y; y_stone++){
+                    setBlockAt(x, y_stone, z, STONE);
+                }
+            }
+            else{
+                setBlockAt(x, y, z, STONE);
+                for(int y_dirt=128; y_dirt<y; y_dirt++){
+                    setBlockAt(x, y_dirt, z, DIRT);
+                }
+            }
+
+        }
     }
 }
