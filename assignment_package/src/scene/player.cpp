@@ -205,10 +205,24 @@ void Player::rotateCameraView(InputBundle &input) {
     thetaChange = std::clamp(thetaChange, -360.f, 360.f);
     phiChange = std::clamp(phiChange, -360.f, 360.f);
 
+    // adjust the angle
     float scalar = 0.1f;
 
+    // avoid phi out of range (-90 ~ 90)
+    float tolerance = 0.98f;
+    if (m_camera.getForward()[1] >= tolerance && phiChange < 0) {
+        // cannot move up
+        rotateOnRightLocal(0.f);
+    } else if (m_camera.getForward()[1] <= -tolerance && phiChange > 0) {
+        // cannot move down
+        rotateOnRightLocal(0.f);
+    } else {
+        rotateOnRightLocal(-phiChange * scalar);
+    }
+
+    // no restriction on theta
     rotateOnUpGlobal(-thetaChange * scalar);
-    rotateOnRightLocal(-phiChange * scalar);
+
 }
 
 void Player::rotateCameraView(float thetaChange, float phiChange) {
