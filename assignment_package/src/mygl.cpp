@@ -71,7 +71,8 @@ void MyGL::initializeGL()
     // using multiple VAOs, we can just bind one once.
     glBindVertexArray(vao);
 
-    m_terrain.CreateTestScene();
+    //m_terrain.CreateTestScene();
+    m_terrain.CreateTestGrassScene();
 }
 
 void MyGL::resizeGL(int w, int h) {
@@ -134,7 +135,7 @@ void MyGL::paintGL() {
 // terrain that surround the player (refer to Terrain::m_generatedTerrain
 // for more info)
 void MyGL::renderTerrain() {
-    m_terrain.draw(0, 64, 0, 64, &m_progInstanced);
+    m_terrain.draw(0, 128, 0, 128, &m_progInstanced);
 }
 
 
