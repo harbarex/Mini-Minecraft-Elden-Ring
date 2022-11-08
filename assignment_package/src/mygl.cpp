@@ -20,7 +20,7 @@ MyGL::MyGL(QWidget *parent)
     setFocusPolicy(Qt::ClickFocus);
     m_inputs = InputBundle();
     setMouseTracking(true); // MyGL will track the mouse's movements even if a mouse button is not pressed
-//    setCursor(Qt::BlankCursor); // Make the cursor invisible
+    setCursor(Qt::BlankCursor); // Make the cursor invisible
     prevMouseX = width() / 2;
     prevMouseY = height() / 2;
 }
@@ -218,10 +218,15 @@ void MyGL::mouseMoveEvent(QMouseEvent *e) {
     // TODO
     m_inputs.mouseX = e->pos().x();
     m_inputs.mouseY = e->pos().y();
+
+    // for windows
     m_player.rotateCameraView(m_inputs);
-//    m_player.rotateCameraView(m_inputs.mouseX - prevMouseX, m_inputs.mouseY - prevMouseY);
-//    prevMouseX = m_inputs.mouseX;
-//    prevMouseY = m_inputs.mouseY;
+
+    // for MacOS
+    // m_player.rotateCameraView(m_inputs.mouseX - prevMouseX, m_inputs.mouseY - prevMouseY);
+    // prevMouseX = m_inputs.mouseX;
+    // prevMouseY = m_inputs.mouseY;
+
     moveMouseToCenter();
 }
 
