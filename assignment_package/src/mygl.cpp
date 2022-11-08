@@ -18,9 +18,11 @@ MyGL::MyGL(QWidget *parent)
     // Tell the timer to redraw 60 times per second
     m_timer.start(16);
     setFocusPolicy(Qt::ClickFocus);
-
+    m_inputs = InputBundle();
     setMouseTracking(true); // MyGL will track the mouse's movements even if a mouse button is not pressed
-    setCursor(Qt::BlankCursor); // Make the cursor invisible
+//    setCursor(Qt::BlankCursor); // Make the cursor invisible
+    prevMouseX = width() / 2;
+    prevMouseY = height() / 2;
 }
 
 MyGL::~MyGL() {
@@ -160,7 +162,7 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
     // statement were used, but I really dislike their
     // syntax so I chose to be lazy and use a long
     // chain of if statements instead
-    m_inputs = InputBundle();
+    // m_inputs = InputBundle();
     if (e->key() == Qt::Key_Escape) {
         QApplication::quit();
     } else if (e->key() == Qt::Key_Right) {
@@ -214,6 +216,12 @@ void MyGL::keyReleaseEvent(QKeyEvent *e)
 
 void MyGL::mouseMoveEvent(QMouseEvent *e) {
     // TODO
+    m_inputs.mouseX = e->pos().x();
+    m_inputs.mouseY = e->pos().y();
+    m_player.rotateCameraView(m_inputs.mouseX - prevMouseX, m_inputs.mouseY - prevMouseY);
+    prevMouseX = m_inputs.mouseX;
+    prevMouseY = m_inputs.mouseY;
+    moveMouseToCenter();
 }
 
 void MyGL::mousePressEvent(QMouseEvent *e) {

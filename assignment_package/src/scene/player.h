@@ -57,6 +57,10 @@ public:
     // toggle current flight mode
     void toggleFlightMode();
 
+    // rotate camera view based on the position of the cursor
+//    void rotateCameraView(InputBundle &input);
+    void rotateCameraView(float thetaChange, float phiChange);
+
     // check if any key associated with player's movement is pressed
     bool buttonIsPressed(InputBundle &inputs);
     // check if current player is moving or not (velocity)

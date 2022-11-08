@@ -26,4 +26,7 @@ public:
     glm::vec3 getForward();
     glm::vec3 getRight();
     glm::vec3 getUp();
+
+    // get center position of the screen
+    glm::vec2 getCenterPos();
 };

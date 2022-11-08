@@ -47,3 +47,7 @@ glm::vec3 Camera::getRight() {
 glm::vec3 Camera::getUp() {
     return m_up;
 }
+
+glm::vec2 Camera::getCenterPos() {
+    return glm::vec2(m_width/2, m_height/2);
+}

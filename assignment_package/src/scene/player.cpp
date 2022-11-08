@@ -194,3 +194,15 @@ VelocityCond Player::currVelocityCond(float dT, InputBundle &inputs) {
 
     return VelocityCond::move;
 }
+
+void Player::rotateCameraView(float thetaChange, float phiChange) {
+
+    // clamp theta and phi
+    thetaChange = std::clamp(thetaChange, -360.f, 360.f);
+    phiChange = std::clamp(phiChange, -360.f, 360.f);
+
+    float scalar = 0.1f;
+
+    rotateOnUpGlobal(-thetaChange * scalar);
+    rotateOnRightLocal(-phiChange * scalar);
+}
