@@ -220,9 +220,6 @@ void Terrain::CreateTestScene()
 
 void Terrain::CreateTestGrassScene()
 {
-    // TODO: DELETE THIS LINE WHEN YOU DELETE m_geomCube!
-    m_geomCube.createVBOdata();
-
     Noise terrainHeightMap;
 
     int xMax = 256;
