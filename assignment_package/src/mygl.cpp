@@ -218,9 +218,10 @@ void MyGL::mouseMoveEvent(QMouseEvent *e) {
     // TODO
     m_inputs.mouseX = e->pos().x();
     m_inputs.mouseY = e->pos().y();
-    m_player.rotateCameraView(m_inputs.mouseX - prevMouseX, m_inputs.mouseY - prevMouseY);
-    prevMouseX = m_inputs.mouseX;
-    prevMouseY = m_inputs.mouseY;
+    m_player.rotateCameraView(m_inputs);
+//    m_player.rotateCameraView(m_inputs.mouseX - prevMouseX, m_inputs.mouseY - prevMouseY);
+//    prevMouseX = m_inputs.mouseX;
+//    prevMouseY = m_inputs.mouseY;
     moveMouseToCenter();
 }
 

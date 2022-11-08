@@ -58,7 +58,9 @@ public:
     void toggleFlightMode();
 
     // rotate camera view based on the position of the cursor
-//    void rotateCameraView(InputBundle &input);
+    // for windows (main)
+    void rotateCameraView(InputBundle &input);
+    // for MacOS in the condition that QCursor::setPos does not work
     void rotateCameraView(float thetaChange, float phiChange);
 
     // check if any key associated with player's movement is pressed

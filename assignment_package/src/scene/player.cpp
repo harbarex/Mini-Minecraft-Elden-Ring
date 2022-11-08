@@ -195,6 +195,22 @@ VelocityCond Player::currVelocityCond(float dT, InputBundle &inputs) {
     return VelocityCond::move;
 }
 
+void Player::rotateCameraView(InputBundle &input) {
+
+    // compute the difference
+    float thetaChange = input.mouseX - m_camera.getCenterPos()[0];
+    float phiChange = input.mouseY - m_camera.getCenterPos()[1];
+
+    // clamp theta and phi
+    thetaChange = std::clamp(thetaChange, -360.f, 360.f);
+    phiChange = std::clamp(phiChange, -360.f, 360.f);
+
+    float scalar = 0.1f;
+
+    rotateOnUpGlobal(-thetaChange * scalar);
+    rotateOnRightLocal(-phiChange * scalar);
+}
+
 void Player::rotateCameraView(float thetaChange, float phiChange) {
 
     // clamp theta and phi
