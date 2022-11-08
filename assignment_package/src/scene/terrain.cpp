@@ -6,7 +6,7 @@
 #include <iostream>
 
 Terrain::Terrain(OpenGLContext *context)
-    : m_chunks(), m_generatedTerrain(), m_geomCube(context), mp_context(context)
+    : m_chunks(), m_chunkVBOs(), m_generatedTerrain(), m_geomCube(context), mp_context(context)
 {}
 
 Terrain::~Terrain() {
@@ -157,11 +157,23 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
                 // do nothing if no chunk at (x, z)
                 continue;
             }
+
             // get the pointer of the chunk at (x, z)
             const uPtr<Chunk> &chunk = getChunkAt(x, z);
 
+            // check chunk's vbo
+            int xFloor = static_cast<int>(glm::floor(x / 16.f));
+            int zFloor = static_cast<int>(glm::floor(z / 16.f));
+            int64_t key = toKey(16 * xFloor, 16 * zFloor);
+
+            if (m_chunkVBOs.find(key) == m_chunkVBOs.end()) {
+                // generate vbo
+                ChunkVBOdata vbo = chunk->generateVBOdata();
+                m_chunkVBOs[key] = vbo;
+            }
+
             // create VBO data of each chun
-            chunk->createVBOdata();
+            chunk->createVBOdata(m_chunkVBOs[key]);
 
             // set model matrix
             glm::mat4 translation = glm::mat4(1.f);
