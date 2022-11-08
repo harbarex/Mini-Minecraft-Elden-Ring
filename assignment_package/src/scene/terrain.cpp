@@ -182,8 +182,11 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
             shaderProgram->setModelMatrix(translation);
             // use drawInterleaved to draw the interleaved buffer data
             shaderProgram->drawInterleaved(*chunk);
+
+            chunk->destroyVBOdata();
         }
     }
+
 
 }
 
@@ -234,8 +237,8 @@ void Terrain::CreateTestGrassScene()
 {
     Noise terrainHeightMap;
 
-    int xMax = 128;
-    int zMax = 128;
+    int xMax = 256;
+    int zMax = 256;
 
     // Create the Chunks that will store the blocks for our initial world space
     for(int x = 0; x < xMax; x += 16) {
