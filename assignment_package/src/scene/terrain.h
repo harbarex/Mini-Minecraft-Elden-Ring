@@ -28,6 +28,9 @@ private:
     // glm::ivec2s are not hashable by default, so they cannot be used as keys.
     std::unordered_map<int64_t, uPtr<Chunk>> m_chunks;
 
+    // chunkVBOs
+    std::unordered_map<int64_t, ChunkVBOdata> m_chunkVBOs;
+
     // We will designate every 64 x 64 area of the world's x-z plane
     // as one "terrain generation zone". Every time the player moves
     // near a portion of the world that has not yet been generated
