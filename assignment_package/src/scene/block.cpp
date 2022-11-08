@@ -99,6 +99,9 @@ glm::vec4 Block::getColors(BlockType type)
     case WATER:
         color = glm::vec4(0.f, 0.f, 0.75f, 1.f);
         break;
+    case SNOW:
+        color = glm::vec4(1.f, 1.f, 1.f, 1.f);
+        break;
     default:
         // Other block types are not yet handled, so we default to debug purple
         color = glm::vec4(1.f, 0.f, 1.f, 1.f);
@@ -119,6 +122,7 @@ std::unordered_map<BlockType, std::array<BlockFace, 6>> Block::BlockCollection =
      {DIRT ,  Block::createBlockFaces()},
      {STONE,  Block::createBlockFaces()},
      {WATER,  Block::createBlockFaces()},
+     {SNOW,  Block::createBlockFaces()}
     }
 };
 
