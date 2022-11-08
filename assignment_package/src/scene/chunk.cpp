@@ -6,11 +6,7 @@
 Chunk::Chunk(OpenGLContext *context)
     : Drawable(context),
       m_blocks(),
-      m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}},
-      indices(),
-      buffer(),
-      uvs(),
-      vboLoaded(false)
+      m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}}
 {
     std::fill_n(m_blocks.begin(), 65536, EMPTY);
 }
@@ -109,26 +105,43 @@ BlockType Chunk::getNeighborBlock(int x, int y, int z, glm::vec4 dirVec) const
 
 
 /**
- * @brief Chunk::clearVBOData
- *  Remove existing buffer data
+ * @brief pushVec4ToBuffer
+ *  The helper func to push 4 elements into buffer array
+ * @param buf
+ * @param vec
  */
-void Chunk::clearVBOdata()
+void pushVec4ToBuffer(std::vector<float> &buf, const glm::vec4 &vec)
 {
-    indices.clear();
-    buffer.clear();
-    uvs.clear();
-    vboLoaded = false;
-    destroyVBOdata();
+    for (int i = 0; i < 4; i++) {
+        buf.push_back(vec[i]);
+    }
+}
+
+
+/**
+ * @brief pushVec2ToBuffer
+ *   *  The helper func to push 2 elements into buffer array
+ * @param buf
+ * @param vec
+ */
+void pushVec2ToBuffer(std::vector<float> &buf, const glm::vec2 &vec)
+{
+    for (int i = 0; i < 2; i++) {
+        buf.push_back(vec[i]);
+    }
 }
 
 /**
- * @brief Chunk::fillVBOdata
- *  Fill the vbo data (indices, buffer, uvs ...)
- **/
-void Chunk::fillVBOdata()
+ * @brief Chunk::generateVBOdata
+ *  This method generates the needed vertex buffer & index data for this chunk.
+ *  Note: the order of the vertex buffer is (pos, normal, color, uv).
+ *  All of them are put in a vector<float>.
+ * @return
+ */
+ChunkVBOdata Chunk::generateVBOdata() const
 {
-    // clear existing buffer at first
-    clearVBOdata();
+    // init
+    ChunkVBOdata vbo = ChunkVBOdata();
 
     // basically, iterate through all the blocks contained in a chunk
     // each chunk : 16 x 256 x 16
@@ -137,6 +150,7 @@ void Chunk::fillVBOdata()
 
     // Used as the indices for triangulation
     std::vector<GLuint> faceIndices = {0, 1, 2, 0, 2, 3};
+    glm::vec4 out = glm::vec4();
 
     for (int x = 0; x < 16; x++) {
         for (int y = 0; y < 256; y++) {
@@ -159,17 +173,16 @@ void Chunk::fillVBOdata()
                         if (!Block::isOpaque(neighbor)) {
                             // add this face
                             for (const VertexData &vert : face.vertices) {
-                                // buffer: pos0nor0col0
-                                buffer.push_back(vert.pos + glm::vec4(x, y, z, 0));
-                                buffer.push_back(face.normal);
-                                // add temporary colors (for MS1)
-                                buffer.push_back(Block::getColors(blockType));
-                                // add uvs
-                                uvs.push_back(vert.uv);
+                                // buffer: pos0nor0col0uv0
+                                pushVec4ToBuffer(vbo.buffer, vert.pos + glm::vec4(x, y, z, 0));
+                                pushVec4ToBuffer(vbo.buffer, face.normal);
+                                pushVec4ToBuffer(vbo.buffer, Block::getColors(blockType));
+                                pushVec2ToBuffer(vbo.buffer, vert.uv);
+
                             }
                             // add indices for each face (4 vertices)
                             for (int index : faceIndices) {
-                                indices.push_back(nVert + index);
+                                vbo.indices.push_back(nVert + index);
                             }
                             // move the offset for indices
                             nVert += 4;
@@ -181,47 +194,57 @@ void Chunk::fillVBOdata()
 
     }
 
-    // indices count
-    m_count = indices.size();
+    return vbo;
+}
 
-    // set vboCreated to true
-    vboLoaded = true;
+
+/**
+ * @brief Chunk::createVBOdata
+ * @param vbo : ChunkVBOdata, contains the loaded interleaved vertex data and index data
+ */
+void Chunk::createVBOdata(ChunkVBOdata &vbo)
+{
+    // remember to set m_count
+    m_count = vbo.indices.size();
+
+    int bufferSize = vbo.buffer.size();
+
+    generateIdx();
+    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufIdx);
+    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_count * sizeof(GLuint), vbo.indices.data(), GL_STATIC_DRAW);
+
+    generatePos();
+    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufPos);
+    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(glm::vec4), vbo.buffer.data(), GL_STATIC_DRAW);
+
+    generateNor();
+    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufNor);
+    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(glm::vec4), vbo.buffer.data(), GL_STATIC_DRAW);
+
+    generateCol();
+    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufCol);
+    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(glm::vec4), vbo.buffer.data(), GL_STATIC_DRAW);
+
+    // additionally for uv
+    generateUV();
+    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufUV);
+    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(glm::vec2), vbo.buffer.data(), GL_STATIC_DRAW);
+
+    return;
+
 }
 
 /**
  * @brief Chunk::createVBOdata
  * Generate the buffer for chunk rendering.
  * Note: each block & each block face are already created in block.h
+ * Note: this is used only for MS1. In MS2 & MS3, vbo of each chunk
+ * is hold by the terrain. Won't be generated on the fly here.
  */
 void Chunk::createVBOdata()
 {
-    fillVBOdata();
-
-    // bind buffer & pass to gpu
-    int bufferSize = buffer.size();
-
-    generateIdx();
-    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufIdx);
-    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_count * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
-
-    generatePos();
-    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufPos);
-    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(glm::vec4), buffer.data(), GL_STATIC_DRAW);
-
-    generateNor();
-    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufNor);
-    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(glm::vec4), buffer.data(), GL_STATIC_DRAW);
-
-    generateCol();
-    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufCol);
-    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(glm::vec4), buffer.data(), GL_STATIC_DRAW);
-
-    // additionally for uv
-    generateUV();
-    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufUV);
-    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), uvs.data(), GL_STATIC_DRAW);
-
-    return;
+    ChunkVBOdata vbo = generateVBOdata();
+    createVBOdata(vbo);
 }
 
 Chunk::~Chunk(){}

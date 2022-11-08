@@ -8,6 +8,26 @@
 #include <cstddef>
 #include <openglcontext.h>
 
+// this struct is used to hold the VBO data of a given chunk
+// identified by (x, z) coord
+struct ChunkVBOdata
+{
+    // MS1
+    std::vector<GLuint> indices;
+    // order: pos (vec4) + normal (vec4) + color (vec4) + uv (vec2)
+    std::vector<float> buffer;
+
+    // MS2: add transparent part
+    std::vector<GLuint> transparentIndices;
+    std::vector<float> transparentBuffer;
+
+    // constructors
+    ChunkVBOdata()
+        : indices(), buffer(),
+          transparentIndices(), transparentBuffer() {}
+
+};
+
 // One Chunk is a 16 x 256 x 16 section of the world,
 // containing all the Minecraft blocks in that area.
 // We divide the world into Chunks in order to make
@@ -26,16 +46,8 @@ private:
     // These allow us to properly determine
     std::unordered_map<Direction, Chunk*, EnumHash> m_neighbors;
 
-    std::vector<GLuint> indices;
-    std::vector<glm::vec4> buffer;
-    std::vector<glm::vec2> uvs;
-
     // get neighboring block
     BlockType getNeighborBlock(int x, int y, int z, glm::vec4 dirVec) const;
-
-    // used to see if VBO data is loaded into the array or not
-    // indices, buffer, uvs, ... etc.
-    bool vboLoaded;
 
 public:
     // constructor as a subclass of Drawable
@@ -49,16 +61,13 @@ public:
     // since chunk's drawMode is still GL_TRIANGLES, no need to implement drawMode() here.
     virtual void createVBOdata() override;
 
-    // fill & clear the VBO data (indices, buffer, uvs)
-    void fillVBOdata();
-    void clearVBOdata();
-    bool isVBOLoaded();
+    // this generates the vbo data for further rendering
+    ChunkVBOdata generateVBOdata() const;
+
+    // this takes ChunkVBOdata in and buffers them into this Chunk (Drawable)
+    void createVBOdata(ChunkVBOdata &vbo);
 
     int getNNeighbors() const;
 
     virtual ~Chunk();
 };
-
-
-
-
