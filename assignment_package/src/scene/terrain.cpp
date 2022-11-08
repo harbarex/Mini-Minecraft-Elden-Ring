@@ -222,8 +222,8 @@ void Terrain::CreateTestGrassScene()
 {
     Noise terrainHeightMap;
 
-    int xMax = 256;
-    int zMax = 256;
+    int xMax = 128;
+    int zMax = 128;
 
     // Create the Chunks that will store the blocks for our initial world space
     for(int x = 0; x < xMax; x += 16) {
