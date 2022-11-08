@@ -208,10 +208,7 @@ void MyGL::keyReleaseEvent(QKeyEvent *e)
         m_inputs.ePressed = false;
     } else if (e->key() == Qt::Key_Space) {
         m_inputs.spacePressed = false;
-    } else if (e->key() == Qt::Key_F) {
-        m_player.toggleFlightMode();
     }
-
 }
 
 void MyGL::mouseMoveEvent(QMouseEvent *e) {

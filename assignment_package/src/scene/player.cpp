@@ -44,6 +44,9 @@ void Player::processInputs(InputBundle &inputs) {
         }
     } else {
         // the flight mode is inactive
+
+        // discard acceleration on Y axis
+        currAccUnit[1] = 0.f;
     }
 
     // normalize acceleration and velocity vectors
