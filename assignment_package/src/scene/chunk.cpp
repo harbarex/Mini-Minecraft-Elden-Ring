@@ -174,15 +174,14 @@ ChunkVBOdata Chunk::generateVBOdata() const
                             // add this face
                             for (const VertexData &vert : face.vertices) {
                                 // buffer: pos0nor0col0uv0
-                                vbo.pos.push_back(vert.pos + glm::vec4(x, y, z, 0));
-                                vbo.nor.push_back(face.normal);
-                                vbo.col.push_back(Block::getColors(blockType));
-                                vbo.uv.push_back(vert.uv);
-//                                pushVec4ToBuffer(vbo.buffer, vert.pos + glm::vec4(x, y, z, 0));
-//                                pushVec4ToBuffer(vbo.buffer, face.normal);
-//                                pushVec4ToBuffer(vbo.buffer, Block::getColors(blockType));
-//                                pushVec2ToBuffer(vbo.buffer, vert.uv);
-
+//                                vbo.pos.push_back(vert.pos + glm::vec4(x, y, z, 0));
+//                                vbo.nor.push_back(face.normal);
+//                                vbo.col.push_back(Block::getColors(blockType));
+//                                vbo.uv.push_back(vert.uv);
+                                pushVec4ToBuffer(vbo.buffer, vert.pos + glm::vec4(x, y, z, 0));
+                                pushVec4ToBuffer(vbo.buffer, face.normal);
+                                pushVec4ToBuffer(vbo.buffer, Block::getColors(blockType));
+                                pushVec2ToBuffer(vbo.buffer, vert.uv);
                             }
                             // add indices for each face (4 vertices)
                             for (int index : faceIndices) {
@@ -211,7 +210,7 @@ void Chunk::createVBOdata(ChunkVBOdata &vbo)
     // remember to set m_count
     m_count = vbo.indices.size();
 
-    int bufferSize = vbo.pos.size();
+    int bufferSize = vbo.buffer.size();
 
     generateIdx();
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufIdx);
@@ -219,21 +218,7 @@ void Chunk::createVBOdata(ChunkVBOdata &vbo)
 
     generatePos();
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufPos);
-    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(glm::vec4), vbo.pos.data(), GL_STATIC_DRAW);
-
-    generateNor();
-    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufNor);
-    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(glm::vec4), vbo.nor.data(), GL_STATIC_DRAW);
-
-    generateCol();
-    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufCol);
-    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(glm::vec4), vbo.col.data(), GL_STATIC_DRAW);
-
-    // additionally for uv
-    generateUV();
-    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufUV);
-    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(glm::vec2), vbo.uv.data(), GL_STATIC_DRAW);
-
+    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(float), vbo.buffer.data(), GL_STATIC_DRAW);
 
 //    generatePos();
 //    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufPos);
