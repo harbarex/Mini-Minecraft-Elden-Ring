@@ -414,6 +414,11 @@ void Player::destroyBlock(InputBundle &inputs, const Terrain &terrain) {
         return;
     }
 
+    // remove hit block
+    Chunk* hitBlock = terrain.getChunkAt(out_blockHit[0], out_blockHit[2]).get();
+//    hitBlock->setBlockAt(out_blockHit[0], out_blockHit[1], out_blockHit[2], EMPTY);
+
+
     return;
 
 }
