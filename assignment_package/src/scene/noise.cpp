@@ -19,35 +19,48 @@ Noise::~Noise(){}
  * @param z
  */
 int Noise::getHeight(int x, int z) {
-    float grass         = getGrassHeight(x, z);
-    float mtn_rock      = getMountainousRockHeight(x, z);
+    float grass             = getGrassHeight(x, z);
+    float mtn_rock          = getMountainousRockHeight(x, z);
+    float water             = getWaterHeight(x, z);
 
-    float perlin        = (FBM2D(x/2048.f, z/2048.f, 0.2, "perlin", 1) + 1) / 2;
-    float smoothPerlin  = glm::smoothstep(0.5, 0.6, (double) perlin);
+    float perlin            = (FBM2D(x/2048.f, z/2048.f, 0.2, "perlin", 1) + 1) / 2;
+    float smoothPerlin      = glm::smoothstep(0.5, 0.6, (double) perlin);
 
-    return glm::clamp(glm::mix(grass, mtn_rock, smoothPerlin), 0.f, 255.f);
+    float waterPerlin       = (FBM2D(x/4096.f, z/4096.f, 0.9, "perlin", 3) + 1) / 2;
+    float waterSmoothPerlin = glm::smoothstep(0.8, 0.85, (double) waterPerlin);
+
+    return glm::clamp(glm::mix(glm::mix(grass, mtn_rock, smoothPerlin), water, waterSmoothPerlin), 128.f, 255.f);
 }
 
 float Noise::getGrassHeight(float x, float z){
-    x /= 256;
-    z /= 256;
+    x /= 512;
+    z /= 512;
 
-    int grassMin = 128;
+    int grassMin = 134;
     int grassMax = 140;
 
     return grassMin + (grassMax - grassMin) * worleyNoise2D(FBM2D(x, z, 0.5, "perlin", 1), FBM2D(z, x, 0.5, "perlin", 1));
 }
 
 float Noise::getMountainousRockHeight(float x, float z) {
-    x /= 512;
-    z /= 512;
+    x /= 2048;
+    z /= 2048;
 
-    int mountainMin = 170;
+    int mountainMin = 140;
     int mountainMax = 250;
 
     return mountainMin + (mountainMax - mountainMin) * glm::abs(FBM2D(x, z, 0.92, "perlin", 1));
 }
 
+float Noise::getWaterHeight(float x, float z){
+    x /= 256;
+    z /= 256;
+
+    int waterMin = 128;
+    int waterMax = 134;
+
+    return waterMin + (waterMax - waterMin) * (FBM2D(x, z, 0.5, "perlin", 3) + 1) / 2;
+}
 
 ///////////////////////////////////////////////////
 ///////////////// Worley Noise ////////////////////
