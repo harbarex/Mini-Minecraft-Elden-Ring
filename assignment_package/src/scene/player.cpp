@@ -50,11 +50,14 @@ void Player::processInputs(InputBundle &inputs) {
     }
 
     // normalize acceleration and velocity vectors
-    if (buttonIsPressed(inputs)) {
+    if (buttonIsPressed(inputs) && glm::length(currAccUnit) > 0.00001f) {
         m_acceleration = glm::normalize(currAccUnit) * m_acceleration_val;
-    } else if (playerIsMoving()) {
+    } else if (playerIsMoving(true) && flightMode) {
         // set acceleration as opposite unit vector compared to velocity if the player is moving and no button clicked
         m_acceleration = glm::normalize(-m_velocity) * m_acceleration_val;
+    } else if (playerIsMoving(false) && !flightMode) {
+        // (only XZ) set acceleration as opposite unit vector compared to velocity if the player is moving and no button clicked
+        m_acceleration = glm::normalize(glm::vec3(-m_velocity[0], 0.f, -m_velocity[2])) * m_acceleration_val;
     } else {
         m_acceleration = glm::vec3(0.f);
     }
@@ -85,21 +88,21 @@ void Player::computePhysics(float dT, const Terrain &terrain, InputBundle &input
         break;
     }
 
-    displacement = m_velocity * dampingFactor * dT;
-
     if (!checkXZCollision(0, terrain)) {
         m_velocity[0] = 0.f;
-        displacement[0] = 0.f;
     }
     if (!checkXZCollision(2, terrain)) {
         m_velocity[2] = 0.f;
-        displacement[2] = 0.f;
     }
     if (!checkYCollision(terrain)) {
         m_velocity[1] = 0.f;
-        displacement[1] = 0.f;
     }
 
+    if (inputs.spacePressed) {
+        implementJumping();
+    }
+
+    displacement = m_velocity * dampingFactor * dT;
     moveAlongVector(displacement);
 
 }
@@ -198,10 +201,13 @@ bool Player::buttonIsPressed(InputBundle &inputs) {
 
 }
 
-bool Player::playerIsMoving()
+bool Player::playerIsMoving(bool yCheck)
 {
     float tolerance = 0.00001f;
     for (int i = 0; i < 3; ++i) {
+        if (i == 1 && !yCheck) {
+            continue;
+        }
         if (abs(m_velocity[i]) > tolerance) {
             return true;
         }
@@ -381,4 +387,12 @@ bool Player::checkYCollision(const Terrain &terrain) {
     }
 
     return true;
+}
+
+void Player::implementJumping() {
+    if (flightMode || m_velocity[1] != 0.f) {
+        return;
+    }
+    // empirical
+    m_velocity[1] = 7.5f;
 }

@@ -20,6 +20,7 @@ private:
 
     bool checkXZCollision(int idx, const Terrain &terrain); // determine if current movement collide in X or Z axis (with idx 0 and 2)
     bool checkYCollision(const Terrain &terrain); // determine if current movement collide in Y axis (specifically for the ground)
+    void implementJumping();
 
 public:
     // Readonly public reference to our camera
@@ -69,7 +70,7 @@ public:
     // check if any key associated with player's movement is pressed
     bool buttonIsPressed(InputBundle &inputs);
     // check if current player is moving or not (velocity)
-    bool playerIsMoving();
+    bool playerIsMoving(bool yCheck);
     // check the effect of acceleration on current velocity
     VelocityCond currVelocityCond(float dT, InputBundle &inputs);
 
