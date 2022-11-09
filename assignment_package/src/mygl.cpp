@@ -5,10 +5,6 @@
 #include <QApplication>
 #include <QKeyEvent>
 #include <QDateTime>
-<<<<<<< HEAD
-=======
-
->>>>>>> 9d2eb2b (setup player tick and key release)
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
@@ -109,24 +105,15 @@ void MyGL::tick() {
     sendPlayerDataToGUI(); // Updates the info in the secondary window displaying player data
     // call terrain expansion
     m_terrain.expand(m_player.mcr_position[0], m_player.mcr_position[2], 1);
-<<<<<<< HEAD
     // compute the delta-time
     long long currFrameTime = QDateTime::currentMSecsSinceEpoch();
     float deltaTime = (currFrameTime - prevFrameTime) / 1000.f;
-=======
 
-    // compute the delta-time
-    long long currFrameTime = QDateTime::currentMSecsSinceEpoch();
-    long long deltaTime = currFrameTime - prevFrameTime;
->>>>>>> 9d2eb2b (setup player tick and key release)
     prevFrameTime = currFrameTime;
 
     // pass delta-time to Player::tick
     m_player.tick(deltaTime, m_inputs);
-<<<<<<< HEAD
 
-=======
->>>>>>> 9d2eb2b (setup player tick and key release)
 }
 
 void MyGL::sendPlayerDataToGUI() const {
@@ -181,11 +168,8 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
     // statement were used, but I really dislike their
     // syntax so I chose to be lazy and use a long
     // chain of if statements instead
-<<<<<<< HEAD
     // m_inputs = InputBundle();
-=======
-    m_inputs = InputBundle();
->>>>>>> 9d2eb2b (setup player tick and key release)
+
     if (e->key() == Qt::Key_Escape) {
         QApplication::quit();
     } else if (e->key() == Qt::Key_Right) {
@@ -198,10 +182,6 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
         m_player.rotateOnRightLocal(amount);
     } else if (e->key() == Qt::Key_W) {
         m_inputs.wPressed = true;
-<<<<<<< HEAD
-=======
-        // m_player.moveForwardLocal(amount);
->>>>>>> 9d2eb2b (setup player tick and key release)
     } else if (e->key() == Qt::Key_S) {
         m_inputs.sPressed = true;
     } else if (e->key() == Qt::Key_D) {
@@ -236,23 +216,6 @@ void MyGL::keyReleaseEvent(QKeyEvent *e)
     } else if (e->key() == Qt::Key_Space) {
         m_inputs.spacePressed = false;
     }
-}
-
-void MyGL::keyReleaseEvent(QKeyEvent *e)
-{
-    if (e->key() == Qt::Key_Right) {
-    } else if (e->key() == Qt::Key_Left) {
-    } else if (e->key() == Qt::Key_Up) {
-    } else if (e->key() == Qt::Key_Down) {
-    } else if (e->key() == Qt::Key_W) {
-        qDebug() << "W key released";
-    } else if (e->key() == Qt::Key_S) {
-    } else if (e->key() == Qt::Key_D) {
-    } else if (e->key() == Qt::Key_A) {
-    } else if (e->key() == Qt::Key_Q) {
-    } else if (e->key() == Qt::Key_E) {
-    }
-
 }
 
 void MyGL::mouseMoveEvent(QMouseEvent *e) {
