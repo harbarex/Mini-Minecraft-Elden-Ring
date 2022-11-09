@@ -66,14 +66,28 @@ std::array<BlockFace, 6> Block::createBlockFaces()
 
 /**
  * @brief Block::isOpaque
- *  The helper function to determine whether a given block type is opaque or not.
+ *  The helper function to determine whether a given block type is
+ *  treated as opaque or not.
  * @return
  */
 bool Block::isOpaque(BlockType type)
 {
-    // currently (MS1), opaque if it is not empty & not water
+    // currently (MS1), opaque if it is not empty
     // TODO: add more criteria
-    return (type != EMPTY && type != WATER);
+    return (type != EMPTY);
+}
+
+
+/**
+ * @brief Block::isTransparent
+ *  The helper function to determine whether a given block type
+ *  is treated as transparent or not
+ * @param type
+ * @return
+ */
+bool Block::isTransparent(BlockType type)
+{
+    return (type == EMPTY || type == WATER);
 }
 
 

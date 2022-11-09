@@ -182,7 +182,6 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
             shaderProgram->setModelMatrix(translation);
             // use drawInterleaved to draw the interleaved buffer data
             shaderProgram->drawInterleaved(*chunk);
-            // shaderProgram->draw(*chunk);
 
             chunk->destroyVBOdata();
         }

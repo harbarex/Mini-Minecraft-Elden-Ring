@@ -170,14 +170,10 @@ ChunkVBOdata Chunk::generateVBOdata() const
                         // the neighboring block might be in the neighboring chunk
                         BlockType neighbor = getNeighborBlock(x, y, z, face.normal);
                         // draw (add data to buffer) if the neighbor is not opaque
-                        if (!Block::isOpaque(neighbor)) {
+                        if (Block::isTransparent(neighbor)) {
                             // add this face
                             for (const VertexData &vert : face.vertices) {
                                 // buffer: pos0nor0col0uv0
-//                                vbo.pos.push_back(vert.pos + glm::vec4(x, y, z, 0));
-//                                vbo.nor.push_back(face.normal);
-//                                vbo.col.push_back(Block::getColors(blockType));
-//                                vbo.uv.push_back(vert.uv);
                                 pushVec4ToBuffer(vbo.buffer, vert.pos + glm::vec4(x, y, z, 0));
                                 pushVec4ToBuffer(vbo.buffer, face.normal);
                                 pushVec4ToBuffer(vbo.buffer, Block::getColors(blockType));
@@ -219,23 +215,6 @@ void Chunk::createVBOdata(ChunkVBOdata &vbo)
     generatePos();
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufPos);
     mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(float), vbo.buffer.data(), GL_STATIC_DRAW);
-
-//    generatePos();
-//    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufPos);
-//    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, vbo.pos.size() * sizeof(glm::vec4), vbo.buffer.data(), GL_STATIC_DRAW);
-
-//    generateNor();
-//    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufNor);
-//    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, vbo.nor.size()* sizeof(glm::vec4), vbo.buffer.data(), GL_STATIC_DRAW);
-
-//    generateCol();
-//    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufCol);
-//    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, vbo.col.size() * sizeof(glm::vec4), vbo.buffer.data(), GL_STATIC_DRAW);
-
-//    // additionally for uv
-//    generateUV();
-//    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufUV);
-//    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(glm::vec2), vbo.buffer.data(), GL_STATIC_DRAW);
 
     return;
 
