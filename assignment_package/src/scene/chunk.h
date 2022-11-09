@@ -17,13 +17,20 @@ struct ChunkVBOdata
     // order: pos (vec4) + normal (vec4) + color (vec4) + uv (vec2)
     std::vector<float> buffer;
 
+    // TODO: use separate buffers for testing
+    std::vector<glm::vec4> pos;
+    std::vector<glm::vec4> nor;
+    std::vector<glm::vec4> col;
+    std::vector<glm::vec2> uv;
+
+
     // MS2: add transparent part
     std::vector<GLuint> transparentIndices;
     std::vector<float> transparentBuffer;
 
     // constructors
     ChunkVBOdata()
-        : indices(), buffer(),
+        : indices(), buffer(), pos(), nor(), col(), uv(),
           transparentIndices(), transparentBuffer() {}
 
 };
