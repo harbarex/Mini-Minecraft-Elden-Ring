@@ -1,17 +1,14 @@
 #include "terrain.h"
 #include "noise.h"
-#include "cube.h"
 #include <algorithm>
 #include <stdexcept>
 #include <iostream>
 
 Terrain::Terrain(OpenGLContext *context)
-    : m_chunks(), m_chunkVBOs(), m_generatedTerrain(), m_geomCube(context), mp_context(context)
+    : m_chunks(), m_chunkVBOs(), m_generatedTerrain(), mp_context(context)
 {}
 
-Terrain::~Terrain() {
-    m_geomCube.destroyVBOdata();
-}
+Terrain::~Terrain() {}
 
 // Combine two 32-bit ints into one 64-bit int
 // where the upper 32 bits are X and the lower 32 bits are Z
@@ -43,6 +40,39 @@ glm::ivec2 toCoords(int64_t k) {
     int64_t x = (k >> 32);
 
     return glm::ivec2(x, z);
+}
+
+
+/**
+ * @brief setChunkMinMaxXZ
+ *  The logic to find the grid around a player.
+ *  Basically, the grid is a square of size ((1 + 2 * halfGridSize) chunks) , centered at player's chunk.
+ * @param playerX
+ * @param playerZ
+ * @param minX
+ * @param maxX
+ * @param minZ
+ * @param maxZ
+ */
+void setChunkMinMaxXZ(float playerX,
+                      float playerZ,
+                      int halfGridSize,
+                      int &minX,
+                      int &maxX,
+                      int &minZ,
+                      int &maxZ)
+{
+    int xFloor = static_cast<int>(glm::floor(playerX / 16.f));
+    int zFloor = static_cast<int>(glm::floor(playerZ / 16.f));
+
+    // Note: the xFloor, zFloor stand for the i-th chunk (not chunk origin coordinate)
+    // Remember to multiply with 16 to get back to the chunk origin
+    // Also, the chunk directly at maxX & maxZ won't be included.
+    minX = (xFloor - halfGridSize) * 16;
+    maxX = (xFloor + (halfGridSize + 1)) * 16;
+    minZ = (zFloor - halfGridSize) * 16;
+    maxZ = (zFloor + (halfGridSize + 1)) * 16;
+
 }
 
 // Surround calls to this with try-catch if you don't know whether
@@ -150,20 +180,16 @@ Chunk* Terrain::instantiateChunkAt(int x, int z) {
  */
 void Terrain::draw(float playerX, float playerZ, int halfGridSize, ShaderProgram *shaderProgram)
 {
-    // set up the gridSize for draw
-    // steps
-    // - get player's chunk
-    // - use that chunk to get gridSize (chunk min max X & Z)
-    int xFloor = static_cast<int>(glm::floor(playerX / 16.f));
-    int zFloor = static_cast<int>(glm::floor(playerZ / 16.f));
+    // get the grid of minX, maxX, minZ, maxZ by (playerX, playerZ)
+    int minX, maxX, minZ, maxZ;
 
-    // Note: the xFloor, zFloor stand for the i-th chunk (not chunk origin coordinate)
-    // Remember to multiply with 16 to get back to the chunk origin
-    // Also, the chunk directly at maxX & maxZ won't be included.
-    int minX = (xFloor - halfGridSize) * 16;
-    int maxX = (xFloor + (halfGridSize + 1)) * 16;
-    int minZ = (zFloor - halfGridSize) * 16;
-    int maxZ = (zFloor + (halfGridSize + 1)) * 16;
+    setChunkMinMaxXZ(playerX,
+                     playerZ,
+                     halfGridSize,
+                     minX,
+                     maxX,
+                     minZ,
+                     maxZ);
 
     // use the origianl terrain::draw
     draw(minX, maxX, minZ, maxZ, shaderProgram);
@@ -217,6 +243,145 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
     }
 }
 
+/**
+ * @brief Terrain::expand
+ *  For MS1: 3 x 3 chunk
+ *  For further: 3 x 3 zones
+ * @param playerX
+ * @param playerZ
+ * @param halfGridSize
+ */
+void Terrain::expand(float playerX, float playerZ, int halfGridSize)
+{
+    // m_generatedTerrain not used for now
+    // m_generatedTerrain.insert(toKey(0, 0));
+
+    int minX, maxX, minZ, maxZ;
+
+    setChunkMinMaxXZ(playerX,
+                     playerZ,
+                     halfGridSize,
+                     minX,
+                     maxX,
+                     minZ,
+                     maxZ);
+
+    for (int x = minX; x < maxX; x += 16) {
+
+        for (int z = minZ; z < maxZ; z += 16) {
+
+            // if the chunk does not exist, create one
+            // and set up VBO
+            if (!hasChunkAt(x, z)) {
+
+                // create this part of the terrain
+                instantiateChunkAndFillBlocks(x, z);
+
+                // retrieve chunk pointer
+                const uPtr<Chunk> &chunk = getChunkAt(x, z);
+
+                // set up VBO
+                int64_t key = toKey(x, z);
+                ChunkVBOdata vbo = chunk->generateVBOdata();
+                m_chunkVBOs[key] = vbo;
+                chunk->createVBOdata(m_chunkVBOs[key]);
+
+            }
+        }
+
+    }
+
+}
+
+
+/**
+ * @brief Terrain::instantiateChunkAndFillBlocks
+ *  This helper is used to fill the blocks in the chunk
+ * @param chunkX : int, the chunk's origin X
+ * @param chunkZ : int, the chunk's origin Z
+ */
+void Terrain::instantiateChunkAndFillBlocks(int chunkX, int chunkZ)
+{
+    Noise terrainHeightMap;
+
+    instantiateChunkAt(chunkX, chunkZ);
+
+    for (int x = chunkX; x < chunkX + 16; x++) {
+
+        for (int z = chunkZ; z < chunkZ + 16; z++) {
+
+            // TODO: wrap up the logics later
+            double y = terrainHeightMap.getHeight(x,z);
+
+            if( y < 136){
+                setBlockAt(x, y, z, WATER);
+                for(int y_dirt=128; y_dirt<y; y_dirt++){
+                    setBlockAt(x, y_dirt, z, WATER);
+                }
+            }
+            else if( y < 142){
+                setBlockAt(x, y, z, GRASS);
+                for(int y_dirt=128; y_dirt<y; y_dirt++){
+                    setBlockAt(x, y_dirt, z, DIRT);
+                }
+            }
+            else if (y > 190){
+                setBlockAt(x, y, z, SNOW);
+                for(int y_stone=128; y_stone<y; y_stone++){
+                    setBlockAt(x, y_stone, z, STONE);
+                }
+            }
+            else{
+                setBlockAt(x, y, z, STONE);
+                for(int y_dirt=128; y_dirt<y; y_dirt++){
+                    setBlockAt(x, y_dirt, z, DIRT);
+                }
+            }
+
+            // Set DIRT from 0-128 height values
+            for(int y_underground=0; y_underground<128;y_underground++){
+                setBlockAt(x, y_underground, z, DIRT);
+            }
+
+        }
+
+    }
+}
+
+
+/**
+ * @brief Terrain::putBlockAt
+ *  Set the block at (x, y, z) as a block t,
+ *  then destroy the chunk's VBO containing this block (to reload).
+ * @param x
+ * @param y
+ * @param z
+ * @param t
+ */
+void Terrain::placeBlockAt(int x, int y, int z, BlockType t)
+{
+    // set to block type t
+    setBlockAt(x, y, z, t);
+
+    // find the corresponding chunk origin with block's (x, z)
+    int chunkX = static_cast<int>(glm::floor(x / 16.f)) * 16;
+    int chunkZ = static_cast<int>(glm::floor(z / 16.f)) * 16;
+
+    if (!hasChunkAt(chunkX, chunkZ)) {
+        // no chunk at this place
+        // not allow to place any block where there's no chunk.
+        return;
+    }
+
+    // create the VBO again
+    const uPtr<Chunk> &chunk = getChunkAt(chunkX, chunkZ);
+    int64_t key = toKey(chunkX, chunkZ);
+    ChunkVBOdata vbo = chunk->generateVBOdata();
+    // update the one in the map
+    m_chunkVBOs[key] = vbo;
+    chunk->createVBOdata(m_chunkVBOs[key]);
+
+}
 
 
 void Terrain::CreateTestScene()
@@ -319,106 +484,3 @@ void Terrain::CreateTestGrassScene()
 }
 
 
-/**
- * @brief Terrain::generateChunkAndBlock
- * @param chunkX : int, the chunk's origin X
- * @param chunkZ : int, the chunk's origin Z
- */
-void Terrain::generateChunkAndBlock(int chunkX, int chunkZ)
-{
-    Noise terrainHeightMap;
-
-    instantiateChunkAt(chunkX, chunkZ);
-
-    for (int x = chunkX; x < chunkX + 16; x++) {
-
-        for (int z = chunkZ; z < chunkZ + 16; z++) {
-
-            double y = terrainHeightMap.getHeight(x,z);
-
-            if( y < 136){
-                setBlockAt(x, y, z, WATER);
-                for(int y_dirt=128; y_dirt<y; y_dirt++){
-                    setBlockAt(x, y_dirt, z, WATER);
-                }
-            }
-            else if( y < 142){
-                setBlockAt(x, y, z, GRASS);
-                for(int y_dirt=128; y_dirt<y; y_dirt++){
-                    setBlockAt(x, y_dirt, z, DIRT);
-                }
-            }
-            else if (y > 190){
-                setBlockAt(x, y, z, SNOW);
-                for(int y_stone=128; y_stone<y; y_stone++){
-                    setBlockAt(x, y_stone, z, STONE);
-                }
-            }
-            else{
-                setBlockAt(x, y, z, STONE);
-                for(int y_dirt=128; y_dirt<y; y_dirt++){
-                    setBlockAt(x, y_dirt, z, DIRT);
-                }
-            }
-
-            // Set DIRT from 0-128 height values
-            for(int y_underground=0; y_underground<128;y_underground++){
-                setBlockAt(x, y_underground, z, DIRT);
-            }
-
-        }
-
-    }
-}
-
-
-/**
- * @brief Terrain::expand
- *  For MS1: 3 x 3 chunk
- *  For further: 3 x 3 zones
- * @param playerX
- * @param playerZ
- * @param halfGridSize
- */
-void Terrain::expand(float playerX, float playerZ, int halfGridSize)
-{
-    // m_generatedTerrain not used for now
-    // m_generatedTerrain.insert(toKey(0, 0));
-
-    // set up the gridSize for draw
-    // steps
-    // - get player's chunk
-    // - use that chunk to get gridSize (chunk min max X & Z)
-    int xFloor = static_cast<int>(glm::floor(playerX / 16.f));
-    int zFloor = static_cast<int>(glm::floor(playerZ / 16.f));
-
-    // Note: the xFloor, zFloor stand for the i-th chunk (not chunk origin coordinate)
-    // Remember to multiply with 16 to get back to the chunk origin
-    // Also, the chunk directly at maxX & maxZ won't be included.
-    int minX = (xFloor - halfGridSize) * 16;
-    int maxX = (xFloor + (halfGridSize + 1)) * 16;
-    int minZ = (zFloor - halfGridSize) * 16;
-    int maxZ = (zFloor + (halfGridSize + 1)) * 16;
-
-    for (int x = minX; x < maxX; x += 16) {
-
-        for (int z = minZ; z < maxZ; z += 16) {
-
-            // if the chunk does not exist, create one
-            // and set up VBO
-            if (!hasChunkAt(x, z)) {
-                // create this part of the terrain
-                generateChunkAndBlock(x, z);
-                // retrieve chunk pointer
-                const uPtr<Chunk> &chunk = getChunkAt(x, z);
-                // set up VBO
-                int64_t key = toKey(x, z);
-                ChunkVBOdata vbo = chunk->generateVBOdata();
-                m_chunkVBOs[key] = vbo;
-                chunk->createVBOdata(m_chunkVBOs[key]);
-            }
-        }
-
-    }
-
-}

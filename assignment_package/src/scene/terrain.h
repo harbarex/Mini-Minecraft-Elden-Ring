@@ -47,15 +47,6 @@ private:
     // in the Terrain will never be deleted until the program is terminated.
     std::unordered_set<int64_t> m_generatedTerrain;
 
-    // TODO: DELETE ALL REFERENCES TO m_geomCube AS YOU WILL NOT USE
-    // IT IN YOUR FINAL PROGRAM!
-    // The instance of a unit cube we can use to render any cube.
-    // Presently, Terrain::draw renders one instance of this cube
-    // for every non-EMPTY block within its Chunks. This is horribly
-    // inefficient, and will cause your game to run very slowly until
-    // milestone 1's Chunk VBO setup is completed.
-    Cube m_geomCube;
-
     OpenGLContext* mp_context;
 
 public:
@@ -88,6 +79,10 @@ public:
     // described by the min and max coords, using the provided
     // ShaderProgram
     void draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shaderProgram);
+    // custom draw to
+    // draw the chunks around the player at (playerX, playerZ)
+    // with a defined halfGridSize
+    // the side of the grid is (1 + 2 * halfGridSize) chunks
     void draw(float playerX, float playerZ, int halfGridSize, ShaderProgram *shaderProgram);
 
     // Initializes the Chunks that store the 64 x 256 x 64 block scene you
@@ -95,9 +90,11 @@ public:
     void CreateTestScene();
     void CreateTestGrassScene();
 
-    // Terrain expansion that instantiate 3 x 3 Chunk (including the blocks inside)
+    // Terrain expansion that instantiate the Chunks (including the blocks inside)
     // around the player.
-    // mcr_pos is the get method in m_player
-    void generateChunkAndBlock(int chunkX, int chunkZ);
+    void instantiateChunkAndFillBlocks(int chunkX, int chunkZ);
     void expand(float playerX, float playerZ, int halfGridSize);
+
+    // for player to destroy & add blocks
+    void placeBlockAt(int x, int y, int z, BlockType t);
 };
