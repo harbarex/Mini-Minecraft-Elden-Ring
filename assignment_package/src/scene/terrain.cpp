@@ -238,8 +238,8 @@ void Terrain::CreateTestGrassScene()
 {
     Noise terrainHeightMap;
 
-    int xMax = 256;
-    int zMax = 256;
+    int xMax = 512;
+    int zMax = 512;
 
     // Create the Chunks that will store the blocks for our initial world space
     for(int x = 0; x < xMax; x += 16) {
@@ -256,13 +256,20 @@ void Terrain::CreateTestGrassScene()
 
             float y = terrainHeightMap.getHeight(x,z);
 
-            if( y < 135){
+            if( y < 134){
+                setBlockAt(x, y, z, WATER);
+                for(int y_dirt=128; y_dirt<y; y_dirt++){
+                    setBlockAt(x, y_dirt, z, DIRT);
+                }
+            }
+
+            else if( y < 140){
                 setBlockAt(x, y, z, GRASS);
                 for(int y_dirt=128; y_dirt<y; y_dirt++){
                     setBlockAt(x, y_dirt, z, DIRT);
                 }
             }
-            else if (y > 142){
+            else if (y > 190){
                 setBlockAt(x, y, z, SNOW);
                 for(int y_stone=128; y_stone<y; y_stone++){
                     setBlockAt(x, y_stone, z, STONE);
