@@ -253,16 +253,17 @@ void Terrain::CreateTestGrassScene()
     for(int x = 0; x < xMax; ++x) {
         for(int z = 0; z < zMax; ++z) {
 
-            float y = terrainHeightMap.getHeight(x,z);
+            double y = terrainHeightMap.getHeight(x,z);
+            y = std::max(128.0, y);
 
-            if( y < 134){
+            if( y < 136){
                 setBlockAt(x, y, z, WATER);
                 for(int y_dirt=128; y_dirt<y; y_dirt++){
-                    setBlockAt(x, y_dirt, z, DIRT);
+                    setBlockAt(x, y_dirt, z, WATER);
                 }
             }
 
-            else if( y < 140){
+            else if( y < 142){
                 setBlockAt(x, y, z, GRASS);
                 for(int y_dirt=128; y_dirt<y; y_dirt++){
                     setBlockAt(x, y_dirt, z, DIRT);
@@ -279,6 +280,11 @@ void Terrain::CreateTestGrassScene()
                 for(int y_dirt=128; y_dirt<y; y_dirt++){
                     setBlockAt(x, y_dirt, z, DIRT);
                 }
+            }
+
+            // Set DIRT from 0-128 height values
+            for(int y_underground=0; y_underground<128;y_underground++){
+                setBlockAt(x, y_underground, z, DIRT);
             }
 
         }
