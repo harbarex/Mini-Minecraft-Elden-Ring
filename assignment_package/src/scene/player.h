@@ -15,6 +15,8 @@ private:
     float m_velocity_val, m_acceleration_val; // length of the vector
     bool flightMode; // determine the current mode
 
+    float* out_dist_player_y = new float();
+
     void processInputs(InputBundle &inputs);
     void computePhysics(float dT, const Terrain &terrain, InputBundle &inputs);
 
