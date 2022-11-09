@@ -363,7 +363,7 @@ bool Player::checkXZCollision(int idx, const Terrain &terrain) {
 
         for (auto& corner: cornerArr) {
             bool cornerHit = gridMarch(corner, fowardDir*currForward, terrain, &out_dist, &out_blockHit);
-            if (cornerHit && out_dist < horizontalDistTolerance) {
+            if (cornerHit && out_dist < horizontalDistTolerance && m_velocity[idx] * forwardDeg[idx] >= 0) {
                 return false;
             }
         }
