@@ -232,4 +232,30 @@ void MyGL::mouseMoveEvent(QMouseEvent *e) {
 
 void MyGL::mousePressEvent(QMouseEvent *e) {
     // TODO
+
+    switch (e->button()) {
+    case (Qt::LeftButton):
+        m_inputs.leftMouseButtonPressed = true;
+        break;
+    case (Qt::RightButton):
+        m_inputs.rightMouseButtonPressed = true;
+        break;
+    default:
+        return;
+    }
+}
+
+void MyGL::mouseReleaseEvent(QMouseEvent *e) {
+    // TODO
+
+    switch (e->button()) {
+    case (Qt::LeftButton):
+        m_inputs.leftMouseButtonPressed = false;
+        break;
+    case (Qt::RightButton):
+        m_inputs.rightMouseButtonPressed = false;
+        break;
+    default:
+        return;
+    }
 }

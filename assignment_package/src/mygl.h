@@ -75,6 +75,9 @@ protected:
     // Automatically invoked when the user
     // presses a mouse button
     void mousePressEvent(QMouseEvent *e);
+    // Automatically invoked when the user
+    // releases a mouse button
+    void mouseReleaseEvent(QMouseEvent *e);
 
 private slots:
     void tick(); // Slot that gets called ~60 times per second by m_timer firing.
