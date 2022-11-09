@@ -211,17 +211,17 @@ void ShaderProgram::drawInterleaved(Drawable &d)
         context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)0);
     }
 
-    if (attrNor != -1 && d.bindNor()) {
+    if (attrNor != -1 && d.bindPos()) {
         context->glEnableVertexAttribArray(attrNor);
         context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)sizeof(glm::vec4));
     }
 
-    if (attrCol != -1 && d.bindCol()) {
+    if (attrCol != -1 && d.bindPos()) {
         context->glEnableVertexAttribArray(attrCol);
         context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)(2 * sizeof(glm::vec4)));
     }
 
-    if (attrUV  != -1 && d.bindUV())  {
+    if (attrUV  != -1 && d.bindPos())  {
         context->glEnableVertexAttribArray(attrUV);
         context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)(3 * sizeof(glm::vec4)));
     }
