@@ -11,6 +11,7 @@ Player::~Player()
 {}
 
 void Player::tick(float dT, InputBundle &input) {
+    destroyBlock(input, mcr_terrain);
     processInputs(input);
     computePhysics(dT, mcr_terrain, input);
 }
@@ -395,4 +396,24 @@ void Player::implementJumping() {
     }
     // empirical
     m_velocity[1] = 7.5f;
+}
+
+void Player::destroyBlock(InputBundle &inputs, const Terrain &terrain) {
+    if (!inputs.leftMouseButtonPressed) {
+        return;
+    }
+
+    glm::ivec3 out_blockHit(0);
+    float out_dist_camera = 0.f;
+    float cameraBlockDist = 3.f;
+    glm::vec3 cameraRay(cameraBlockDist * m_camera.getForward());
+
+    bool cameraHit = gridMarch(m_camera.getCurrentPos(), cameraRay, terrain, &out_dist_camera, &out_blockHit);
+
+    if (!cameraHit) {
+        return;
+    }
+
+    return;
+
 }
