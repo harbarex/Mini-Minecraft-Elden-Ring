@@ -324,85 +324,46 @@ bool Player::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrai
 
 bool Player::checkXZCollision(int idx, const Terrain &terrain) {
 
+    if (idx != 0 && idx != 2) {
+        return true;
+    }
+
     glm::ivec3 out_blockHit(0);
-    float out_dist_cam_1 = 0.f;
-    float out_dist_cam_2 = 0.f;
-    float out_dist_cam_3 = 0.f;
-    float out_dist_cam_4 = 0.f;
-    float out_dist_player_1 = 0.f;
-    float out_dist_player_2 = 0.f;
-    float out_dist_player_3 = 0.f;
-    float out_dist_player_4 = 0.f;
+    float out_dist = 0.f;
 
     glm::vec3 currForward(0.f);
     if (m_forward[idx] > 0.f) {
         currForward[idx] = 0.5f;
     } else if (m_forward[idx] < 0.f) {
         currForward[idx] = -0.5f;
+    } else {
+        return false;
     }
-    float rad45 = glm::radians(45.f);
-    float rad135 = glm::radians(135.f);
-    float horizontalDistTolerance = 0.13f; // 0.5 * 0.707 = 0.35 > 0.5 - 0.35 = 0.15
-    glm::vec3 forwardPos45 = glm::vec3(glm::rotate(glm::mat4(), rad45, glm::vec3(0,1,0)) * glm::vec4(currForward, 0.f));
-    glm::vec3 forwardPos135 = glm::vec3(glm::rotate(glm::mat4(), rad135, glm::vec3(0,1,0)) * glm::vec4(currForward, 0.f));
-    glm::vec3 forwardNeg45 = glm::vec3(glm::rotate(glm::mat4(), -rad45, glm::vec3(0,1,0)) * glm::vec4(currForward, 0.f));
-    glm::vec3 forwardNeg135 = glm::vec3(glm::rotate(glm::mat4(), -rad135, glm::vec3(0,1,0)) * glm::vec4(currForward, 0.f));
-    glm::vec3 cameraCorner1 = m_camera.getCurrentPos() + forwardPos45 + glm::vec3(0.f, 0.5f, 0.f);
-    glm::vec3 cameraCorner2 = m_camera.getCurrentPos() + forwardNeg45 + glm::vec3(0.f, 0.5f, 0.f);
-    glm::vec3 cameraCorner3 = m_camera.getCurrentPos() + forwardPos135 + glm::vec3(0.f, 0.5f, 0.f);
-    glm::vec3 cameraCorner4 = m_camera.getCurrentPos() + forwardNeg135 + glm::vec3(0.f, 0.5f, 0.f);
-    glm::vec3 playerCorner1(cameraCorner1 - glm::vec3(0.f, 2.f, 0.f));
-    glm::vec3 playerCorner2(cameraCorner2 - glm::vec3(0.f, 2.f, 0.f));
-    glm::vec3 playerCorner3(cameraCorner1 - glm::vec3(0.f, 2.f, 0.f));
-    glm::vec3 playerCorner4(cameraCorner2 - glm::vec3(0.f, 2.f, 0.f));
 
-//    std::cout << "----" << std::endl;
-//    std::cout << m_forward[0] << " " << m_forward[1] << " " << m_forward[2] << std::endl;
-//    std::cout << forwardZ[0] << " " << forwardZ[1] << " " << forwardZ[2] << std::endl;
-//    std::cout << forwardPos45[0] << " " << forwardPos45[1] << " " << forwardPos45[2] << std::endl;
-//    std::cout << cameraCorner1[0] << " " << cameraCorner1[1] << " " << cameraCorner1[2] << std::endl;
-//    std::cout << cameraCorner2[0] << " " << cameraCorner2[1] << " " << cameraCorner2[2] << std::endl;
-//    std::cout << "----" << std::endl;
+    float horizontalDistTolerance = 0.13f; // 0.5 * 0.707 = 0.35 -> 0.5 - 0.35 = 0.15
+    std::array<glm::vec3, 2> cornerArr;
 
-    bool cameraCorner1Hit = gridMarch(cameraCorner1, currForward, terrain, &out_dist_cam_1, &out_blockHit);
-    bool cameraCorner2Hit = gridMarch(cameraCorner2, currForward, terrain, &out_dist_cam_2, &out_blockHit);
-    bool cameraCorner3Hit = gridMarch(cameraCorner3, -currForward, terrain, &out_dist_cam_3, &out_blockHit);
-    bool cameraCorner4Hit = gridMarch(cameraCorner4, -currForward, terrain, &out_dist_cam_4, &out_blockHit);
-    bool playerCorner1Hit = gridMarch(playerCorner1, currForward, terrain, &out_dist_player_1, &out_blockHit);
-    bool playerCorner2Hit = gridMarch(playerCorner2, currForward, terrain, &out_dist_player_2, &out_blockHit);
-    bool playerCorner3Hit = gridMarch(playerCorner3, -currForward, terrain, &out_dist_player_3, &out_blockHit);
-    bool playerCorner4Hit = gridMarch(playerCorner4, -currForward, terrain, &out_dist_player_4, &out_blockHit);
+    // 4 corners: 45, 135, 225, 315
+    for (int i = 0; i < 4; ++i) {
+        float currDeg = 45.f + i * 90.f;
+        float currRad = glm::radians(currDeg);
+        float fowardDir = (currDeg >= 90.f && currDeg <= 270.f) ? -1.f : 1.f; // the orientation of player and velocity is same or opposite
+        glm::vec3 forwardDeg = glm::vec3(glm::rotate(glm::mat4(), currRad, glm::vec3(0,1,0)) * glm::vec4(currForward, 0.f));
+        glm::vec3 cameraCorner = m_camera.getCurrentPos() + forwardDeg + glm::vec3(0.f, 0.5f, 0.f);
+        glm::vec3 playerCorner(cameraCorner - glm::vec3(0.f, 2.f, 0.f));
+        cornerArr[0] = cameraCorner;
+        cornerArr[1] = playerCorner;
 
-//    std::cout << "----" << std::endl;
-//    std::cout << cameraCorner1HitZ << std::endl;
-//    std::cout << *out_dist_cam_1 << std::endl;
-//    std::cout << cameraCorner1[0] << " " << cameraCorner1[1] << " " << cameraCorner1[2] << std::endl;
-//    std::cout << playerCorner2HitZ << std::endl;
-//    std::cout << *out_dist_player_2 << std::endl;
-//    std::cout << playerCorner2[0] << " " << playerCorner2[1] << " " << playerCorner2[2] << std::endl;
-//    std::cout << "Box" << (*out_blockHit)[0] << " " << (*out_blockHit)[1] << " " << (*out_blockHit)[2] << std::endl;
-//    std::cout << "Cam" << m_camera.getCurrentPos()[0] << " " << m_camera.getCurrentPos()[1] << " " << m_camera.getCurrentPos()[2] << std::endl;
-//    std::cout << "----" << std::endl;
-
-    if (cameraCorner1Hit && out_dist_cam_1 < horizontalDistTolerance && m_velocity[idx] * forwardPos45[idx] >= 0) {
-        return false;
-    } else if (cameraCorner2Hit && out_dist_cam_2 < horizontalDistTolerance && m_velocity[idx] * forwardNeg45[idx] >= 0) {
-        return false;
-    } else if (cameraCorner3Hit && out_dist_cam_3 < horizontalDistTolerance && m_velocity[idx] * forwardPos135[idx] >= 0) {
-        return false;
-    } else if (cameraCorner4Hit && out_dist_cam_4 < horizontalDistTolerance && m_velocity[idx] * forwardNeg135[idx] >= 0) {
-        return false;
-    } else if (playerCorner1Hit && out_dist_player_1 < horizontalDistTolerance && m_velocity[idx] * forwardPos45[idx] >= 0) {
-        return false;
-    } else if (playerCorner2Hit && out_dist_player_2 < horizontalDistTolerance && m_velocity[idx] * forwardNeg45[idx] >= 0) {
-        return false;
-    } else if (playerCorner3Hit && out_dist_player_3 < horizontalDistTolerance && m_velocity[idx] * forwardPos135[idx] >= 0) {
-        return false;
-    } else if (playerCorner4Hit && out_dist_player_4 < horizontalDistTolerance && m_velocity[idx] * forwardNeg135[idx] >= 0) {
-        return false;
+        for (auto& corner: cornerArr) {
+            bool cornerHit = gridMarch(corner, fowardDir*currForward, terrain, &out_dist, &out_blockHit);
+            if (cornerHit && out_dist < horizontalDistTolerance) {
+                return false;
+            }
+        }
     }
 
     return true;
+
 }
 
 bool Player::checkYCollision(const Terrain &terrain) {
@@ -410,7 +371,7 @@ bool Player::checkYCollision(const Terrain &terrain) {
     float out_dist_player_y = 0.f;
     if (!flightMode) {
         // check if the player touches the ground
-        float verticalDistTolerance = 0.4f; // max velocity: 20, average dt: 0.016 > max displacement: 20 * 0.016 = 0.32
+        float verticalDistTolerance = 0.4f; // max velocity: 10, average dt: 0.016 > max displacement: 10 * 0.016 = 0.16
         bool playerGroundHitY = gridMarch(m_position, glm::vec3(0.f, -1.f, 0.f), terrain, &out_dist_player_y, &out_blockHit);
 
         if (playerGroundHitY && out_dist_player_y < verticalDistTolerance) {
@@ -418,4 +379,6 @@ bool Player::checkYCollision(const Terrain &terrain) {
         }
         return true;
     }
+
+    return true;
 }
