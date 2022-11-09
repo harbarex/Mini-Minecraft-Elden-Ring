@@ -77,8 +77,8 @@ void MyGL::initializeGL()
     // using multiple VAOs, we can just bind one once.
     glBindVertexArray(vao);
 
-    //m_terrain.CreateTestScene();
-    m_terrain.CreateTestGrassScene();
+    // m_terrain.CreateTestScene();
+    // m_terrain.CreateTestGrassScene();
 }
 
 void MyGL::resizeGL(int w, int h) {
@@ -103,7 +103,8 @@ void MyGL::resizeGL(int w, int h) {
 void MyGL::tick() {
     update(); // Calls paintGL() as part of a larger QOpenGLWidget pipeline
     sendPlayerDataToGUI(); // Updates the info in the secondary window displaying player data
-
+    // call terrain expansion
+    m_terrain.expand(m_player.mcr_position[0], m_player.mcr_position[2], 1);
     // compute the delta-time
     long long currFrameTime = QDateTime::currentMSecsSinceEpoch();
     float deltaTime = (currFrameTime - prevFrameTime) / 1000.f;
@@ -111,6 +112,7 @@ void MyGL::tick() {
 
     // pass delta-time to Player::tick
     m_player.tick(deltaTime, m_inputs);
+
 }
 
 void MyGL::sendPlayerDataToGUI() const {
@@ -149,7 +151,9 @@ void MyGL::paintGL() {
 // terrain that surround the player (refer to Terrain::m_generatedTerrain
 // for more info)
 void MyGL::renderTerrain() {
-    m_terrain.draw(0, 512, 0, 512, &m_progLambert);
+    // only draw the 3 x 3 chunks around the player
+    glm::vec3 pos = m_player.mcr_position;
+    m_terrain.draw(pos[0], pos[2], 1, &m_progLambert);
 }
 
 
