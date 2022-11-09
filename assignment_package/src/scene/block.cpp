@@ -87,7 +87,7 @@ bool Block::isOpaque(BlockType type)
  */
 bool Block::isTransparent(BlockType type)
 {
-    return (type == EMPTY || type == WATER);
+    return (type == EMPTY);
 }
 
 

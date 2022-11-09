@@ -28,7 +28,8 @@ private:
     // glm::ivec2s are not hashable by default, so they cannot be used as keys.
     std::unordered_map<int64_t, uPtr<Chunk>> m_chunks;
 
-    // chunkVBOs
+    // Stores the ChunkVBOdata of each renedered chunk
+    // the keys are the same with the m_chunks
     std::unordered_map<int64_t, ChunkVBOdata> m_chunkVBOs;
 
     // We will designate every 64 x 64 area of the world's x-z plane
@@ -87,9 +88,16 @@ public:
     // described by the min and max coords, using the provided
     // ShaderProgram
     void draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shaderProgram);
+    void draw(float playerX, float playerZ, int halfGridSize, ShaderProgram *shaderProgram);
 
     // Initializes the Chunks that store the 64 x 256 x 64 block scene you
     // see when the base code is run.
     void CreateTestScene();
     void CreateTestGrassScene();
+
+    // Terrain expansion that instantiate 3 x 3 Chunk (including the blocks inside)
+    // around the player.
+    // mcr_pos is the get method in m_player
+    void generateChunkAndBlock(int chunkX, int chunkZ);
+    void expand(float playerX, float playerZ, int halfGridSize);
 };
