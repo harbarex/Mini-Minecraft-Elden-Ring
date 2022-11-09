@@ -348,7 +348,7 @@ bool Player::checkXZCollision(int idx, const Terrain &terrain) {
     }
 
     float horizontalDistTolerance = 0.13f; // 0.5 * 0.707 = 0.35 -> 0.5 - 0.35 = 0.15
-    std::array<glm::vec3, 2> cornerArr;
+    std::array<glm::vec3, 3> cornerArr;
 
     // 4 corners: 45, 135, 225, 315
     for (int i = 0; i < 4; ++i) {
@@ -356,10 +356,13 @@ bool Player::checkXZCollision(int idx, const Terrain &terrain) {
         float currRad = glm::radians(currDeg);
         float fowardDir = (currDeg >= 90.f && currDeg <= 270.f) ? -1.f : 1.f; // the orientation of player and velocity is same or opposite
         glm::vec3 forwardDeg = glm::vec3(glm::rotate(glm::mat4(), currRad, glm::vec3(0,1,0)) * glm::vec4(currForward, 0.f));
+        // each angle has three points: up, middle and down
         glm::vec3 cameraCorner = m_camera.getCurrentPos() + forwardDeg + glm::vec3(0.f, 0.5f, 0.f);
+        glm::vec3 middleCorner(cameraCorner - glm::vec3(0.f, 1.f, 0.f));
         glm::vec3 playerCorner(cameraCorner - glm::vec3(0.f, 2.f, 0.f));
         cornerArr[0] = cameraCorner;
-        cornerArr[1] = playerCorner;
+        cornerArr[1] = middleCorner;
+        cornerArr[2] = playerCorner;
 
         for (auto& corner: cornerArr) {
             bool cornerHit = gridMarch(corner, fowardDir*currForward, terrain, &out_dist, &out_blockHit);
@@ -414,9 +417,12 @@ void Player::destroyBlock(InputBundle &inputs, const Terrain &terrain) {
         return;
     }
 
-    // remove hit block
-    Chunk* hitBlock = terrain.getChunkAt(out_blockHit[0], out_blockHit[2]).get();
-//    hitBlock->setBlockAt(out_blockHit[0], out_blockHit[1], out_blockHit[2], EMPTY);
+    // get current working chunk
+//    Chunk* hitChunk = terrain.getChunkAt(out_blockHit.x, out_blockHit.z).get();
+//    BlockType hitCellType = terrain.getBlockAt(out_blockHit.x, out_blockHit.y, out_blockHit.z);
+    // remove hit block in the chunk
+//    hitChunk->getBlockAt(out_blockHit.x, out_blockHit.y, out_blockHit.z);
+//    hitChunk->setBlockAt(out_blockHit.x, out_blockHit.y, out_blockHit.z, EMPTY);
 
 
     return;
