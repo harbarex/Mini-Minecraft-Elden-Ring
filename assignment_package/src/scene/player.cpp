@@ -5,7 +5,7 @@ Player::Player(glm::vec3 pos, Terrain &terrain)
     : Entity(pos), m_velocity(0,0,0), m_acceleration(0,0,0),
       m_camera(pos + glm::vec3(0, 1.5f, 0)), mcr_terrain(terrain),
       m_velocity_val(20.f), m_acceleration_val(40.f), flightMode(true), destroyBufferTime(0.f),
-      destroyMinWaitTime(0.5f), mcr_camera(m_camera)
+      creationBufferTime(0.f), minWaitTime(0.5f), mcr_camera(m_camera)
 {}
 
 Player::~Player()
@@ -13,7 +13,9 @@ Player::~Player()
 
 void Player::tick(float dT, InputBundle &input) {
     destroyBufferTime += dT;
+    creationBufferTime += dT;
     destroyBlock(input, mcr_terrain);
+    placeNewBlock(input, mcr_terrain);
     processInputs(input);
     computePhysics(dT, mcr_terrain, input);
 }
@@ -331,6 +333,61 @@ bool Player::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrai
     return false;
 }
 
+bool Player::gridMarchPrevBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, glm::ivec3 *out_prevBlock, glm::ivec3 *out_blockHit) {
+
+    float maxLen = glm::length(rayDirection); // Farthest we search
+    glm::ivec3 currCell = glm::ivec3(glm::floor(rayOrigin));
+    rayDirection = glm::normalize(rayDirection); // Now all t values represent world dist.
+    float curr_t = 0.f;
+
+    while(curr_t < maxLen) {
+        float min_t = glm::sqrt(3.f);
+        float interfaceAxis = -1; // Track axis for which t is smallest
+        for(int i = 0; i < 3; ++i) { // Iterate over the three axes
+            if(rayDirection[i] != 0) { // Is ray parallel to axis i?
+                float offset = glm::max(0.f, glm::sign(rayDirection[i])); // See slide 5
+                // If the player is *exactly* on an interface then
+                // they'll never move if they're looking in a negative direction
+                if(currCell[i] == rayOrigin[i] && offset == 0.f) {
+                    offset = -1.f;
+                }
+                int nextIntercept = currCell[i] + offset;
+                float axis_t = (nextIntercept - rayOrigin[i]) / rayDirection[i];
+                axis_t = glm::min(axis_t, maxLen); // Clamp to max len to avoid super out of bounds errors
+                if(axis_t < min_t) {
+                    min_t = axis_t;
+                    interfaceAxis = i;
+                }
+            }
+        }
+
+        if(interfaceAxis == -1) {
+            throw std::out_of_range("interfaceAxis was -1 after the for loop in gridMarch!");
+        }
+        curr_t += min_t; // min_t is declared in slide 7 algorithm
+        rayOrigin += rayDirection * min_t;
+        glm::ivec3 offset(0);
+        // Sets it to 0 if sign is +, -1 if sign is -
+        offset[interfaceAxis] = glm::min(0.f, glm::sign(rayDirection[interfaceAxis]));
+
+        glm::ivec3 prevOffset(0);
+        prevOffset[interfaceAxis] = glm::sign(rayDirection[interfaceAxis]);
+
+        currCell = glm::ivec3(glm::floor(rayOrigin)) + offset;
+        // If currCell contains something other than EMPTY, return
+        // curr_t
+        BlockType cellType = terrain.getBlockAt(currCell.x, currCell.y, currCell.z);
+        if(cellType != EMPTY) {
+            *out_blockHit = currCell;
+            *out_prevBlock = currCell - prevOffset;
+            BlockType prevCellType = terrain.getBlockAt((*out_prevBlock).x, (*out_prevBlock).y, (*out_prevBlock).z);
+            return (prevCellType == EMPTY);
+        }
+    }
+    return false;
+
+}
+
 bool Player::checkXZCollision(int idx, const Terrain &terrain) {
 
     if (idx != 0 && idx != 2) {
@@ -409,7 +466,7 @@ void Player::destroyBlock(InputBundle &inputs, Terrain &terrain) {
         return;
     }
 
-    if (destroyBufferTime < destroyMinWaitTime) {
+    if (destroyBufferTime < minWaitTime) {
         return;
     }
 
@@ -429,6 +486,39 @@ void Player::destroyBlock(InputBundle &inputs, Terrain &terrain) {
 
     // reset the buffer time
     destroyBufferTime = 0.f;
+
+    return;
+
+}
+
+void Player::placeNewBlock(InputBundle &inputs, Terrain &terrain) {
+
+    if (!inputs.rightMouseButtonPressed) {
+        return;
+    }
+
+    if (creationBufferTime < minWaitTime) {
+        return;
+    }
+
+    glm::ivec3 out_blockHit(0);
+    glm::ivec3 out_blockHitPrev(0);
+    float cameraBlockDist = 3.f;
+    glm::vec3 cameraRay(cameraBlockDist * m_camera.getForward());
+
+    bool newBlockHit = gridMarchPrevBlock(m_camera.getCurrentPos(), cameraRay, terrain, &out_blockHitPrev, &out_blockHit);
+
+    if (!newBlockHit) {
+        return;
+    }
+
+    // set the type of new block same as target hit block
+    BlockType prevCellType = terrain.getBlockAt(out_blockHit.x, out_blockHit.y, out_blockHit.z);
+
+    terrain.placeBlockAt(out_blockHitPrev.x, out_blockHitPrev.y, out_blockHitPrev.z, prevCellType);
+
+    // reset the buffer time
+    creationBufferTime = 0.f;
 
     return;
 

@@ -15,7 +15,8 @@ private:
     float m_velocity_val, m_acceleration_val; // length of the vector
     bool flightMode; // determine the current mode
     double destroyBufferTime; // compute the passing time (s) starting from last destroy
-    double destroyMinWaitTime; // the minimum waiting time (s) to destroy the next block
+    double creationBufferTime; // compute the passing time (s) starting from last block creation
+    double minWaitTime; // the minimum waiting time (s) to destroy the next block
 
     void processInputs(InputBundle &inputs);
     void computePhysics(float dT, const Terrain &terrain, InputBundle &inputs);
@@ -24,6 +25,7 @@ private:
     bool checkYCollision(const Terrain &terrain); // determine if current movement collide in Y axis (specifically for the ground)
     void implementJumping();
     void destroyBlock(InputBundle &inputs, Terrain &terrain); // destroy the block within 3 unit from camera pos when left mouse button is pressed
+    void placeNewBlock(InputBundle &inputs, Terrain &terrain);
 
 public:
     // Readonly public reference to our camera
@@ -78,6 +80,6 @@ public:
     VelocityCond currVelocityCond(float dT, InputBundle &inputs);
 
     bool gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, float *out_dist, glm::ivec3 *out_blockHit);
-
+    bool gridMarchPrevBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, glm::ivec3 *out_prevBlock, glm::ivec3 *out_blockHit);
 };
 
