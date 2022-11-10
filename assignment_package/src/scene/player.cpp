@@ -1,16 +1,18 @@
 #include "player.h"
 #include <QString>
 
-Player::Player(glm::vec3 pos, const Terrain &terrain)
+Player::Player(glm::vec3 pos, Terrain &terrain)
     : Entity(pos), m_velocity(0,0,0), m_acceleration(0,0,0),
       m_camera(pos + glm::vec3(0, 1.5f, 0)), mcr_terrain(terrain),
-      m_velocity_val(20.f), m_acceleration_val(40.f), flightMode(true), mcr_camera(m_camera)
+      m_velocity_val(20.f), m_acceleration_val(40.f), flightMode(true), destroyBufferTime(0.f),
+      destroyMinWaitTime(0.5f), mcr_camera(m_camera)
 {}
 
 Player::~Player()
 {}
 
 void Player::tick(float dT, InputBundle &input) {
+    destroyBufferTime += dT;
     destroyBlock(input, mcr_terrain);
     processInputs(input);
     computePhysics(dT, mcr_terrain, input);
@@ -401,8 +403,13 @@ void Player::implementJumping() {
     m_velocity[1] = 7.5f;
 }
 
-void Player::destroyBlock(InputBundle &inputs, const Terrain &terrain) {
+void Player::destroyBlock(InputBundle &inputs, Terrain &terrain) {
+
     if (!inputs.leftMouseButtonPressed) {
+        return;
+    }
+
+    if (destroyBufferTime < destroyMinWaitTime) {
         return;
     }
 
@@ -417,13 +424,11 @@ void Player::destroyBlock(InputBundle &inputs, const Terrain &terrain) {
         return;
     }
 
-    // get current working chunk
-//    Chunk* hitChunk = terrain.getChunkAt(out_blockHit.x, out_blockHit.z).get();
-//    BlockType hitCellType = terrain.getBlockAt(out_blockHit.x, out_blockHit.y, out_blockHit.z);
-    // remove hit block in the chunk
-//    hitChunk->getBlockAt(out_blockHit.x, out_blockHit.y, out_blockHit.z);
-//    hitChunk->setBlockAt(out_blockHit.x, out_blockHit.y, out_blockHit.z, EMPTY);
+    // remove hit block
+    terrain.placeBlockAt(out_blockHit[0], out_blockHit[1], out_blockHit[2], EMPTY);
 
+    // reset the buffer time
+    destroyBufferTime = 0.f;
 
     return;
 

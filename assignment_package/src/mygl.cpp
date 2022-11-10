@@ -223,16 +223,18 @@ void MyGL::mouseMoveEvent(QMouseEvent *e) {
     m_inputs.mouseX = e->pos().x();
     m_inputs.mouseY = e->pos().y();
 
-    #ifdef __APPLE__
-    // for MacOS, but the cursor still cannot keep in center
-    m_player.rotateCameraView(m_inputs.mouseX - prevMouseX, m_inputs.mouseY - prevMouseY);
-    prevMouseX = m_inputs.mouseX;
-    prevMouseY = m_inputs.mouseY;
-    #elif _WIN32
-    // for windows
-    m_player.rotateCameraView(m_inputs);
+//    #ifdef __APPLE__
+//    // for MacOS, but the cursor still cannot keep in center
+//    m_player.rotateCameraView(m_inputs.mouseX - prevMouseX, m_inputs.mouseY - prevMouseY);
+//    prevMouseX = m_inputs.mouseX;
+//    prevMouseY = m_inputs.mouseY;
+//    #elif _WIN32
+//    // for windows
+//    m_player.rotateCameraView(m_inputs);
 
-    #endif
+//    #endif
+
+    m_player.rotateCameraView(m_inputs);
 
     moveMouseToCenter();
 }
