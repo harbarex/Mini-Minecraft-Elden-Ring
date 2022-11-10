@@ -452,6 +452,10 @@ bool Player::checkXZCollision(int idx, const Terrain &terrain) {
         return true;
     }
 
+    if (flightMode) {
+        return true;
+    }
+
     glm::ivec3 out_blockHit(0);
     float out_dist = 0.f;
 
@@ -499,20 +503,27 @@ bool Player::checkXZCollision(int idx, const Terrain &terrain) {
  * @param terrain : Terrain, terrain storing block data
  */
 bool Player::checkYCollision(const Terrain &terrain) {
-    glm::ivec3 out_blockHit(0);
-    float out_dist_player_y = 0.f;
-    if (!flightMode) {
-        // check if the player touches the ground
-        float verticalDistTolerance = 0.4f; // max velocity: 10, average dt: 0.016 > max displacement: 10 * 0.016 = 0.16
-        bool playerGroundHitY = gridMarch(m_position, glm::vec3(0.f, -1.f, 0.f), terrain, &out_dist_player_y, &out_blockHit);
-
-        if (playerGroundHitY && out_dist_player_y < verticalDistTolerance) {
-            return false;
-        }
+    if (flightMode) {
         return true;
     }
 
+    glm::ivec3 out_blockHit(0);
+    float out_dist_neg_y = 0.f;
+    float out_dist_pos_y = 0.f;
+
+    // check if the player touches the ground
+    float negYTolerance = 0.4f; // (specifically for gravity) max velocity: 10, average dt: 0.016 > displacement: 10 * 0.016 = 0.16
+    float posYTolerance = 0.4f;
+    bool playerGroundHit = gridMarch(m_position, glm::vec3(0.f, -1.f, 0.f), terrain, &out_dist_neg_y, &out_blockHit);
+    bool playerCeilingHit = gridMarch(m_camera.getCurrentPos(), glm::vec3(0.f, 1.f, 0.f), terrain, &out_dist_pos_y, &out_blockHit);
+    if (playerGroundHit && out_dist_neg_y < negYTolerance && m_velocity[1] <= 0) {
+        return false;
+    }
+    if (playerCeilingHit && out_dist_pos_y < posYTolerance && m_velocity[1] >= 0) {
+        return false;
+    }
     return true;
+
 }
 
 /**
@@ -524,7 +535,7 @@ void Player::implementJumping() {
         return;
     }
     // empirical
-    m_velocity[1] = 7.5f;
+    m_velocity[1] = 5.f;
 }
 
 /**
