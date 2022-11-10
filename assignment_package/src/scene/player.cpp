@@ -26,31 +26,34 @@ void Player::processInputs(InputBundle &inputs) {
 
     glm::vec3 currAccUnit(0.f);
 
+    glm::vec3 moveForward(m_camera.getForward());
+    glm::vec3 moveRight(m_camera.getRight());
+    moveForward.y = 0.f;
+    moveRight.y = 0.f;
+
     // process WASD first (regardless of flight mode)
     if (inputs.wPressed) {
-        currAccUnit += m_camera.getForward();
+        currAccUnit += moveForward;
     }
     if (inputs.aPressed) {
-        currAccUnit -= m_camera.getRight();
+        currAccUnit -= moveRight;
     }
     if (inputs.sPressed) {
-        currAccUnit -= m_camera.getForward();
+        currAccUnit -= moveForward;
     }
     if (inputs.dPressed) {
-        currAccUnit += m_camera.getRight();
+        currAccUnit += moveRight;
     }
 
     if (flightMode) {
         if (inputs.ePressed) {
-            currAccUnit += m_camera.getUp();
+            currAccUnit += glm::vec3(0.f, -1.f, 0.f);
         }
         if (inputs.qPressed) {
-            currAccUnit -= m_camera.getUp();
+            currAccUnit -= glm::vec3(0.f, -1.f, 0.f);
         }
     } else {
-        // the flight mode is inactive
-
-        // discard acceleration on Y axis
+        // the flight mode is inactive > discard acceleration on Y axis
         currAccUnit[1] = 0.f;
     }
 
@@ -194,10 +197,10 @@ void Player::toggleFlightMode() {
     // adjust the maximum velocity
     if (flightMode) {
         flightMode = false;
-        m_velocity_val = 10.f;
+        m_velocity_val = 5.f;
     } else {
         flightMode = true;
-        m_velocity_val = 20.f;
+        m_velocity_val = 10.f;
     }
 }
 
