@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <iostream>
+#include <unordered_map>
 
 Terrain::Terrain(OpenGLContext *context)
     : m_chunks(), m_chunkVBOs(), m_generatedTerrain(), mp_context(context)
@@ -219,16 +220,13 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
             // get the pointer of the chunk at (x, z)
             const uPtr<Chunk> &chunk = getChunkAt(x, z);
 
-            // check chunk's vbo
-            int64_t key = toKey(x, z);
-
             // TODO: might be able to delete
             // since terrain expansion already does this.
-            if (m_chunkVBOs.find(key) == m_chunkVBOs.end()) {
+            if (m_chunkVBOs.find(chunk.get()) == m_chunkVBOs.end()) {
                 // generate vbo
                 ChunkVBOdata vbo = chunk->generateVBOdata();
-                m_chunkVBOs[key] = vbo;
-                chunk->createVBOdata(m_chunkVBOs[key]);
+                m_chunkVBOs[chunk.get()] = vbo;
+                chunk->createVBOdata(vbo);
             }
 
             // set model matrix
@@ -256,8 +254,9 @@ void Terrain::expand(float playerX, float playerZ, int halfGridSize)
     // m_generatedTerrain not used for now
     // m_generatedTerrain.insert(toKey(0, 0));
 
+    // set the min max X & Z
+    // note the chunk at (maxX, maxZ) is not included
     int minX, maxX, minZ, maxZ;
-
     setChunkMinMaxXZ(playerX,
                      playerZ,
                      halfGridSize,
@@ -266,29 +265,42 @@ void Terrain::expand(float playerX, float playerZ, int halfGridSize)
                      minZ,
                      maxZ);
 
+    // keep a collection of the chunks whose VBOs need to be created
+    std::unordered_set<Chunk*> newChunks = std::unordered_set<Chunk*>();
+
+    // instantnate all needed chunks at first
     for (int x = minX; x < maxX; x += 16) {
 
         for (int z = minZ; z < maxZ; z += 16) {
 
-            // if the chunk does not exist, create one
-            // and set up VBO
             if (!hasChunkAt(x, z)) {
 
-                // create this part of the terrain
-                instantiateChunkAndFillBlocks(x, z);
+                instantiateChunkAndfillBlocks(x, z);
+                newChunks.insert(getChunkAt(x, z).get());
 
-                // retrieve chunk pointer
-                const uPtr<Chunk> &chunk = getChunkAt(x, z);
+                // re-create the vbo for the neighbors
+                // this is to remove the original boundary
+                for (int dx : {-16, 16}) {
+                    if (hasChunkAt(x + dx, z)) {
+                        newChunks.insert(getChunkAt(x + dx, z).get());
 
-                // set up VBO
-                int64_t key = toKey(x, z);
-                ChunkVBOdata vbo = chunk->generateVBOdata();
-                m_chunkVBOs[key] = vbo;
-                chunk->createVBOdata(m_chunkVBOs[key]);
+                    }
+                }
+                for (int dz : {-16, 16}) {
+                    if (hasChunkAt(x, z + dz)) {
+                        newChunks.insert(getChunkAt(x, z + dz).get());
+                    }
 
+                }
             }
         }
+    }
 
+    // recreate the VBOs
+    for (Chunk *chunk : newChunks) {
+        ChunkVBOdata vbo = chunk->generateVBOdata();
+        m_chunkVBOs[chunk] = vbo;
+        chunk->createVBOdata(vbo);
     }
 
 }
@@ -300,11 +312,12 @@ void Terrain::expand(float playerX, float playerZ, int halfGridSize)
  * @param chunkX : int, the chunk's origin X
  * @param chunkZ : int, the chunk's origin Z
  */
-void Terrain::instantiateChunkAndFillBlocks(int chunkX, int chunkZ)
+void Terrain::instantiateChunkAndfillBlocks(int chunkX, int chunkZ)
 {
-    Noise terrainHeightMap;
-
+    // instantiate the chunk
     instantiateChunkAt(chunkX, chunkZ);
+
+    Noise terrainHeightMap;
 
     for (int x = chunkX; x < chunkX + 16; x++) {
 
@@ -375,11 +388,10 @@ void Terrain::placeBlockAt(int x, int y, int z, BlockType t)
 
     // create the VBO again
     const uPtr<Chunk> &chunk = getChunkAt(chunkX, chunkZ);
-    int64_t key = toKey(chunkX, chunkZ);
     ChunkVBOdata vbo = chunk->generateVBOdata();
     // update the one in the map
-    m_chunkVBOs[key] = vbo;
-    chunk->createVBOdata(m_chunkVBOs[key]);
+    m_chunkVBOs[chunk.get()] = vbo;
+    chunk->createVBOdata(vbo);
 
 }
 

@@ -29,8 +29,8 @@ private:
     std::unordered_map<int64_t, uPtr<Chunk>> m_chunks;
 
     // Stores the ChunkVBOdata of each renedered chunk
-    // the keys are the same with the m_chunks
-    std::unordered_map<int64_t, ChunkVBOdata> m_chunkVBOs;
+    // the keys are the address of the chunk
+    std::unordered_map<Chunk*, ChunkVBOdata> m_chunkVBOs;
 
     // We will designate every 64 x 64 area of the world's x-z plane
     // as one "terrain generation zone". Every time the player moves
@@ -92,7 +92,7 @@ public:
 
     // Terrain expansion that instantiate the Chunks (including the blocks inside)
     // around the player.
-    void instantiateChunkAndFillBlocks(int chunkX, int chunkZ);
+    void instantiateChunkAndfillBlocks(int chunkX, int chunkZ);
     void expand(float playerX, float playerZ, int halfGridSize);
 
     // for player to destroy & add blocks
