@@ -2,22 +2,38 @@
 #include "entity.h"
 #include "camera.h"
 #include "terrain.h"
+#include <iostream>
+
+enum class VelocityCond {stop, max, move};
 
 class Player : public Entity {
 private:
     glm::vec3 m_velocity, m_acceleration;
     Camera m_camera;
-    const Terrain &mcr_terrain;
+    Terrain &mcr_terrain;
+
+    float m_velocity_val, m_acceleration_val; // length of the vector
+    float cameraBlockDist; // max distance from the camera while using ray tracing
+    bool flightMode; // determine the current mode
+    double destroyBufferTime; // compute the passing time (s) starting from last destroy
+    double creationBufferTime; // compute the passing time (s) starting from last block creation
+    double minWaitTime; // the minimum waiting time (s) to destroy the next block
 
     void processInputs(InputBundle &inputs);
-    void computePhysics(float dT, const Terrain &terrain);
+    void computePhysics(float dT, const Terrain &terrain, InputBundle &inputs);
+
+    bool checkXZCollision(int idx, const Terrain &terrain); // determine if current movement collide in X or Z axis (with idx 0 and 2)
+    bool checkYCollision(const Terrain &terrain); // determine if current movement collide in Y axis (specifically for the ground)
+    void implementJumping();
+    void destroyBlock(InputBundle &inputs, Terrain &terrain); // destroy the block within 3 unit from camera pos when left mouse button is pressed
+    void placeNewBlock(InputBundle &inputs, Terrain &terrain);
 
 public:
     // Readonly public reference to our camera
     // for easy access from MyGL
     const Camera& mcr_camera;
 
-    Player(glm::vec3 pos, const Terrain &terrain);
+    Player(glm::vec3 pos, Terrain &terrain);
     virtual ~Player() override;
 
     void setCameraWidthHeight(unsigned int w, unsigned int h);
@@ -47,4 +63,24 @@ public:
     QString velAsQString() const;
     QString accAsQString() const;
     QString lookAsQString() const;
+
+    // toggle current flight mode
+    void toggleFlightMode();
+
+    // rotate camera view based on the position of the cursor
+    // for windows (main)
+    void rotateCameraView(InputBundle &input);
+    // for MacOS in the condition that QCursor::setPos does not work
+    void rotateCameraView(float thetaChange, float phiChange);
+
+    // check if any key associated with player's movement is pressed
+    bool buttonIsPressed(InputBundle &inputs);
+    // check if current player is moving or not (velocity)
+    bool playerIsMoving(bool yCheck);
+    // check the effect of acceleration on current velocity
+    VelocityCond currVelocityCond(float dT, InputBundle &inputs);
+
+    bool gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, float *out_dist, glm::ivec3 *out_blockHit);
+    bool gridMarchPrevBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, glm::ivec3 *out_prevBlock, glm::ivec3 *out_blockHit);
 };
+

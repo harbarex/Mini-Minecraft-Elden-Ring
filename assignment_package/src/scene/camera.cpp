@@ -35,3 +35,23 @@ void Camera::tick(float dT, InputBundle &input) {
 glm::mat4 Camera::getViewProj() const {
     return glm::perspective(glm::radians(m_fovy), m_aspect, m_near_clip, m_far_clip) * glm::lookAt(m_position, m_position + m_forward, m_up);
 }
+
+glm::vec3 Camera::getForward() {
+    return m_forward;
+}
+
+glm::vec3 Camera::getRight() {
+    return m_right;
+}
+
+glm::vec3 Camera::getUp() {
+    return m_up;
+}
+
+glm::vec2 Camera::getScreenCenterPos() {
+    return glm::vec2(m_width/2, m_height/2);
+}
+
+glm::vec3 Camera::getCurrentPos() {
+    return m_position;
+}

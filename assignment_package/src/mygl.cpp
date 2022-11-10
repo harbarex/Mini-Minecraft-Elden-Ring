@@ -4,22 +4,25 @@
 #include <iostream>
 #include <QApplication>
 #include <QKeyEvent>
-
+#include <QDateTime>
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this), m_progInstanced(this),
-      m_terrain(this), m_player(glm::vec3(48.f, 129.f, 48.f), m_terrain)
+      m_terrain(this), m_player(glm::vec3(48.f, 129.f, 48.f), m_terrain),
+      prevFrameTime(QDateTime::currentMSecsSinceEpoch())
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
     // Tell the timer to redraw 60 times per second
     m_timer.start(16);
     setFocusPolicy(Qt::ClickFocus);
-
+    m_inputs = InputBundle();
     setMouseTracking(true); // MyGL will track the mouse's movements even if a mouse button is not pressed
     setCursor(Qt::BlankCursor); // Make the cursor invisible
+    prevMouseX = width() / 2;
+    prevMouseY = height() / 2;
 }
 
 MyGL::~MyGL() {
@@ -44,6 +47,9 @@ void MyGL::initializeGL()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    // The order DOES MATTER
+    // glEnable(GL_BLEND);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // Set the color with which the screen is filled at the start of each render call.
     glClearColor(0.37f, 0.74f, 1.0f, 1);
 
@@ -99,6 +105,15 @@ void MyGL::tick() {
     sendPlayerDataToGUI(); // Updates the info in the secondary window displaying player data
     // call terrain expansion
     m_terrain.expand(m_player.mcr_position[0], m_player.mcr_position[2], 1);
+    // compute the delta-time
+    long long currFrameTime = QDateTime::currentMSecsSinceEpoch();
+    float deltaTime = (currFrameTime - prevFrameTime) / 1000.f;
+
+    prevFrameTime = currFrameTime;
+
+    // pass delta-time to Player::tick
+    m_player.tick(deltaTime, m_inputs);
+
 }
 
 void MyGL::sendPlayerDataToGUI() const {
@@ -153,6 +168,8 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
     // statement were used, but I really dislike their
     // syntax so I chose to be lazy and use a long
     // chain of if statements instead
+    // m_inputs = InputBundle();
+
     if (e->key() == Qt::Key_Escape) {
         QApplication::quit();
     } else if (e->key() == Qt::Key_Right) {
@@ -164,24 +181,90 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
     } else if (e->key() == Qt::Key_Down) {
         m_player.rotateOnRightLocal(amount);
     } else if (e->key() == Qt::Key_W) {
-        m_player.moveForwardLocal(amount);
+        m_inputs.wPressed = true;
     } else if (e->key() == Qt::Key_S) {
-        m_player.moveForwardLocal(-amount);
+        m_inputs.sPressed = true;
     } else if (e->key() == Qt::Key_D) {
-        m_player.moveRightLocal(amount);
+        m_inputs.dPressed = true;
     } else if (e->key() == Qt::Key_A) {
-        m_player.moveRightLocal(-amount);
+        m_inputs.aPressed = true;
     } else if (e->key() == Qt::Key_Q) {
-        m_player.moveUpGlobal(-amount);
+        m_inputs.qPressed = true;
     } else if (e->key() == Qt::Key_E) {
-        m_player.moveUpGlobal(amount);
+        m_inputs.ePressed = true;
+    } else if (e->key() == Qt::Key_Space) {
+        m_inputs.spacePressed = true;
+    } else if (e->key() == Qt::Key_F) {
+        m_player.toggleFlightMode();
+    }
+}
+
+void MyGL::keyReleaseEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_W) {
+        m_inputs.wPressed = false;
+    } else if (e->key() == Qt::Key_S) {
+        m_inputs.sPressed = false;
+    } else if (e->key() == Qt::Key_D) {
+        m_inputs.dPressed = false;
+    } else if (e->key() == Qt::Key_A) {
+        m_inputs.aPressed = false;
+    } else if (e->key() == Qt::Key_Q) {
+        m_inputs.qPressed = false;
+    } else if (e->key() == Qt::Key_E) {
+        m_inputs.ePressed = false;
+    } else if (e->key() == Qt::Key_Space) {
+        m_inputs.spacePressed = false;
     }
 }
 
 void MyGL::mouseMoveEvent(QMouseEvent *e) {
     // TODO
+    m_inputs.mouseX = e->pos().x();
+    m_inputs.mouseY = e->pos().y();
+
+//    #ifdef __APPLE__
+//    // for MacOS, but the cursor still cannot keep in center
+//    m_player.rotateCameraView(m_inputs.mouseX - prevMouseX, m_inputs.mouseY - prevMouseY);
+//    prevMouseX = m_inputs.mouseX;
+//    prevMouseY = m_inputs.mouseY;
+//    #elif _WIN32
+//    // for windows
+//    m_player.rotateCameraView(m_inputs);
+
+//    #endif
+
+    m_player.rotateCameraView(m_inputs);
+
+    moveMouseToCenter();
 }
 
 void MyGL::mousePressEvent(QMouseEvent *e) {
     // TODO
+
+    switch (e->button()) {
+    case (Qt::LeftButton):
+        m_inputs.leftMouseButtonPressed = true;
+        break;
+    case (Qt::RightButton):
+        m_inputs.rightMouseButtonPressed = true;
+        break;
+    default:
+        return;
+    }
+}
+
+void MyGL::mouseReleaseEvent(QMouseEvent *e) {
+    // TODO
+
+    switch (e->button()) {
+    case (Qt::LeftButton):
+        m_inputs.leftMouseButtonPressed = false;
+        break;
+    case (Qt::RightButton):
+        m_inputs.rightMouseButtonPressed = false;
+        break;
+    default:
+        return;
+    }
 }

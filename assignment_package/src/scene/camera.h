@@ -21,4 +21,14 @@ public:
     void tick(float dT, InputBundle &input) override;
 
     glm::mat4 getViewProj() const;
+
+    // get current camera orientation
+    glm::vec3 getForward();
+    glm::vec3 getRight();
+    glm::vec3 getUp();
+
+    // get center position of the screen
+    glm::vec2 getScreenCenterPos();
+    // get current camera position
+    glm::vec3 getCurrentPos();
 };
