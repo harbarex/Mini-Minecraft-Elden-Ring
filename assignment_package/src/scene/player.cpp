@@ -4,8 +4,8 @@
 Player::Player(glm::vec3 pos, Terrain &terrain)
     : Entity(pos), m_velocity(0,0,0), m_acceleration(0,0,0),
       m_camera(pos + glm::vec3(0, 1.5f, 0)), mcr_terrain(terrain),
-      m_velocity_val(20.f), m_acceleration_val(40.f), flightMode(true), destroyBufferTime(0.f),
-      creationBufferTime(0.f), minWaitTime(0.5f), mcr_camera(m_camera)
+      m_velocity_val(20.f), m_acceleration_val(40.f), cameraBlockDist(3.f), flightMode(true),
+      destroyBufferTime(0.f), creationBufferTime(0.f), minWaitTime(0.5f), mcr_camera(m_camera)
 {}
 
 Player::~Player()
@@ -186,6 +186,10 @@ QString Player::lookAsQString() const {
     return QString::fromStdString(str);
 }
 
+/**
+ * @brief Player::toggleFlightMode
+ *  toggle the flight mode
+ */
 void Player::toggleFlightMode() {
     // adjust the maximum velocity
     if (flightMode) {
@@ -197,6 +201,11 @@ void Player::toggleFlightMode() {
     }
 }
 
+/**
+ * @brief Player::buttonIsPressed
+ *  helper function for determining if the user pressed any button or not
+ * @param inputs : InputBundle, state of key pressed
+ */
 bool Player::buttonIsPressed(InputBundle &inputs) {
     if (!flightMode) {
         return inputs.aPressed || inputs.dPressed || inputs.wPressed || inputs.sPressed || inputs.spacePressed;
@@ -206,6 +215,11 @@ bool Player::buttonIsPressed(InputBundle &inputs) {
 
 }
 
+/**
+ * @brief Player::playerIsMoving
+ *  helper function for determining if the player is moving or not
+ * @param yCheck : bool, we need to check the velocity on y-axis or not
+ */
 bool Player::playerIsMoving(bool yCheck)
 {
     float tolerance = 0.00001f;
@@ -220,6 +234,12 @@ bool Player::playerIsMoving(bool yCheck)
     return false;
 }
 
+/**
+ * @brief Player::currVelocityCond
+ *  helper function for determining the state of current velocity on the player
+ * @param dT : float, time difference between current frame and previous frame in second
+ * @param inputs : InputBundle, state of key pressed
+ */
 VelocityCond Player::currVelocityCond(float dT, InputBundle &inputs) {
     if (glm::length(m_velocity + m_acceleration * dT) >= m_velocity_val) {
         return VelocityCond::max;
@@ -231,6 +251,12 @@ VelocityCond Player::currVelocityCond(float dT, InputBundle &inputs) {
     return VelocityCond::move;
 }
 
+/**
+ * @brief Player::rotateCameraView
+ *  Rotate the camera view based on the difference in x-direction and y-direction on screen
+ *  Currently we use this function
+ * @param inputs : InputBundle, state of key pressed
+ */
 void Player::rotateCameraView(InputBundle &input) {
 
     // compute the difference
@@ -261,12 +287,20 @@ void Player::rotateCameraView(InputBundle &input) {
 
 }
 
+/**
+ * @brief Player::rotateCameraView
+ *  Rotate the camera view based on the difference in x-direction and y-direction on screen
+ *  This function is specifically for MacOS, but now we do not use it
+ * @param thetaChange : float, difference in x-direction on screen
+ * @param phiChange : float, difference in y-direction on screen
+ */
 void Player::rotateCameraView(float thetaChange, float phiChange) {
 
     // clamp theta and phi
     thetaChange = std::clamp(thetaChange, -360.f, 360.f);
     phiChange = std::clamp(phiChange, -360.f, 360.f);
 
+    // empirical
     float scalar = 0.1f;
 
     // avoid phi out of range (-90 ~ 90)
@@ -284,6 +318,15 @@ void Player::rotateCameraView(float thetaChange, float phiChange) {
     rotateOnUpGlobal(-thetaChange * scalar);
 }
 
+/**
+ * @brief Player::gridMarch
+ *  Find the hit block given ray direction and position
+ * @param rayOrigin : glm::vec3, coordinate of start point
+ * @param rayDirection : glm::vec3, direction of the ray, and the length is the farthest length we search
+ * @param terrain : Terrain, terrain storing block data
+ * @param out_dist : float, distance between ray origin and colliding surface
+ * @param out_blockHit : glm::ivec3, coordinate of hit block
+ */
 bool Player::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, float *out_dist, glm::ivec3 *out_blockHit) {
     float maxLen = glm::length(rayDirection); // Farthest we search
     glm::ivec3 currCell = glm::ivec3(glm::floor(rayOrigin));
@@ -333,6 +376,15 @@ bool Player::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrai
     return false;
 }
 
+/**
+ * @brief Player::gridMarchPrevBlock
+ *  Find the hit block and adjacent empty block given ray direction and position
+ * @param rayOrigin : glm::vec3, coordinate of start point
+ * @param rayDirection : glm::vec3, direction of the ray, and the length is the farthest length we search
+ * @param terrain : Terrain, terrain storing block data
+ * @param out_prevBlock : glm::ivec3, coordinate of empty block adjacent to hit block
+ * @param out_blockHit : glm::ivec3, coordinate of hit block
+ */
 bool Player::gridMarchPrevBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, glm::ivec3 *out_prevBlock, glm::ivec3 *out_blockHit) {
 
     float maxLen = glm::length(rayDirection); // Farthest we search
@@ -388,6 +440,12 @@ bool Player::gridMarchPrevBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, con
 
 }
 
+/**
+ * @brief Player::checkXZCollision
+ *  This helper is used to check if the player collides on x or z axis
+ * @param idx : int, axis that check the collision (0: x axis, 2: z axis)
+ * @param terrain : Terrain, terrain storing block data
+ */
 bool Player::checkXZCollision(int idx, const Terrain &terrain) {
 
     if (idx != 0 && idx != 2) {
@@ -435,6 +493,11 @@ bool Player::checkXZCollision(int idx, const Terrain &terrain) {
 
 }
 
+/**
+ * @brief Player::checkYCollision
+ *  This helper is used to check if the player collides on y axis
+ * @param terrain : Terrain, terrain storing block data
+ */
 bool Player::checkYCollision(const Terrain &terrain) {
     glm::ivec3 out_blockHit(0);
     float out_dist_player_y = 0.f;
@@ -452,6 +515,10 @@ bool Player::checkYCollision(const Terrain &terrain) {
     return true;
 }
 
+/**
+ * @brief Player::implementJumping
+ *  Assign initial velocity in +y direction for player to jump
+ */
 void Player::implementJumping() {
     if (flightMode || m_velocity[1] != 0.f) {
         return;
@@ -460,6 +527,12 @@ void Player::implementJumping() {
     m_velocity[1] = 7.5f;
 }
 
+/**
+ * @brief Player::destroyBlock
+ *  Destroy the hit block
+ * @param inputs : InputBundle, state of key pressed
+ * @param terrain : Terrain, terrain storing block data
+ */
 void Player::destroyBlock(InputBundle &inputs, Terrain &terrain) {
 
     if (!inputs.leftMouseButtonPressed) {
@@ -472,7 +545,6 @@ void Player::destroyBlock(InputBundle &inputs, Terrain &terrain) {
 
     glm::ivec3 out_blockHit(0);
     float out_dist_camera = 0.f;
-    float cameraBlockDist = 3.f;
     glm::vec3 cameraRay(cameraBlockDist * m_camera.getForward());
 
     bool cameraHit = gridMarch(m_camera.getCurrentPos(), cameraRay, terrain, &out_dist_camera, &out_blockHit);
@@ -491,6 +563,13 @@ void Player::destroyBlock(InputBundle &inputs, Terrain &terrain) {
 
 }
 
+/**
+ * @brief Player::placeNewBlock
+ *  Place new block at the face of hit block,
+ *  and set its type as that of hit block
+ * @param inputs : InputBundle, state of key pressed
+ * @param terrain : Terrain, terrain storing block data
+ */
 void Player::placeNewBlock(InputBundle &inputs, Terrain &terrain) {
 
     if (!inputs.rightMouseButtonPressed) {
@@ -503,7 +582,6 @@ void Player::placeNewBlock(InputBundle &inputs, Terrain &terrain) {
 
     glm::ivec3 out_blockHit(0);
     glm::ivec3 out_blockHitPrev(0);
-    float cameraBlockDist = 3.f;
     glm::vec3 cameraRay(cameraBlockDist * m_camera.getForward());
 
     bool newBlockHit = gridMarchPrevBlock(m_camera.getCurrentPos(), cameraRay, terrain, &out_blockHitPrev, &out_blockHit);

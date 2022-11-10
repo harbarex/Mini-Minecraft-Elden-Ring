@@ -13,6 +13,7 @@ private:
     Terrain &mcr_terrain;
 
     float m_velocity_val, m_acceleration_val; // length of the vector
+    float cameraBlockDist; // max distance from the camera while using ray tracing
     bool flightMode; // determine the current mode
     double destroyBufferTime; // compute the passing time (s) starting from last destroy
     double creationBufferTime; // compute the passing time (s) starting from last block creation
