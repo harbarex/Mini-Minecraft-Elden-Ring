@@ -353,7 +353,7 @@ void Terrain::instantiateChunkAndfillBlocks(int chunkX, int chunkZ)
 
             // Set DIRT from 0-128 height values
             for(int y_underground=0; y_underground<128;y_underground++){
-                setBlockAt(x, y_underground, z, DIRT);
+                setBlockAt(x, y_underground, z, STONE);
             }
 
         }
