@@ -1,7 +1,7 @@
 
 # Feature Implementation
 
-## Game Engine Tick Function and Player Physics
+## Game Engine Tick Function and Player Physics (Meng-Chuan Chang)
 
 ### Movement
 
@@ -44,3 +44,26 @@ We treat the displacement of cursor on x and y axis on the screen as the angle c
 #### Issue in MacOS
 
 In MacOS, there is an issue in QCursor::setPos. It only works on Mac at the first time. Therefore, we need to manually delete MiniMinecraft.app in accessibility everytime before running the program.
+
+
+## Efficient Terrain Rendering and Chunking (Chun-Fu Yeh)
+
+### Add block.h & block.cpp
+
+To organize the needed information to render all the blocks in a given chunk, block.h and block.cpp are used to define the structs and the classes to store the information about a block, including block types, block faces, vertices, normals, colors, uvs. The rules to define a block as opaque or transparent are also kept here.
+
+### Chunk as a drawable
+
+The main task is to collect the vbo data of a chunk and keep vbo data in memory for rendering. During the collection of vbo data, if it is an opaque block, only the faces contacting with the air would be rendering, which means the vertices, normals, colors and uvs of that face are added to the vbo data. For the blocks on the edge of a chunk, the neighboring chunk will be retrieved to check the neighboring block of the blocks on the edge.
+
+### Interleaved VBO
+
+Since there's only one buffer array in addition to the index buffer array, only generatePos() & m_bufPos is needed. Then, bind the buffer data with the m_bufPos. In the shaderprogram.cpp, a drawInterleaved(Drawable &d) method is added to draw the buffer. Inside the method, the addresses of the start of each data (pos, normal, color, uv) are specified along with the stride needed to retrieve each info correctly.
+
+### Terrain expansion
+
+For expansion, every tick, the program checks whether the 3 x 3 chunks surrounding the player are instantiated and the vbo data of these chunks are created or not. If not, the program instantiate the chunk and create the vbo data for it. Here, there is a member variable, called m_ChunkVBOs, storing all the vbos of the loaded chunks. The terrain.draw(...) iterates through the grid and draws the chunk if its vbo data is available.
+
+
+## Procedural Terrain (Ankit Billa)
+
