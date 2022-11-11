@@ -69,13 +69,13 @@ For expansion, every tick, the program checks whether the 3 x 3 chunks surroundi
 
 In order to get the procedurally generated heightmap for a particular `x` and `z` coordinate, variations of Perlin noise were used, wrapped in the `Noise` class. Subsequently, `noise.h` and `noise.cpp` contain private helper functions to generate height values for different biomes, in this case Grasslands, Mountains and Water Bodies. 
 
-Grasslands: 
+#### Grasslands: 
 The grasslands terrain is generated using Worley Noise coupled with 2D Fractal Brownian Motion (FBM2D) for Perlin noise as suggested in the handout. 
 
-Mountainous Rock:
+#### Mountainous Rock:
 The mountainous rock terrain is generated using the absolute value of FBM Perlin Noise.
 
-Water Bodies:
+#### Water Bodies:
 Water bodies are added to the procedurally generated terrain, and the height value is obtained using averaged FBM Perlin Noise.
 
 In order to have smooth transitions between the biomes, we utilize `glm::smoothstep` applied on averaged FBM Perlin Noise. This hastens the transitions from one biome to another.
