@@ -65,5 +65,24 @@ Since there's only one buffer array in addition to the index buffer array, only 
 For expansion, every tick, the program checks whether the 3 x 3 chunks surrounding the player are instantiated and the vbo data of these chunks are created or not. If not, the program instantiate the chunk and create the vbo data for it. Here, there is a member variable, called m_ChunkVBOs, storing all the vbos of the loaded chunks. The terrain.draw(...) iterates through the grid and draws the chunk if its vbo data is available.
 
 
-## Procedural Terrain (Ankit Billa)
+## Procedural Terrain Generation (Ankit Billa)
 
+In order to get the procedurally generated heightmap for a particular `x` and `z` coordinate, variations of Perlin noise were used, wrapped in the `Noise` class. Subsequently, `noise.h` and `noise.cpp` contain private helper functions to generate height values for different biomes, in this case Grasslands, Mountains and Water Bodies. 
+
+Grasslands: 
+The grasslands terrain is generated using Worley Noise coupled with 2D Fractal Brownian Motion (FBM2D) for Perlin noise as suggested in the handout. 
+
+Mountainous Rock:
+The mountainous rock terrain is generated using the absolute value of FBM Perlin Noise.
+
+Water Bodies:
+Water bodies are added to the procedurally generated terrain, and the height value is obtained using averaged FBM Perlin Noise.
+
+In order to have smooth transitions between the biomes, we utilize `glm::smoothstep` applied on averaged FBM Perlin Noise. This hastens the transitions from one biome to another.
+ 
+The method used to get the procedurally generated height has the following signature:
+```
+int getHeight(int x, int z);
+```
+
+### 
