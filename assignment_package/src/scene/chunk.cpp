@@ -6,7 +6,8 @@
 Chunk::Chunk(OpenGLContext *context)
     : Drawable(context),
       m_blocks(),
-      m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}}
+      m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}},
+      vboLoaded(false)
 {
     std::fill_n(m_blocks.begin(), 65536, EMPTY);
 }
@@ -103,6 +104,14 @@ BlockType Chunk::getNeighborBlock(int x, int y, int z, glm::vec4 dirVec) const
     return getBlockAt(nx, ny, nz);
 }
 
+/**
+ * @brief Chunk::getNeighbors
+ * @return
+ */
+std::unordered_map<Direction, Chunk*, EnumHash> Chunk::getNeighbors() const
+{
+    return m_neighbors;
+}
 
 /**
  * @brief pushVec4ToBuffer
@@ -141,7 +150,7 @@ void pushVec2ToBuffer(std::vector<float> &buf, const glm::vec2 &vec)
 ChunkVBOdata Chunk::generateVBOdata() const
 {
     // init
-    ChunkVBOdata vbo = ChunkVBOdata();
+    ChunkVBOdata vbo = ChunkVBOdata((Chunk*)(this));
 
     // basically, iterate through all the blocks contained in a chunk
     // each chunk : 16 x 256 x 16
@@ -216,6 +225,9 @@ void Chunk::createVBOdata(ChunkVBOdata &vbo)
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufPos);
     mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(float), vbo.buffer.data(), GL_STATIC_DRAW);
 
+    // TODO: set to vboLoaded to true
+    vboLoaded = true;
+
     return;
 
 }
@@ -232,6 +244,28 @@ void Chunk::createVBOdata()
     ChunkVBOdata vbo = generateVBOdata();
     createVBOdata(vbo);
 }
+
+
+/**
+ * @brief Chunk::isVBOLoaded
+ * @return
+ */
+bool Chunk::isVBOLoaded() const
+{
+    return vboLoaded;
+}
+
+
+/**
+ * @brief Chunk::destroyVBOdata
+ */
+void Chunk::destroyVBOdata()
+{
+    Drawable::destroyVBOdata();
+    vboLoaded = false;
+}
+
+
 
 Chunk::~Chunk(){}
 

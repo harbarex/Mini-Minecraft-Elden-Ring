@@ -7,6 +7,8 @@
 #include <unordered_set>
 #include "shaderprogram.h"
 #include "cube.h"
+#include <QMutex>
+#include <QThreadPool>
 
 
 //using namespace std;
@@ -27,10 +29,23 @@ private:
     // so that we can use them as a key for the map, as objects like std::pairs or
     // glm::ivec2s are not hashable by default, so they cannot be used as keys.
     std::unordered_map<int64_t, uPtr<Chunk>> m_chunks;
+    std::unordered_set<int64_t> createdChunks;
+    // TODO: Keep a collection of the to-do tasks for creating the vbos of the chunks
+    // Note: the chunks in this collection must be filled with the blocks
+    std::unordered_set<Chunk*> m_chunksWithBlocks;
+    // TODO: the lock for the read / write to the m_chunksWithBlocks
+    QMutex m_chunksWithBlocksLock;
 
-    // Stores the ChunkVBOdata of each renedered chunk
-    // the keys are the address of the chunk
-    std::unordered_map<Chunk*, ChunkVBOdata> m_chunkVBOs;
+    // TODO: Keep a collection of the to-do tasks for sending vbos to gpu
+    std::vector<ChunkVBOdata> m_chunksWithVBOs;
+    // TODO: the lock for the read / write to the m_chunksWithVBOs
+    QMutex m_chunksWithVBOsLock;
+
+    // TODO: private helpers for workers
+    // TODO: use chunk (x, z) at first
+    void spawnFillBlocksWorker(int x, int z);
+    void spawnVBOWorker(Chunk* mp_chunk);
+    void spawnVBOWorkers(const std::unordered_set<Chunk*> &completedChunksWithBlocks);
 
     // We will designate every 64 x 64 area of the world's x-z plane
     // as one "terrain generation zone". Every time the player moves
@@ -95,6 +110,54 @@ public:
     void instantiateChunkAndfillBlocks(int chunkX, int chunkZ);
     void expand(float playerX, float playerZ, int halfGridSize);
 
+    // TODO: check thread result
+    void checkThreadResults();
+
     // for player to destroy & add blocks
     void placeBlockAt(int x, int y, int z, BlockType t);
+};
+
+
+// Worker to fill the blocks
+class FillBlocksWorker : public QRunnable
+{
+private:
+
+    int xCorner;
+    int zCorner;
+    Chunk *chunk;
+    std::unordered_set<Chunk*> *completedChunks;
+    QMutex *completedChunksLock;
+
+public:
+    // constructors
+    // TODO: change from chunk to zone
+    // Note: completedChunks == m_chunksWithBlocks (in terrain)
+    FillBlocksWorker(int x,
+                     int z,
+                     Chunk *chunk,
+                     std::unordered_set<Chunk*> *completedChunks,
+                     QMutex *completedChunksLock);
+
+    // run()
+    void run() override;
+};
+
+
+// Worker to create vbo
+class VBOWorker : public QRunnable
+{
+private:
+    Chunk *chunkWithoutVBO;
+    std::vector<ChunkVBOdata> *completedChunkVBOs;
+    QMutex *completedChunkVBOsLock;
+
+public:
+    // constructors
+    VBOWorker(Chunk *chunkWithoutVBO,
+              std::vector<ChunkVBOdata> *completedChunkVBOs,
+              QMutex *completedChunkVBOsLock);
+
+    // run()
+    void run() override;
 };

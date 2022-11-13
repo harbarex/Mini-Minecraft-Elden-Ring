@@ -6,7 +6,10 @@
 #include <unordered_map>
 
 Terrain::Terrain(OpenGLContext *context)
-    : m_chunks(), m_chunkVBOs(), m_generatedTerrain(), mp_context(context)
+    : m_chunks(), createdChunks(),
+      m_chunksWithBlocks(), m_chunksWithBlocksLock(),
+      m_chunksWithVBOs(), m_chunksWithVBOsLock(),
+      m_generatedTerrain(), mp_context(context)
 {}
 
 Terrain::~Terrain() {}
@@ -220,13 +223,10 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
             // get the pointer of the chunk at (x, z)
             const uPtr<Chunk> &chunk = getChunkAt(x, z);
 
-            // TODO: might be able to delete
-            // since terrain expansion already does this.
-            if (m_chunkVBOs.find(chunk.get()) == m_chunkVBOs.end()) {
-                // generate vbo
-                ChunkVBOdata vbo = chunk->generateVBOdata();
-                m_chunkVBOs[chunk.get()] = vbo;
-                chunk->createVBOdata(vbo);
+            // TODO: only draw the chunk with vbo loaded
+            // skip if not loaded yet
+            if (!chunk->isVBOLoaded()) {
+                continue;
             }
 
             // set model matrix
@@ -241,17 +241,37 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
     }
 }
 
+
+/**
+ * @brief Terrain::checkThreadResults
+ */
+void Terrain::checkThreadResults()
+{
+    m_chunksWithBlocksLock.lock();
+    spawnVBOWorkers(m_chunksWithBlocks);
+    m_chunksWithBlocks.clear();
+    m_chunksWithBlocksLock.unlock();
+
+    // send to gpu
+    m_chunksWithVBOsLock.lock();
+    for (ChunkVBOdata &vbo : m_chunksWithVBOs) {
+        vbo.mp_chunk->createVBOdata(vbo);
+    }
+    m_chunksWithVBOs.clear();
+    m_chunksWithVBOsLock.unlock();
+}
+
 /**
  * @brief Terrain::expand
  *  For MS1: 3 x 3 chunk
- *  For further: 3 x 3 zones
+ *  For MS2: 5 x 5 zones
  * @param playerX
  * @param playerZ
  * @param halfGridSize
  */
 void Terrain::expand(float playerX, float playerZ, int halfGridSize)
 {
-    // m_generatedTerrain not used for now
+    // TODO: change to use zone
     // m_generatedTerrain.insert(toKey(0, 0));
 
     // set the min max X & Z
@@ -265,45 +285,37 @@ void Terrain::expand(float playerX, float playerZ, int halfGridSize)
                      minZ,
                      maxZ);
 
-    // keep a collection of the chunks whose VBOs need to be created
-    std::unordered_set<Chunk*> newChunks = std::unordered_set<Chunk*>();
-
+    // TODO: destroy VBOs
     // instantnate all needed chunks at first
     for (int x = minX; x < maxX; x += 16) {
 
         for (int z = minZ; z < maxZ; z += 16) {
 
-            if (!hasChunkAt(x, z)) {
+            int64_t key = toKey(x, z);
 
-                instantiateChunkAndfillBlocks(x, z);
-                newChunks.insert(getChunkAt(x, z).get());
-
-                // re-create the vbo for the neighbors
-                // this is to remove the original boundary
-                for (int dx : {-16, 16}) {
-                    if (hasChunkAt(x + dx, z)) {
-                        newChunks.insert(getChunkAt(x + dx, z).get());
-
-                    }
-                }
-                for (int dz : {-16, 16}) {
-                    if (hasChunkAt(x, z + dz)) {
-                        newChunks.insert(getChunkAt(x, z + dz).get());
-                    }
-
-                }
+            if (createdChunks.find(key) != createdChunks.end()) {
+                // this chunk is already instantiated
+                // all the blocks are already filled as well
+                // TODO: spawn VBO worker for this chunk
+                // TODO: include in zone loop later?
+                Chunk *chunk = getChunkAt(x, z).get();
+                // spawnVBOWorker(chunk);
             }
+
+            else // if (createdChunks.find(key) == createdChunks.end())
+            {
+                // otherwise, spawn the thread to instantiate chunk & fill its blocks
+                // TODO: convert to zone later
+                std::cout << "Expand: " << x << " " << z << std::endl;
+                createdChunks.insert(key);
+                spawnFillBlocksWorker(x, z);
+            }
+
         }
     }
 
-    // recreate the VBOs
-    for (Chunk *chunk : newChunks) {
-        ChunkVBOdata vbo = chunk->generateVBOdata();
-        m_chunkVBOs[chunk] = vbo;
-        chunk->createVBOdata(vbo);
-    }
-
 }
+
 
 
 /**
@@ -390,8 +402,9 @@ void Terrain::placeBlockAt(int x, int y, int z, BlockType t)
     const uPtr<Chunk> &chunk = getChunkAt(chunkX, chunkZ);
     ChunkVBOdata vbo = chunk->generateVBOdata();
     // update the one in the map
-    m_chunkVBOs[chunk.get()] = vbo;
-    chunk->createVBOdata(vbo);
+    vbo.mp_chunk->createVBOdata(vbo);
+    // m_chunkVBOs[chunk.get()] = vbo;
+    // chunk->createVBOdata(vbo);
 
 }
 
@@ -496,3 +509,152 @@ void Terrain::CreateTestGrassScene()
 }
 
 
+/**
+ * @brief Terrain::spawnFillBlocksWorker
+ * @param x
+ * @param z
+ */
+void Terrain::spawnFillBlocksWorker(int x, int z)
+{
+    Chunk *chunk = instantiateChunkAt(x, z);
+    FillBlocksWorker *worker = new FillBlocksWorker(x, z,
+                                                    chunk,
+                                                    &m_chunksWithBlocks,
+                                                    &m_chunksWithBlocksLock);
+    QThreadPool::globalInstance()->start(worker);
+}
+
+
+/**
+ * @brief Terrain::spawnVBOWorker
+ * @param mp_chunk
+ */
+void Terrain::spawnVBOWorker(Chunk* mp_chunk)
+{
+    VBOWorker *worker = new VBOWorker(mp_chunk,
+                                      &m_chunksWithVBOs,
+                                      &m_chunksWithVBOsLock);
+    QThreadPool::globalInstance()->start(worker);
+}
+
+
+/**
+ * @brief Terrain::spawnVBOWorkers
+ * @param completedChunksWithBlocks
+ */
+void Terrain::spawnVBOWorkers(const std::unordered_set<Chunk*> &completedChunksWithBlocks)
+{
+    for (Chunk *ck : completedChunksWithBlocks) {
+        spawnVBOWorker(ck);
+    }
+}
+
+//--------------------------
+// Thread Workers
+//--------------------------
+FillBlocksWorker::FillBlocksWorker(int x,
+                                   int z,
+                                   Chunk *chunk,
+                                   std::unordered_set<Chunk*> *completedChunks,
+                                   QMutex *completedChunksLock)
+    : xCorner(x), zCorner(z),
+      chunk(chunk),
+      completedChunks(completedChunks), completedChunksLock(completedChunksLock)
+{}
+
+
+/**
+ * @brief FillBlocksWorker::run
+ *  The run() to fill the blocks of a given region
+ */
+void FillBlocksWorker::run()
+{
+    // TODO: iterate through each chunks in the zone
+    // TODO: iterate through (x, z) in a chunk
+    // assign the block
+
+    Noise terrainHeightMap;
+
+    for (int x = 0; x < 16; x++) {
+
+        for (int z = 0; z < 16; z++) {
+
+            // TODO: wrap up the logics later
+            double y = terrainHeightMap.getHeight(xCorner + x ,zCorner + z);
+
+            // x, z need to be the offset (not the global x, z)
+
+            if( y < 136){
+                chunk->setBlockAt(x, y, z, WATER);
+                for(int y_dirt=128; y_dirt<y; y_dirt++){
+                    chunk->setBlockAt(x, y_dirt, z, WATER);
+                }
+            }
+            else if( y < 142){
+                chunk->setBlockAt(x, y, z, GRASS);
+                for(int y_dirt=128; y_dirt<y; y_dirt++){
+                    chunk->setBlockAt(x, y_dirt, z, DIRT);
+                }
+            }
+            else if (y > 190){
+                chunk->setBlockAt(x, y, z, SNOW);
+                for(int y_stone=128; y_stone<y; y_stone++){
+                    chunk->setBlockAt(x, y_stone, z, STONE);
+                }
+            }
+            else{
+                chunk->setBlockAt(x, y, z, STONE);
+                for(int y_dirt=128; y_dirt<y; y_dirt++){
+                    chunk->setBlockAt(x, y_dirt, z, DIRT);
+                }
+            }
+
+            // Set DIRT from 0-128 height values
+            for(int y_underground=0; y_underground<128;y_underground++){
+                chunk->setBlockAt(x, y_underground, z, STONE);
+            }
+
+        }
+
+    }
+
+    // already filled the blocks
+    // TODO: push to the collection of completed Chunks
+    completedChunksLock->lock();
+    completedChunks->insert(chunk);
+    // neighbors to re-create vbo
+    for (const std::pair<Direction, Chunk*> &p : chunk->getNeighbors()) {
+        if (p.second != nullptr) {
+            completedChunks->insert(p.second);
+        }
+    }
+    completedChunksLock->unlock();
+}
+
+
+/**
+ * @brief VBOWorker::VBOWorker
+ * @param chunkWithoutVBO
+ * @param completedChunkVBOs
+ * @param completedChunkVBOsLock
+ */
+VBOWorker::VBOWorker(Chunk *chunkWithoutVBO,
+                     std::vector<ChunkVBOdata> *completedChunkVBOs,
+                     QMutex *completedChunkVBOsLock)
+    : chunkWithoutVBO(chunkWithoutVBO),
+      completedChunkVBOs(completedChunkVBOs),
+      completedChunkVBOsLock(completedChunkVBOsLock)
+{}
+
+
+/**
+ * @brief VBOWorker::run
+ */
+void VBOWorker::run()
+{
+    // create vbo
+    ChunkVBOdata vbo = chunkWithoutVBO->generateVBOdata();
+    completedChunkVBOsLock->lock();
+    completedChunkVBOs->push_back(vbo);
+    completedChunkVBOsLock->unlock();
+}

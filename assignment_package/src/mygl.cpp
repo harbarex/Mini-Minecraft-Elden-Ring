@@ -10,7 +10,7 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this), m_progInstanced(this),
-      m_terrain(this), m_player(glm::vec3(48.f, 129.f, 48.f), m_terrain),
+      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
       prevFrameTime(QDateTime::currentMSecsSinceEpoch())
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
@@ -103,8 +103,13 @@ void MyGL::resizeGL(int w, int h) {
 void MyGL::tick() {
     update(); // Calls paintGL() as part of a larger QOpenGLWidget pipeline
     sendPlayerDataToGUI(); // Updates the info in the secondary window displaying player data
+
     // call terrain expansion
-    m_terrain.expand(m_player.mcr_position[0], m_player.mcr_position[2], 1);
+    // TODO: use 5 x 5 zones
+    m_terrain.expand(m_player.mcr_position[0], m_player.mcr_position[2], 5);
+    // TODO: check & (draw) send to gpu
+    m_terrain.checkThreadResults();
+
     // compute the delta-time
     long long currFrameTime = QDateTime::currentMSecsSinceEpoch();
     float deltaTime = (currFrameTime - prevFrameTime) / 1000.f;
@@ -113,7 +118,6 @@ void MyGL::tick() {
 
     // pass delta-time to Player::tick
     m_player.tick(deltaTime, m_inputs);
-
 }
 
 void MyGL::sendPlayerDataToGUI() const {
@@ -154,7 +158,7 @@ void MyGL::paintGL() {
 void MyGL::renderTerrain() {
     // only draw the 3 x 3 chunks around the player
     glm::vec3 pos = m_player.mcr_position;
-    m_terrain.draw(pos[0], pos[2], 1, &m_progLambert);
+    m_terrain.draw(pos[0], pos[2], 5, &m_progLambert);
 }
 
 

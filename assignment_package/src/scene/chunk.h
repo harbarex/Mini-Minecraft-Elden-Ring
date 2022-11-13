@@ -8,29 +8,28 @@
 #include <cstddef>
 #include <openglcontext.h>
 
+class Chunk;
+
 // this struct is used to hold the VBO data of a given chunk
 // identified by (x, z) coord
 struct ChunkVBOdata
 {
-    // MS1
+    // keep a pointer of the chunk
+    Chunk* mp_chunk;
+
+    // MS1 - opaque
     std::vector<GLuint> indices;
     // order: pos (vec4) + normal (vec4) + color (vec4) + uv (vec2)
     std::vector<float> buffer;
 
-//    // TODO: use separate buffers for testing
-//    std::vector<glm::vec4> pos;
-//    std::vector<glm::vec4> nor;
-//    std::vector<glm::vec4> col;
-//    std::vector<glm::vec2> uv;
-
-
     // MS2: add transparent part
     std::vector<GLuint> transparentIndices;
+    // order: pos (vec4) + normal (vec4) + color (vec4) + uv (vec2)
     std::vector<float> transparentBuffer;
 
     // constructors
-    ChunkVBOdata()
-        : indices(), buffer(), //pos(), nor(), col(), uv(),
+    ChunkVBOdata(Chunk* chunk)
+        : mp_chunk(chunk), indices(), buffer(),
           transparentIndices(), transparentBuffer() {}
 
 };
@@ -56,6 +55,9 @@ private:
     // get neighboring block
     BlockType getNeighborBlock(int x, int y, int z, glm::vec4 dirVec) const;
 
+    // TODO: a member variable to mark vboLoaded
+    bool vboLoaded;
+
 public:
     // constructor as a subclass of Drawable
     Chunk(OpenGLContext *context);
@@ -76,5 +78,14 @@ public:
 
     int getNNeighbors() const;
 
+    std::unordered_map<Direction, Chunk*, EnumHash> getNeighbors() const;
+
+    bool isVBOLoaded() const;
+
+    // helper method to destroy vbo and set isVBOLoaded to false
+    void destroyVBOdata();
+
     virtual ~Chunk();
 };
+
+
