@@ -106,7 +106,7 @@ void MyGL::tick() {
 
     // call terrain expansion
     // TODO: use 5 x 5 zones
-    m_terrain.expand(m_player.mcr_position[0], m_player.mcr_position[2], 5);
+    m_terrain.expand(m_player.mcr_position[0], m_player.mcr_position[2], 2);
     // TODO: check & (draw) send to gpu
     m_terrain.checkThreadResults();
 
@@ -158,7 +158,7 @@ void MyGL::paintGL() {
 void MyGL::renderTerrain() {
     // only draw the 3 x 3 chunks around the player
     glm::vec3 pos = m_player.mcr_position;
-    m_terrain.draw(pos[0], pos[2], 5, &m_progLambert);
+    m_terrain.draw(pos[0], pos[2], 2, &m_progLambert);
 }
 
 

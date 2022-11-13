@@ -42,7 +42,7 @@ private:
     QMutex m_chunksWithVBOsLock;
 
     // TODO: private helpers for workers
-    // TODO: use chunk (x, z) at first
+    // TODO: (x, z) is zone's (xCorner, zCorner)
     void spawnFillBlocksWorker(int x, int z);
     void spawnVBOWorker(Chunk* mp_chunk);
     void spawnVBOWorkers(const std::unordered_set<Chunk*> &completedChunksWithBlocks);
@@ -61,6 +61,12 @@ private:
     // surrounding the Player should be rendered, the Chunks
     // in the Terrain will never be deleted until the program is terminated.
     std::unordered_set<int64_t> m_generatedTerrain;
+
+    // this set represents the zones in the currently loaded (with VBOs)
+    // 5 x 5 zones
+    std::unordered_set<int64_t> m_loadedZones;
+
+    void destroyZoneVBOs(int xCorner, int zCorner);
 
     OpenGLContext* mp_context;
 
@@ -125,17 +131,19 @@ private:
 
     int xCorner;
     int zCorner;
-    Chunk *chunk;
+    std::unordered_map<int64_t, Chunk*> chunks;
     std::unordered_set<Chunk*> *completedChunks;
     QMutex *completedChunksLock;
 
+    // helper to set the blocks of each chunk
+    void setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorner);
+
 public:
     // constructors
-    // TODO: change from chunk to zone
     // Note: completedChunks == m_chunksWithBlocks (in terrain)
     FillBlocksWorker(int x,
                      int z,
-                     Chunk *chunk,
+                     std::unordered_map<int64_t, Chunk*> chunks,
                      std::unordered_set<Chunk*> *completedChunks,
                      QMutex *completedChunksLock);
 

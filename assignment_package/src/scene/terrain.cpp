@@ -9,7 +9,8 @@ Terrain::Terrain(OpenGLContext *context)
     : m_chunks(), createdChunks(),
       m_chunksWithBlocks(), m_chunksWithBlocksLock(),
       m_chunksWithVBOs(), m_chunksWithVBOsLock(),
-      m_generatedTerrain(), mp_context(context)
+      m_generatedTerrain(), m_loadedZones(),
+      mp_context(context)
 {}
 
 Terrain::~Terrain() {}
@@ -77,6 +78,65 @@ void setChunkMinMaxXZ(float playerX,
     minZ = (zFloor - halfGridSize) * 16;
     maxZ = (zFloor + (halfGridSize + 1)) * 16;
 
+}
+
+/**
+ * @brief setZoneMinMaxXZ
+ * @param playerX
+ * @param playerZ
+ * @param halfGridSize
+ * @param minX
+ * @param maxX
+ * @param minZ
+ * @param maxZ
+ */
+void setZoneMinMaxXZ(float playerX,
+                      float playerZ,
+                      int halfGridSize,
+                      int &minX,
+                      int &maxX,
+                      int &minZ,
+                      int &maxZ)
+{
+    int xFloor = static_cast<int>(glm::floor(playerX / 64.f));
+    int zFloor = static_cast<int>(glm::floor(playerZ / 64.f));
+
+    // Note: the xFloor, zFloor stand for the i-th zone (not the zone origin coordinate)
+    // Remember to multiply with 64 to get back to the zone origin
+    // Also, the zone directly at maxX & maxZ won't be included.
+    minX = (xFloor - halfGridSize) * 64;
+    maxX = (xFloor + (halfGridSize + 1)) * 64;
+    minZ = (zFloor - halfGridSize) * 64;
+    maxZ = (zFloor + (halfGridSize + 1)) * 64;
+}
+
+/**
+ * @brief getZoneKeys
+ *  The helper to generate (1 + 2 * halfRridSize) x (1 + 2 * halfRridSize) zones keys,
+ *  centered at the zone where the player (playerX, playerZ) is.
+ *  Note: zone size => 64 x 256 x 64
+ * @param playerX
+ * @param playerZ
+ * @param halfGridSize
+ * @return
+ */
+std::unordered_set<int64_t> getZoneKeys(float playerX, float playerZ, int halfGridSize)
+{
+    // init the output set
+    std::unordered_set<int64_t> zoneKeys = std::unordered_set<int64_t>();
+
+    // TODO: get the current zone
+    int minX, maxX, minZ, maxZ;
+    setZoneMinMaxXZ(playerX, playerZ, halfGridSize, minX, maxX, minZ, maxZ);
+
+    // TODO: iterate through the grid
+    for (int x = minX; x < maxX; x += 64) {
+        for (int z = minZ; z < maxZ; z += 64) {
+            zoneKeys.insert(toKey(x, z));
+        }
+    }
+
+    return zoneKeys;
 }
 
 // Surround calls to this with try-catch if you don't know whether
@@ -185,15 +245,16 @@ Chunk* Terrain::instantiateChunkAt(int x, int z) {
 void Terrain::draw(float playerX, float playerZ, int halfGridSize, ShaderProgram *shaderProgram)
 {
     // get the grid of minX, maxX, minZ, maxZ by (playerX, playerZ)
+    // MS2: set to Zone's min max
     int minX, maxX, minZ, maxZ;
 
-    setChunkMinMaxXZ(playerX,
-                     playerZ,
-                     halfGridSize,
-                     minX,
-                     maxX,
-                     minZ,
-                     maxZ);
+    setZoneMinMaxXZ(playerX,
+                    playerZ,
+                    halfGridSize,
+                    minX,
+                    maxX,
+                    minZ,
+                    maxZ);
 
     // use the origianl terrain::draw
     draw(minX, maxX, minZ, maxZ, shaderProgram);
@@ -223,7 +284,7 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
             // get the pointer of the chunk at (x, z)
             const uPtr<Chunk> &chunk = getChunkAt(x, z);
 
-            // TODO: only draw the chunk with vbo loaded
+            // only draw the chunk with vbo loaded
             // skip if not loaded yet
             if (!chunk->isVBOLoaded()) {
                 continue;
@@ -261,6 +322,26 @@ void Terrain::checkThreadResults()
     m_chunksWithVBOsLock.unlock();
 }
 
+
+/**
+ * @brief Terrain::destroyZoneVBOs
+ *  Destroy all the vbos of the chunks in the zone
+ *  Note: zone 64 x 256 x 64
+ */
+void Terrain::destroyZoneVBOs(int xCorner, int zCorner)
+{
+    for (int x = xCorner; x < xCorner + 64; x += 16) {
+        for (int z = zCorner; z < zCorner + 64; z += 16) {
+            // find the chunk =>
+            if (hasChunkAt(x, z)) {
+                Chunk *chunk = getChunkAt(x, z).get();
+                // deload
+                chunk->destroyVBOdata();
+            }
+        }
+    }
+}
+
 /**
  * @brief Terrain::expand
  *  For MS1: 3 x 3 chunk
@@ -271,48 +352,57 @@ void Terrain::checkThreadResults()
  */
 void Terrain::expand(float playerX, float playerZ, int halfGridSize)
 {
-    // TODO: change to use zone
-    // m_generatedTerrain.insert(toKey(0, 0));
+    // TODO: generate to-be zone ids
+    std::unordered_set<int64_t> currZones = getZoneKeys(playerX, playerZ, halfGridSize);
 
-    // set the min max X & Z
-    // note the chunk at (maxX, maxZ) is not included
-    int minX, maxX, minZ, maxZ;
-    setChunkMinMaxXZ(playerX,
-                     playerZ,
-                     halfGridSize,
-                     minX,
-                     maxX,
-                     minZ,
-                     maxZ);
+    // The generall logic:
+    // If the zone is in m_loadedZones, but not in currZones => destroyVBOs
+    // If the zone isn't in m_generatedTerrain => it hasn't created yet (all the chunks inside)
+    // If the zone is in m_generatedTerrain  but not in m_loadedZones
+    // => already created, but not the previous loaded zone => re-create the VBOs
+    // If the zone is in m_generatedTerrain and in m_loadedZones
+    // => do nothing
 
-    // TODO: destroy VBOs
-    // instantnate all needed chunks at first
-    for (int x = minX; x < maxX; x += 16) {
+    // TODO: destroy VBOs if in m_loadedZones but not in currZones
+    for (int64_t prevZoneKey : m_loadedZones) {
+        if (currZones.find(prevZoneKey) == currZones.end()) {
+            // this zone key is not found => destroy VBOs
+            glm::ivec2 coord = toCoords(prevZoneKey);
+            destroyZoneVBOs(coord[0], coord[1]);
+        }
+    }
 
-        for (int z = minZ; z < maxZ; z += 16) {
+    // TODO: check create new zones or re-create VBOs
+    for (int64_t currZoneKey : currZones) {
 
-            int64_t key = toKey(x, z);
+        glm::ivec2 coord = toCoords(currZoneKey);
 
-            if (createdChunks.find(key) != createdChunks.end()) {
-                // this chunk is already instantiated
-                // all the blocks are already filled as well
-                // TODO: spawn VBO worker for this chunk
-                // TODO: include in zone loop later?
-                Chunk *chunk = getChunkAt(x, z).get();
-                // spawnVBOWorker(chunk);
-            }
+        if (m_generatedTerrain.find(currZoneKey) == m_generatedTerrain.end()) {
+            // the zone hasn't been created yet
+            // TODO: spawn worker for this zone
+            spawnFillBlocksWorker(coord[0], coord[1]);
+            m_generatedTerrain.insert(currZoneKey);
+        }
 
-            else // if (createdChunks.find(key) == createdChunks.end())
-            {
-                // otherwise, spawn the thread to instantiate chunk & fill its blocks
-                // TODO: convert to zone later
-                std::cout << "Expand: " << x << " " << z << std::endl;
-                createdChunks.insert(key);
-                spawnFillBlocksWorker(x, z);
+        else if (m_loadedZones.find(currZoneKey) == m_loadedZones.end())
+        {
+            // zone has been created
+            // but this zone is not in the previous frame
+            // re-create the vbo
+            // Chunk *chunk = getChunkAt(x, z).get();
+            // spawnVBOWorker(chunk);
+            for (int x = coord[0]; x < coord[0] + 64; x += 16) {
+                for (int z = coord[1]; z < coord[1] + 64; z += 16) {
+                    Chunk *chunk = getChunkAt(x, z).get();
+                    spawnVBOWorker(chunk);
+                }
             }
 
         }
     }
+
+    // update the loaded zone
+    m_loadedZones = currZones;
 
 }
 
@@ -511,14 +601,23 @@ void Terrain::CreateTestGrassScene()
 
 /**
  * @brief Terrain::spawnFillBlocksWorker
- * @param x
- * @param z
+ * @param xCorner : int, the xCorner of a zone
+ * @param zCorner : int, the zCorner of a zone
  */
-void Terrain::spawnFillBlocksWorker(int x, int z)
+void Terrain::spawnFillBlocksWorker(int xCorner, int zCorner)
 {
-    Chunk *chunk = instantiateChunkAt(x, z);
-    FillBlocksWorker *worker = new FillBlocksWorker(x, z,
-                                                    chunk,
+    // collect all the chunks in this zone
+    std::unordered_map<int64_t, Chunk*> chunks = std::unordered_map<int64_t, Chunk*>();
+
+    for (int x = xCorner; x < xCorner + 64; x += 16) {
+        for (int z = zCorner; z < zCorner + 64; z += 16) {
+            Chunk *chunk = instantiateChunkAt(x, z);
+            chunks[toKey(x, z)] = chunk;
+        }
+    }
+
+    FillBlocksWorker *worker = new FillBlocksWorker(xCorner, zCorner,
+                                                    chunks,
                                                     &m_chunksWithBlocks,
                                                     &m_chunksWithBlocksLock);
     QThreadPool::globalInstance()->start(worker);
@@ -554,24 +653,24 @@ void Terrain::spawnVBOWorkers(const std::unordered_set<Chunk*> &completedChunksW
 //--------------------------
 FillBlocksWorker::FillBlocksWorker(int x,
                                    int z,
-                                   Chunk *chunk,
+                                   std::unordered_map<int64_t, Chunk*> chunks,
                                    std::unordered_set<Chunk*> *completedChunks,
                                    QMutex *completedChunksLock)
     : xCorner(x), zCorner(z),
-      chunk(chunk),
+      chunks(chunks),
       completedChunks(completedChunks), completedChunksLock(completedChunksLock)
 {}
 
 
 /**
- * @brief FillBlocksWorker::run
- *  The run() to fill the blocks of a given region
+ * @brief FillBlocksWorker::setBlocks
+ *  The private helper to set all the blocks of a given chunk
+ * @param chunk
+ * @param chunkXCorner
+ * @param chunkZCorner
  */
-void FillBlocksWorker::run()
+void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorner)
 {
-    // TODO: iterate through each chunks in the zone
-    // TODO: iterate through (x, z) in a chunk
-    // assign the block
 
     Noise terrainHeightMap;
 
@@ -580,10 +679,9 @@ void FillBlocksWorker::run()
         for (int z = 0; z < 16; z++) {
 
             // TODO: wrap up the logics later
-            double y = terrainHeightMap.getHeight(xCorner + x ,zCorner + z);
+            double y = terrainHeightMap.getHeight(chunkXCorner + x , chunkZCorner + z);
 
             // x, z need to be the offset (not the global x, z)
-
             if( y < 136){
                 chunk->setBlockAt(x, y, z, WATER);
                 for(int y_dirt=128; y_dirt<y; y_dirt++){
@@ -623,12 +721,26 @@ void FillBlocksWorker::run()
     completedChunksLock->lock();
     completedChunks->insert(chunk);
     // neighbors to re-create vbo
-    for (const std::pair<Direction, Chunk*> &p : chunk->getNeighbors()) {
+    for (const std::pair<Direction, Chunk*> p : chunk->getNeighbors()) {
         if (p.second != nullptr) {
             completedChunks->insert(p.second);
         }
     }
     completedChunksLock->unlock();
+
+}
+
+/**
+ * @brief FillBlocksWorker::run
+ *  The run() to fill the blocks of a given region
+ */
+void FillBlocksWorker::run()
+{
+    // TODO: iterate through each chunks in the zone
+    for (std::pair<int64_t, Chunk*> p : chunks) {
+        glm::ivec2 coord = toCoords(p.first);
+        setBlocks(p.second, coord[0], coord[1]);
+    }
 }
 
 
