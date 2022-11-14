@@ -197,6 +197,9 @@ ChunkVBOdata Chunk::generateVBOdata() const
                         }
                     }
                 }
+
+                // TODO: add code section for transparent blocks
+                // TODO: set up the vbo for transparent blocks
             }
         }
 
@@ -225,7 +228,7 @@ void Chunk::createVBOdata(ChunkVBOdata &vbo)
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufPos);
     mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(float), vbo.buffer.data(), GL_STATIC_DRAW);
 
-    // TODO: set to vboLoaded to true
+    // set to vboLoaded to true
     vboLoaded = true;
 
     return;

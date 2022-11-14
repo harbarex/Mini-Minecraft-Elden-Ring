@@ -76,10 +76,10 @@ public:
     // this takes ChunkVBOdata in and buffers them into this Chunk (Drawable)
     void createVBOdata(ChunkVBOdata &vbo);
 
-    int getNNeighbors() const;
-
+    // return the map of the neighbors
     std::unordered_map<Direction, Chunk*, EnumHash> getNeighbors() const;
 
+    // check whether the VBO of a chunk is loaded or not
     bool isVBOLoaded() const;
 
     // helper method to destroy vbo and set isVBOLoaded to false

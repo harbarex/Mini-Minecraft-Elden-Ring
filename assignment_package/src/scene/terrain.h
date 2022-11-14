@@ -29,20 +29,20 @@ private:
     // so that we can use them as a key for the map, as objects like std::pairs or
     // glm::ivec2s are not hashable by default, so they cannot be used as keys.
     std::unordered_map<int64_t, uPtr<Chunk>> m_chunks;
-    std::unordered_set<int64_t> createdChunks;
-    // TODO: Keep a collection of the to-do tasks for creating the vbos of the chunks
+
+    // Keep a collection of the to-do tasks for creating the vbos of the chunks
     // Note: the chunks in this collection must be filled with the blocks
     std::unordered_set<Chunk*> m_chunksWithBlocks;
-    // TODO: the lock for the read / write to the m_chunksWithBlocks
+    // the lock for the read / write to the m_chunksWithBlocks
     QMutex m_chunksWithBlocksLock;
 
-    // TODO: Keep a collection of the to-do tasks for sending vbos to gpu
+    // Keep a collection of the to-do tasks for sending vbos to gpu
     std::vector<ChunkVBOdata> m_chunksWithVBOs;
-    // TODO: the lock for the read / write to the m_chunksWithVBOs
+    // the lock for the read / write to the m_chunksWithVBOs
     QMutex m_chunksWithVBOsLock;
 
-    // TODO: private helpers for workers
-    // TODO: (x, z) is zone's (xCorner, zCorner)
+    // private helpers for workers
+    // Note: (x, z) is zone's (xCorner, zCorner)
     void spawnFillBlocksWorker(int x, int z);
     void spawnVBOWorker(Chunk* mp_chunk);
     void spawnVBOWorkers(const std::unordered_set<Chunk*> &completedChunksWithBlocks);
@@ -62,8 +62,7 @@ private:
     // in the Terrain will never be deleted until the program is terminated.
     std::unordered_set<int64_t> m_generatedTerrain;
 
-    // this set represents the zones in the currently loaded (with VBOs)
-    // 5 x 5 zones
+    // this set represents the currently loaded 5 x 5 zones
     std::unordered_set<int64_t> m_loadedZones;
 
     void destroyZoneVBOs(int xCorner, int zCorner);
@@ -116,7 +115,8 @@ public:
     void instantiateChunkAndfillBlocks(int chunkX, int chunkZ);
     void expand(float playerX, float playerZ, int halfGridSize);
 
-    // TODO: check thread result
+    // check thread result
+    // send the result from FillBlocksWorkers to VBOWorkers
     void checkThreadResults();
 
     // for player to destroy & add blocks
@@ -128,7 +128,9 @@ public:
 class FillBlocksWorker : public QRunnable
 {
 private:
-
+    // TODO: other biome attrubites can be added here
+    // TODO: zone attributes
+    // TODO: wrap the height mapping logic in setBlocks
     int xCorner;
     int zCorner;
     std::unordered_map<int64_t, Chunk*> chunks;
@@ -139,7 +141,7 @@ private:
     void setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorner);
 
 public:
-    // constructors
+    // constructor
     // Note: completedChunks == m_chunksWithBlocks (in terrain)
     FillBlocksWorker(int x,
                      int z,
@@ -161,7 +163,8 @@ private:
     QMutex *completedChunkVBOsLock;
 
 public:
-    // constructors
+    // constructor
+    // Note: completedChunksVBOs == m_chunksWithVBOs (in terrain);
     VBOWorker(Chunk *chunkWithoutVBO,
               std::vector<ChunkVBOdata> *completedChunkVBOs,
               QMutex *completedChunkVBOsLock);

@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 Terrain::Terrain(OpenGLContext *context)
-    : m_chunks(), createdChunks(),
+    : m_chunks(),
       m_chunksWithBlocks(), m_chunksWithBlocksLock(),
       m_chunksWithVBOs(), m_chunksWithVBOsLock(),
       m_generatedTerrain(), m_loadedZones(),
@@ -82,6 +82,7 @@ void setChunkMinMaxXZ(float playerX,
 
 /**
  * @brief setZoneMinMaxXZ
+ *  Basically, set the min max X & Z for the zones, centered at the zone where the player is.
  * @param playerX
  * @param playerZ
  * @param halfGridSize
@@ -122,14 +123,15 @@ void setZoneMinMaxXZ(float playerX,
  */
 std::unordered_set<int64_t> getZoneKeys(float playerX, float playerZ, int halfGridSize)
 {
+
     // init the output set
     std::unordered_set<int64_t> zoneKeys = std::unordered_set<int64_t>();
 
-    // TODO: get the current zone
+    // get the current zone
     int minX, maxX, minZ, maxZ;
     setZoneMinMaxXZ(playerX, playerZ, halfGridSize, minX, maxX, minZ, maxZ);
 
-    // TODO: iterate through the grid
+    // iterate through the grid
     for (int x = minX; x < maxX; x += 64) {
         for (int z = minZ; z < maxZ; z += 64) {
             zoneKeys.insert(toKey(x, z));
@@ -308,6 +310,7 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
  */
 void Terrain::checkThreadResults()
 {
+    // Send the result from FillBlocksWorkers to VBOWorkers
     m_chunksWithBlocksLock.lock();
     spawnVBOWorkers(m_chunksWithBlocks);
     m_chunksWithBlocks.clear();
@@ -352,7 +355,9 @@ void Terrain::destroyZoneVBOs(int xCorner, int zCorner)
  */
 void Terrain::expand(float playerX, float playerZ, int halfGridSize)
 {
-    // TODO: generate to-be zone ids
+    // generate to-be zone ids
+    // TODO: start from the zones that close to the previous zones
+    // TODO: would make the visualizations better (the zones near the user would be rendered at first)
     std::unordered_set<int64_t> currZones = getZoneKeys(playerX, playerZ, halfGridSize);
 
     // The generall logic:
@@ -363,7 +368,7 @@ void Terrain::expand(float playerX, float playerZ, int halfGridSize)
     // If the zone is in m_generatedTerrain and in m_loadedZones
     // => do nothing
 
-    // TODO: destroy VBOs if in m_loadedZones but not in currZones
+    // destroy VBOs if in m_loadedZones but not in currZones
     for (int64_t prevZoneKey : m_loadedZones) {
         if (currZones.find(prevZoneKey) == currZones.end()) {
             // this zone key is not found => destroy VBOs
@@ -372,7 +377,7 @@ void Terrain::expand(float playerX, float playerZ, int halfGridSize)
         }
     }
 
-    // TODO: check create new zones or re-create VBOs
+    // check create new zones or re-create VBOs
     for (int64_t currZoneKey : currZones) {
 
         glm::ivec2 coord = toCoords(currZoneKey);

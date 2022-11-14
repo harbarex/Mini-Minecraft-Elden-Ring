@@ -108,6 +108,7 @@ void MyGL::tick() {
     // TODO: use 5 x 5 zones
     m_terrain.expand(m_player.mcr_position[0], m_player.mcr_position[2], 2);
     // TODO: check & (draw) send to gpu
+    // TODO: re-check per second (currently, it's 60 times per second)
     m_terrain.checkThreadResults();
 
     // compute the delta-time
