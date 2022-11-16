@@ -11,7 +11,7 @@ MyGL::MyGL(QWidget *parent)
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this), m_progInstanced(this),
       m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
-      prevFrameTime(QDateTime::currentMSecsSinceEpoch())
+      prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this)
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
@@ -66,6 +66,8 @@ void MyGL::initializeGL()
     // Create and set up the flat lighting shader
     m_progFlat.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
     m_progInstanced.create(":/glsl/instanced.vert.glsl", ":/glsl/lambert.frag.glsl");
+
+    createTexture();
 
     // Set a color with which to draw geometry.
     // This will ultimately not be used when you change
@@ -272,4 +274,9 @@ void MyGL::mouseReleaseEvent(QMouseEvent *e) {
     default:
         return;
     }
+}
+
+void MyGL::createTexture() {
+    textureAll.create(":/textures/minecraft_textures_all.png");
+    textureAll.load(0);
 }

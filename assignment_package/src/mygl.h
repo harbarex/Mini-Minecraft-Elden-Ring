@@ -8,6 +8,8 @@
 #include "scene/terrain.h"
 #include "scene/player.h"
 
+#include "texture.h"
+
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
 #include <smartpointerhelp.h>
@@ -36,11 +38,15 @@ private:
     int prevMouseX;
     int prevMouseY;
 
+    Texture textureAll;
+
     void moveMouseToCenter(); // Forces the mouse position to the screen's center. You should call this
                               // from within a mouse move event after reading the mouse movement so that
                               // your mouse stays within the screen bounds and is always read.
 
     void sendPlayerDataToGUI() const;
+
+    void createTexture();
 
 
 public:
