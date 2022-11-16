@@ -197,10 +197,10 @@ void Player::toggleFlightMode() {
     // adjust the maximum velocity
     if (flightMode) {
         flightMode = false;
-        m_velocity_val = 5.f;
+        m_velocity_val = 20.f;
     } else {
         flightMode = true;
-        m_velocity_val = 10.f;
+        m_velocity_val = 40.f;
     }
 }
 

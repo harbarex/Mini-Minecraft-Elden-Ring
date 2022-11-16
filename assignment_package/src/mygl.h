@@ -49,6 +49,7 @@ private:
 
     void createTexture();
     void loadTextureUVCoord();
+    void bindTexture();
 
 
 public:

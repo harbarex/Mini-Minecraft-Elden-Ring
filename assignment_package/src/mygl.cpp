@@ -160,6 +160,10 @@ void MyGL::paintGL() {
 // terrain that surround the player (refer to Terrain::m_generatedTerrain
 // for more info)
 void MyGL::renderTerrain() {
+
+    // bind the texture
+    bindTexture();
+
     // only draw the 3 x 3 chunks around the player
     glm::vec3 pos = m_player.mcr_position;
     m_terrain.draw(pos[0], pos[2], 2, &m_progLambert);
@@ -322,4 +326,9 @@ void MyGL::loadTextureUVCoord() {
             readCoord = false;
         }
     }
+}
+
+void MyGL::bindTexture() {
+    textureAll.bind(0);
+    m_progLambert.setTexture();
 }

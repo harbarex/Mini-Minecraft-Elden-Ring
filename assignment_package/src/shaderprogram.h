@@ -25,6 +25,7 @@ public:
     int unifModelInvTr; // A handle for the "uniform" mat4 representing inverse transpose of the model matrix in the vertex shader
     int unifViewProj; // A handle for the "uniform" mat4 representing combined projection and view matrices in the vertex shader
     int unifColor; // A handle for the "uniform" vec4 representing color of geometry in the vertex shader
+    int unifTexture; // A handle for the "uniform" sampler2D that will be used to read the texture containing the scene render
 
 public:
     ShaderProgram(OpenGLContext* context);
@@ -32,6 +33,8 @@ public:
     void create(const char *vertfile, const char *fragfile);
     // Tells our OpenGL context to use this shader to draw things
     void useMe();
+    // Pass the given texture map to this shader on the GPU
+    void setTexture();
     // Pass the given model matrix to this shader on the GPU
     void setModelMatrix(const glm::mat4 &model);
     // Pass the given Projection * View matrix to this shader on the GPU
