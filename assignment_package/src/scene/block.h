@@ -92,6 +92,9 @@ public:
     // the function that defines the color of each block type
     static glm::vec4 getColors(BlockType type);
 
+    // insert new uv coordinate of texture map into BlockCollection
+    static void insertNewUVCoord(BlockType blockType, std::array<glm::vec2, 6> uv);
+
 };
 
 

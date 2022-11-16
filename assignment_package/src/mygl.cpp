@@ -277,6 +277,17 @@ void MyGL::mouseReleaseEvent(QMouseEvent *e) {
 }
 
 void MyGL::createTexture() {
+    loadTextureUVCoord();
     textureAll.create(":/textures/minecraft_textures_all.png");
     textureAll.load(0);
+}
+
+// This function is used to load uv coordinate of the block from text file
+void MyGL::loadTextureUVCoord() {
+    std::array<glm::vec2, 6> fakeUVOffsets = {glm::vec2(0.f), glm::vec2(0.f), glm::vec2(0.f), glm::vec2(0.f), glm::vec2(0.f), glm::vec2(0.f)};
+    Block::insertNewUVCoord(GRASS, fakeUVOffsets);
+    Block::insertNewUVCoord(DIRT, fakeUVOffsets);
+    Block::insertNewUVCoord(STONE, fakeUVOffsets);
+    Block::insertNewUVCoord(WATER, fakeUVOffsets);
+    Block::insertNewUVCoord(SNOW, fakeUVOffsets);
 }

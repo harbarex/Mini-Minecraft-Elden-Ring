@@ -7,6 +7,7 @@
 #include "scene/camera.h"
 #include "scene/terrain.h"
 #include "scene/player.h"
+#include "scene/block.h"
 
 #include "texture.h"
 
@@ -47,6 +48,7 @@ private:
     void sendPlayerDataToGUI() const;
 
     void createTexture();
+    void loadTextureUVCoord();
 
 
 public:

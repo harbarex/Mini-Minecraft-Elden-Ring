@@ -125,6 +125,10 @@ glm::vec4 Block::getColors(BlockType type)
     return color;
 }
 
+void Block::insertNewUVCoord(BlockType blockType, std::array<glm::vec2, 6> uv) {
+    BlockCollection[blockType] = Block::createBlockFaces(uv);
+}
+
 
 /**
  * Instantiate various kinds of blocks here.
@@ -132,12 +136,7 @@ glm::vec4 Block::getColors(BlockType type)
  * Access to this static variable with Block::BlockCollection
  **/
 std::unordered_map<BlockType, std::array<BlockFace, 6>> Block::BlockCollection = {
-    {{GRASS,  Block::createBlockFaces()},
-     {DIRT ,  Block::createBlockFaces()},
-     {STONE,  Block::createBlockFaces()},
-     {WATER,  Block::createBlockFaces()},
-     {SNOW,  Block::createBlockFaces()}
-    }
+    {}
 };
 
 
