@@ -5,6 +5,7 @@
 #include <QApplication>
 #include <QKeyEvent>
 #include <QDateTime>
+#include <QFile>
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
@@ -284,10 +285,41 @@ void MyGL::createTexture() {
 
 // This function is used to load uv coordinate of the block from text file
 void MyGL::loadTextureUVCoord() {
-    std::array<glm::vec2, 6> fakeUVOffsets = {glm::vec2(0.f), glm::vec2(0.f), glm::vec2(0.f), glm::vec2(0.f), glm::vec2(0.f), glm::vec2(0.f)};
-    Block::insertNewUVCoord(GRASS, fakeUVOffsets);
-    Block::insertNewUVCoord(DIRT, fakeUVOffsets);
-    Block::insertNewUVCoord(STONE, fakeUVOffsets);
-    Block::insertNewUVCoord(WATER, fakeUVOffsets);
-    Block::insertNewUVCoord(SNOW, fakeUVOffsets);
+
+    // read text file
+    QFile f(":/textures/uv_coord_texture_all.txt");
+    f.open(QIODevice::ReadOnly);
+    QTextStream s(&f);
+    QString line;
+    bool readCoord = false;
+    int coordCount = 0;
+    std::array<glm::vec2, 6> uvOffsets;
+    BlockType currBlockType;
+
+    while (!s.atEnd()) {
+        line = s.readLine();
+        if (line.size() == 0 || line.startsWith("#")) {
+            // skip empty line and line starts with #
+            continue;
+        }
+
+        if (readCoord) {
+            // store uv coordinate into temp array
+            uvOffsets[coordCount] = glm::vec2(line.split(" ")[0].toDouble(), line.split(" ")[1].toDouble());
+            coordCount += 1;
+        } else if (Block::blockTypeMap.find(line.toStdString()) != Block::blockTypeMap.end()) {
+            // identify which block
+            currBlockType = Block::blockTypeMap[line.toStdString()];
+            readCoord = true;
+        }
+
+        if (coordCount == 6) {
+            // store 6 uv coordinates into BlockCollection
+
+            Block::insertNewUVCoord(currBlockType, uvOffsets);
+            uvOffsets.empty();
+            coordCount = 0;
+            readCoord = false;
+        }
+    }
 }

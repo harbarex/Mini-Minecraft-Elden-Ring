@@ -1,0 +1,62 @@
+# To add new blocks, you also need to update blockTypeMap in Block::blockTypeMap
+# Each block is followed by 6 uv coords of face with corresponding direction with the following order
+# XPOS, XNEG, YPOS, YNEG, ZPOS, ZNEG
+# Every direction is written in one line, and x and y are separated by the space " "
+# the program would ignore empty line and line that starts with #
+
+# X and Z
+# x: 3*0.0625
+# y: 15*0.0625
+# YPOS
+# x: 8*0.0625
+# y: 13*0.0625
+# YNEG
+# x: 2*0.0625
+# y: 15*0.0625
+GRASS
+0.1875 0.9375
+0.1875 0.9375
+0.5 0.8125
+0.125 0.9375
+0.1875 0.9375
+0.1875 0.9375
+
+# x: 2*0.0625
+# y: 15*0.0625
+DIRT
+0.125 0.9375
+0.125 0.9375
+0.125 0.9375
+0.125 0.9375
+0.125 0.9375
+0.125 0.9375
+
+# x: 1*0.0625
+# y: 15*0.0625
+STONE
+0.0625 0.9375
+0.0625 0.9375
+0.0625 0.9375
+0.0625 0.9375
+0.0625 0.9375
+0.0625 0.9375
+
+# x: 13*0.0625
+# y: 3*0.0625
+WATER
+0.8125 0.1875
+0.8125 0.1875
+0.8125 0.1875
+0.8125 0.1875
+0.8125 0.1875
+0.8125 0.1875
+
+# x: 2*0.0625
+# y: 11*0.0625
+SNOW
+0.125 0.6875
+0.125 0.6875
+0.125 0.6875
+0.125 0.6875
+0.125 0.6875
+0.125 0.6875

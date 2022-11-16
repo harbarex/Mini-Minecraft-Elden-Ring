@@ -139,5 +139,13 @@ std::unordered_map<BlockType, std::array<BlockFace, 6>> Block::BlockCollection =
     {}
 };
 
+std::unordered_map<std::string, BlockType> Block::blockTypeMap = {
+    {{"GRASS", GRASS},
+    {"DIRT", DIRT},
+    {"STONE", STONE},
+    {"WATER", WATER},
+    {"SNOW", SNOW}}
+};
+
 
 

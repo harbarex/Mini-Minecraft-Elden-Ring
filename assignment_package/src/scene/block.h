@@ -83,6 +83,9 @@ public:
     // a collection of all the pos, nor, col, uvs of all types of blocks
     static std::unordered_map<BlockType, std::array<BlockFace, 6>> BlockCollection;
 
+    // the relationship between string in uv text file and the corresponding BlockType
+    static std::unordered_map<std::string, BlockType> blockTypeMap;
+
     // the rule to determine whether a given block is opaque or not
     static bool isOpaque(BlockType type);
 
