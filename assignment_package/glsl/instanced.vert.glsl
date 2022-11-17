@@ -23,7 +23,7 @@ out vec4 fs_Pos;
 out vec4 fs_Nor;            // The array of normals that has been transformed by u_ModelInvTr. This is implicitly passed to the fragment shader.
 out vec4 fs_LightVec;       // The direction in which our virtual light lies, relative to each vertex. This is implicitly passed to the fragment shader.
 out vec4 fs_Col;            // The color of each vertex. This is implicitly passed to the fragment shader.
-out vec2 fs_UV;
+//out vec2 fs_UV;
 
 const vec4 lightDir = normalize(vec4(0.5, 1, 0.75, 0));  // The direction of our virtual light, which is used to compute the shading of
                                         // the geometry in the fragment shader.
@@ -36,7 +36,7 @@ void main()
 
     fs_Nor = vs_Nor;
 
-    fs_UV = vs_UV;
+//    fs_UV = vs_UV;
 
     fs_LightVec = (lightDir);  // Compute the direction in which the light source lies
 

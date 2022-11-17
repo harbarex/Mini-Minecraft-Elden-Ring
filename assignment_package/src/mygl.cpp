@@ -10,7 +10,7 @@
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
-      m_progLambert(this), m_progFlat(this), m_progInstanced(this),
+      m_progLambert(this), m_progFlat(this),
       m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
       prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this)
 {
@@ -66,7 +66,7 @@ void MyGL::initializeGL()
     m_progLambert.create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
     // Create and set up the flat lighting shader
     m_progFlat.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
-    m_progInstanced.create(":/glsl/instanced.vert.glsl", ":/glsl/lambert.frag.glsl");
+//    m_progInstanced.create(":/glsl/instanced.vert.glsl", ":/glsl/lambert.frag.glsl");
 
     createTexture();
 
@@ -145,7 +145,7 @@ void MyGL::paintGL() {
 
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
-    m_progInstanced.setViewProjMatrix(m_player.mcr_camera.getViewProj());
+//    m_progInstanced.setViewProjMatrix(m_player.mcr_camera.getViewProj());
 
     renderTerrain();
 
