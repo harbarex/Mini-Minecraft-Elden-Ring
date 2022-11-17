@@ -65,7 +65,9 @@ private:
     std::unordered_set<int64_t> m_generatedTerrain;
 
     // this set represents the currently loaded 5 x 5 zones
-    std::unordered_set<int64_t> m_loadedZones;
+    std::unordered_set<int64_t> m_prevBorderZones;
+
+
 
     void destroyZoneVBOs(int xCorner, int zCorner);
 
@@ -117,9 +119,15 @@ public:
     void instantiateChunkAndfillBlocks(int chunkX, int chunkZ);
     void expand(float playerX, float playerZ, int halfGridSize);
 
+    // for initial terrain
+    bool m_initialTerrainLoaded;
+    void loadInitialTerrain(float playerX, float playerZ, int halfGridSize);
+
     // check thread result
     // send the result from FillBlocksWorkers to VBOWorkers
     void checkThreadResults();
+
+
 
     // for player to destroy & add blocks
     void placeBlockAt(int x, int y, int z, BlockType t);

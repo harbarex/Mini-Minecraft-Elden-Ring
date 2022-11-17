@@ -9,7 +9,7 @@ Terrain::Terrain(OpenGLContext *context)
     : m_chunks(),
       m_chunksWithBlocks(), m_chunksWithBlocksLock(),
       m_chunksWithVBOs(), m_chunksWithVBOsLock(),
-      m_generatedTerrain(), m_loadedZones(),
+      m_generatedTerrain(), m_prevBorderZones(), m_initialTerrainLoaded(false),
       mp_context(context)
 {}
 
@@ -139,6 +139,43 @@ std::unordered_set<int64_t> getZoneKeys(float playerX, float playerZ, int halfGr
     }
 
     return zoneKeys;
+}
+
+
+/**
+ * @brief getBorderZoneKeys
+ *  This helper only returns the set of zones on the border
+ *  of the grid made by the center zone where the player is + 2 * halfGridSize.
+ * @param playerX
+ * @param playerZ
+ * @param halfGridSize
+ * @return
+ **/
+std::unordered_set<int64_t> getBorderZoneKeys(float playerX, float playerZ, int halfGridSize)
+{
+    // init the output set
+    std::unordered_set<int64_t> borderZoneKeys = std::unordered_set<int64_t>();
+
+    // get the current zone where the player is
+    int xCenter = static_cast<int>(glm::floor(playerX / 64.f)) * 64.f;
+    int zCenter = static_cast<int>(glm::floor(playerZ / 64.f)) * 64.f;
+
+    // get min max X & Z
+    int minX, maxX, minZ, maxZ;
+    setZoneMinMaxXZ(playerX, playerZ, halfGridSize, minX, maxX, minZ, maxZ);
+
+    // only return the ones on the border
+    // top row + bottom row -> left column + right column
+    for (int x = minX; x < maxX; x += 64) {
+        borderZoneKeys.insert(toKey(x, zCenter - halfGridSize * 64));
+        borderZoneKeys.insert(toKey(x, zCenter + halfGridSize * 64));
+    }
+    for (int z = minZ; z < maxZ; z += 64) {
+        borderZoneKeys.insert(toKey(xCenter - halfGridSize * 64, z));
+        borderZoneKeys.insert(toKey(xCenter + halfGridSize * 64, z));
+    }
+
+    return borderZoneKeys;
 }
 
 // Surround calls to this with try-catch if you don't know whether
@@ -331,6 +368,28 @@ void Terrain::checkThreadResults()
     m_chunksWithVBOsLock.unlock();
 }
 
+void Terrain::loadInitialTerrain(float playerX, float playerZ, int halfGridSize)
+{
+    // generate the zones around the player
+    std::unordered_set<int64_t> currZones = getZoneKeys(playerX, playerZ, halfGridSize);
+
+    // this is the initial terrain loader
+    // basically, no other terrain is created at this moment
+    // - iterate through zones, add each one to spawnFillBlocksWorker
+
+    for (int64_t currZoneKey : currZones) {
+
+        glm::ivec2 coord = toCoords(currZoneKey);
+
+        spawnFillBlocksWorker(coord[0], coord[1]);
+        m_generatedTerrain.insert(currZoneKey);
+
+    }
+
+    // update the border zone
+    m_prevBorderZones = currZones;
+    m_initialTerrainLoaded = true;
+}
 
 /**
  * @brief Terrain::destroyZoneVBOs
@@ -361,47 +420,35 @@ void Terrain::destroyZoneVBOs(int xCorner, int zCorner)
  */
 void Terrain::expand(float playerX, float playerZ, int halfGridSize)
 {
-    // generate to-be zone ids
-    // TODO: start from the zones that close to the previous zones
-    // TODO: would make the visualizations better (the zones near the user would be rendered at first)
+    // get the border zones to start
     std::unordered_set<int64_t> currZones = getZoneKeys(playerX, playerZ, halfGridSize);
-
-    // The generall logic:
-    // If the zone is in m_loadedZones, but not in currZones => destroyVBOs
-    // If the zone isn't in m_generatedTerrain => it hasn't created yet (all the chunks inside)
-    // If the zone is in m_generatedTerrain  but not in m_loadedZones
-    // => already created, but not the previous loaded zone => re-create the VBOs
-    // If the zone is in m_generatedTerrain and in m_loadedZones
-    // => do nothing
+    std::unordered_set<int64_t> currBorderZones = getBorderZoneKeys(playerX, playerZ, halfGridSize);
 
     // destroy VBOs if in m_loadedZones but not in currZones
-    for (int64_t prevZoneKey : m_loadedZones) {
+    for (int64_t prevZoneKey : m_prevBorderZones) {
         if (currZones.find(prevZoneKey) == currZones.end()) {
-            // this zone key is not found => destroy VBOs
+            // no such key => not the current border (destroy VBOs)
             glm::ivec2 coord = toCoords(prevZoneKey);
             destroyZoneVBOs(coord[0], coord[1]);
         }
     }
 
-    // check create new zones or re-create VBOs
-    for (int64_t currZoneKey : currZones) {
+    // check current border zones
+    for (int64_t currZoneKey : currBorderZones) {
 
         glm::ivec2 coord = toCoords(currZoneKey);
 
         if (m_generatedTerrain.find(currZoneKey) == m_generatedTerrain.end()) {
             // the zone hasn't been created yet
-            // TODO: spawn worker for this zone
             spawnFillBlocksWorker(coord[0], coord[1]);
             m_generatedTerrain.insert(currZoneKey);
         }
 
-        else if (m_loadedZones.find(currZoneKey) == m_loadedZones.end())
+        else if (m_prevBorderZones.find(currZoneKey) == m_prevBorderZones.end())
         {
             // zone has been created
             // but this zone is not in the previous frame
             // re-create the vbo
-            // Chunk *chunk = getChunkAt(x, z).get();
-            // spawnVBOWorker(chunk);
             for (int x = coord[0]; x < coord[0] + 64; x += 16) {
                 for (int z = coord[1]; z < coord[1] + 64; z += 16) {
                     Chunk *chunk = getChunkAt(x, z).get();
@@ -413,7 +460,7 @@ void Terrain::expand(float playerX, float playerZ, int halfGridSize)
     }
 
     // update the loaded zone
-    m_loadedZones = currZones;
+    m_prevBorderZones = currZones;
 
 }
 

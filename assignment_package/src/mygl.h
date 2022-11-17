@@ -51,6 +51,8 @@ private:
     void loadTextureUVCoord();
     void bindTexture();
 
+    long long prevExpandTime;
+
 
 public:
     explicit MyGL(QWidget *parent = nullptr);

@@ -12,7 +12,8 @@ MyGL::MyGL(QWidget *parent)
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
       m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
-      prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this)
+      prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this),
+      prevExpandTime(QDateTime::currentMSecsSinceEpoch())
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
@@ -109,9 +110,16 @@ void MyGL::tick() {
 
     // call terrain expansion
     // TODO: use 5 x 5 zones
-    m_terrain.expand(m_player.mcr_position[0], m_player.mcr_position[2], 2);
-    // TODO: check & (draw) send to gpu
-    // TODO: re-check per second (currently, it's 60 times per second)
+    if (!m_terrain.m_initialTerrainLoaded) {
+        m_terrain.loadInitialTerrain(m_player.mcr_position[0], m_player.mcr_position[2], 2);
+        prevExpandTime = QDateTime::currentMSecsSinceEpoch();
+    }
+    else if ((QDateTime::currentMSecsSinceEpoch() - prevExpandTime) >= 500)
+    {
+        m_terrain.expand(m_player.mcr_position[0], m_player.mcr_position[2], 2);
+        prevExpandTime = QDateTime::currentMSecsSinceEpoch();
+    }
+    // check & (draw) send to gpu
     m_terrain.checkThreadResults();
 
     // compute the delta-time
@@ -188,6 +196,9 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
     // m_inputs = InputBundle();
 
     if (e->key() == Qt::Key_Escape) {
+        // clear the thread pool and join the running threads
+        QThreadPool::globalInstance()->clear();
+        QThreadPool::globalInstance()->waitForDone(-1);
         QApplication::quit();
     } else if (e->key() == Qt::Key_Right) {
         m_player.rotateOnUpGlobal(-amount);
