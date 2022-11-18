@@ -148,7 +148,11 @@ void MyGL::paintGL() {
 //    m_progInstanced.setViewProjMatrix(m_player.mcr_camera.getViewProj());
 
     renderTerrain(TerrainDrawType::opaque);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     renderTerrain(TerrainDrawType::transparent);
+    glDisable(GL_BLEND);
 
     glDisable(GL_DEPTH_TEST);
     m_progFlat.setModelMatrix(glm::mat4());
