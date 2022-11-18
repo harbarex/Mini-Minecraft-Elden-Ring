@@ -147,7 +147,8 @@ void MyGL::paintGL() {
     m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
 //    m_progInstanced.setViewProjMatrix(m_player.mcr_camera.getViewProj());
 
-    renderTerrain();
+    renderTerrain(TerrainDrawType::opaque);
+    renderTerrain(TerrainDrawType::transparent);
 
     glDisable(GL_DEPTH_TEST);
     m_progFlat.setModelMatrix(glm::mat4());
@@ -159,14 +160,14 @@ void MyGL::paintGL() {
 // TODO: Change this so it renders the nine zones of generated
 // terrain that surround the player (refer to Terrain::m_generatedTerrain
 // for more info)
-void MyGL::renderTerrain() {
+void MyGL::renderTerrain(TerrainDrawType drawType) {
 
     // bind the texture
     bindTexture();
 
     // only draw the 3 x 3 chunks around the player
     glm::vec3 pos = m_player.mcr_position;
-    m_terrain.draw(pos[0], pos[2], 2, &m_progLambert);
+    m_terrain.draw(pos[0], pos[2], 2, &m_progLambert, drawType);
 }
 
 

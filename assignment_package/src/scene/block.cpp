@@ -72,9 +72,7 @@ std::array<BlockFace, 6> Block::createBlockFaces()
  */
 bool Block::isOpaque(BlockType type)
 {
-    // currently (MS1), opaque if it is not empty
-    // TODO: add more criteria
-    return (type != EMPTY);
+    return (transparentBlockTypes.find(type) == transparentBlockTypes.end());
 }
 
 
@@ -86,6 +84,19 @@ bool Block::isOpaque(BlockType type)
  * @return
  */
 bool Block::isTransparent(BlockType type)
+{
+    return (transparentBlockTypes.find(type) != transparentBlockTypes.end());
+}
+
+/**
+ * @brief Block::isEmpty
+ *  The helper function to determine whether a given block type
+ *  is treated as empty or not.
+ *  It is used for drawing faces of transparent block
+ * @param type
+ * @return
+ */
+bool Block::isEmpty(BlockType type)
 {
     return (type == EMPTY);
 }
@@ -147,5 +158,6 @@ std::unordered_map<std::string, BlockType> Block::blockTypeMap = {
     {"SNOW", SNOW}}
 };
 
-
-
+std::unordered_set<BlockType> Block::transparentBlockTypes = {
+    EMPTY, WATER
+};

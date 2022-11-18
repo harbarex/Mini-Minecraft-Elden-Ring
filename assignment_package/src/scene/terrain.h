@@ -17,6 +17,8 @@
 int64_t toKey(int x, int z);
 glm::ivec2 toCoords(int64_t k);
 
+enum class TerrainDrawType{ opaque, transparent };
+
 // The container class for all of the Chunks in the game.
 // Ultimately, while Terrain will always store all Chunks,
 // not all Chunks will be drawn at any given time as the world
@@ -98,12 +100,12 @@ public:
     // Draws every Chunk that falls within the bounding box
     // described by the min and max coords, using the provided
     // ShaderProgram
-    void draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shaderProgram);
+    void draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shaderProgram, TerrainDrawType drawType);
     // custom draw to
     // draw the chunks around the player at (playerX, playerZ)
     // with a defined halfGridSize
     // the side of the grid is (1 + 2 * halfGridSize) chunks
-    void draw(float playerX, float playerZ, int halfGridSize, ShaderProgram *shaderProgram);
+    void draw(float playerX, float playerZ, int halfGridSize, ShaderProgram *shaderProgram, TerrainDrawType drawType);
 
     // Initializes the Chunks that store the 64 x 256 x 64 block scene you
     // see when the base code is run.

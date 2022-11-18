@@ -8,6 +8,7 @@ class Drawable
 {
 protected:
     int m_count;     // The number of indices stored in bufIdx.
+    int m_transparentCount; // The number of indices stored in bufTransparentIdx.
     GLuint m_bufIdx; // A Vertex Buffer Object that we will use to store triangle indices (GLuints)
     GLuint m_bufPos; // A Vertex Buffer Object that we will use to store mesh vertices (vec4s)
     GLuint m_bufNor; // A Vertex Buffer Object that we will use to store mesh normals (vec4s)
@@ -15,11 +16,17 @@ protected:
                    // Instead, we use a uniform vec4 in the shader to set an overall color for the geometry
     GLuint m_bufUV;  // A Vertex Buffer Object that we will use to store mesh uvs (vec2s)
 
+    GLuint m_bufTransparentData;
+    GLuint m_bufTransparentIdx;
+
     bool m_idxGenerated; // Set to TRUE by generateIdx(), returned by bindIdx().
     bool m_posGenerated;
     bool m_norGenerated;
     bool m_colGenerated;
     bool m_uvGenerated;
+
+    bool m_transparentDataGenerated;
+    bool m_transparentIdxGenerated;
 
     OpenGLContext* mp_context; // Since Qt's OpenGL support is done through classes like QOpenGLFunctions_3_2_Core,
                           // we need to pass our OpenGL context to the Drawable in order to call GL functions
@@ -36,6 +43,7 @@ public:
     // Getter functions for various GL data
     virtual GLenum drawMode();
     int elemCount();
+    int transparentElemCount();
 
     // Call these functions when you want to call glGenBuffers on the buffers stored in the Drawable
     // These will properly set the values of idxBound etc. which need to be checked in ShaderProgram::draw()
@@ -45,11 +53,17 @@ public:
     void generateCol();
     void generateUV();
 
+    void generateTransparentData();
+    void generateTransparentIdx();
+
     bool bindIdx();
     bool bindPos();
     bool bindNor();
     bool bindCol();
     bool bindUV();
+
+    bool bindTransparentIdx();
+    bool bindTransparentData();
 };
 
 // A subclass of Drawable that enables the base code to render duplicates of

@@ -69,7 +69,7 @@ public:
 
     // Called from paintGL().
     // Calls Terrain::draw().
-    void renderTerrain();
+    void renderTerrain(TerrainDrawType drawType);
 
 protected:
     // Automatically invoked when the user

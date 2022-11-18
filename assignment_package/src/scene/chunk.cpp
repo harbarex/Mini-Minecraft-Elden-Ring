@@ -197,9 +197,56 @@ ChunkVBOdata Chunk::generateVBOdata() const
                         }
                     }
                 }
+            }
+        }
 
-                // TODO: add code section for transparent blocks
-                // TODO: set up the vbo for transparent blocks
+    }
+
+    nVert = 0;
+    out = glm::vec4();
+
+    // TODO: for transparent block
+    for (int x = 0; x < 16; x++) {
+        for (int y = 0; y < 256; y++) {
+            for (int z = 0; z < 16; z++) {
+
+                // get each block at (x, y, z) in this chunk
+                // remember, there are 6 faces for a block
+                BlockType blockType = getBlockAt(x, y, z);
+
+                // If it is opaque, skip it
+                if (Block::isOpaque(blockType) || Block::isEmpty(blockType)) {
+                    continue;
+                }
+
+                // iterate through each face and see if it has an opague neighbor
+                // Block::BlockCollection contains the faces of various kinds of blocks
+                for (const BlockFace &face : Block::BlockCollection[blockType]) {
+
+                    // the neighboring block might be in the neighboring chunk
+                    BlockType neighbor = getNeighborBlock(x, y, z, face.normal);
+
+                    // draw (add data to buffer) the face of transparent block if the neighbor is empty
+                    if (!Block::isEmpty(neighbor)) {
+                        continue;
+                    }
+
+                    // add this face
+                    for (const VertexData &vert : face.vertices) {
+                        // buffer: pos0nor0col0uv0
+                        pushVec4ToBuffer(vbo.transparentBuffer, vert.pos + glm::vec4(x, y, z, 0));
+                        pushVec4ToBuffer(vbo.transparentBuffer, face.normal);
+                        pushVec4ToBuffer(vbo.transparentBuffer, Block::getColors(blockType));
+                        pushVec2ToBuffer(vbo.transparentBuffer, vert.uv);
+                    }
+                    // add indices for each face (4 vertices)
+                    for (int index : faceIndices) {
+                        vbo.transparentIndices.push_back(nVert + index);
+                    }
+                    // move the offset for indices
+                    nVert += 4;
+                }
+
             }
         }
 
@@ -217,8 +264,10 @@ void Chunk::createVBOdata(ChunkVBOdata &vbo)
 {
     // remember to set m_count
     m_count = vbo.indices.size();
+    m_transparentCount = vbo.transparentIndices.size();
 
     int bufferSize = vbo.buffer.size();
+    int transparentBufferSize = vbo.transparentBuffer.size();
 
     generateIdx();
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufIdx);
@@ -227,6 +276,14 @@ void Chunk::createVBOdata(ChunkVBOdata &vbo)
     generatePos();
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufPos);
     mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize * sizeof(float), vbo.buffer.data(), GL_STATIC_DRAW);
+
+    generateTransparentIdx();
+    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufTransparentIdx);
+    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_transparentCount * sizeof(GLuint), vbo.transparentIndices.data(), GL_STATIC_DRAW);
+
+    generateTransparentData();
+    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufTransparentData);
+    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, transparentBufferSize * sizeof(float), vbo.transparentBuffer.data(), GL_STATIC_DRAW);
 
     // set to vboLoaded to true
     vboLoaded = true;

@@ -240,6 +240,56 @@ void ShaderProgram::drawInterleaved(Drawable &d)
     context->printGLErrorLog();
 }
 
+void ShaderProgram::drawTransparentInterleaved(Drawable &d)
+{
+    useMe();
+
+    if(d.transparentElemCount() < 0) {
+        throw std::out_of_range("Attempting to draw a drawable with m_count of " + std::to_string(d.transparentElemCount()) + "!");
+    }
+
+    // Each of the following blocks checks that:
+    //   * This shader has this attribute, and
+    //   * This Drawable has a vertex buffer for this attribute.
+    // If so, it binds the appropriate buffers to each attribute.
+
+    // Remember, by calling bindPos(), we call
+    // glBindBuffer on the Drawable's VBO for vertex position,
+    // meaning that glVertexAttribPointer associates vs_Pos
+    // (referred to by attrPos) with that VBO
+    if (attrPos != -1 && d.bindTransparentData()) {
+        context->glEnableVertexAttribArray(attrPos);
+        context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)0);
+    }
+
+    if (attrNor != -1 && d.bindTransparentData()) {
+        context->glEnableVertexAttribArray(attrNor);
+        context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)sizeof(glm::vec4));
+    }
+
+    if (attrCol != -1 && d.bindTransparentData()) {
+        context->glEnableVertexAttribArray(attrCol);
+        context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)(2 * sizeof(glm::vec4)));
+    }
+
+    if (attrUV  != -1 && d.bindTransparentData())  {
+        context->glEnableVertexAttribArray(attrUV);
+        context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)(3 * sizeof(glm::vec4)));
+    }
+
+    // Bind the index buffer and then draw shapes from it.
+    // This invokes the shader program, which accesses the vertex buffers.
+    d.bindTransparentIdx();
+    context->glDrawElements(d.drawMode(), d.transparentElemCount(), GL_UNSIGNED_INT, 0);
+
+    if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
+    if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
+    if (attrCol != -1) context->glDisableVertexAttribArray(attrCol);
+    if (attrUV != -1) context->glDisableVertexAttribArray(attrUV);
+
+    context->printGLErrorLog();
+}
+
 void ShaderProgram::drawInstanced(InstancedDrawable &d)
 {
     useMe();

@@ -244,7 +244,7 @@ Chunk* Terrain::instantiateChunkAt(int x, int z) {
  * @param halfGridSize
  * @param shaderProgram
  */
-void Terrain::draw(float playerX, float playerZ, int halfGridSize, ShaderProgram *shaderProgram)
+void Terrain::draw(float playerX, float playerZ, int halfGridSize, ShaderProgram *shaderProgram, TerrainDrawType drawType)
 {
     // get the grid of minX, maxX, minZ, maxZ by (playerX, playerZ)
     // MS2: set to Zone's min max
@@ -259,7 +259,7 @@ void Terrain::draw(float playerX, float playerZ, int halfGridSize, ShaderProgram
                     maxZ);
 
     // use the origianl terrain::draw
-    draw(minX, maxX, minZ, maxZ, shaderProgram);
+    draw(minX, maxX, minZ, maxZ, shaderProgram, drawType);
 
 }
 
@@ -269,7 +269,7 @@ void Terrain::draw(float playerX, float playerZ, int halfGridSize, ShaderProgram
 // Note: minX, maxX, minZ, maxZ should already be the origins of each chunk
 // USse Terrain::draw(float playerX, float playerZ, ShaderProgram*) in MyGL
 // to ensure the region around the player is drawn.
-void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shaderProgram) {
+void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shaderProgram, TerrainDrawType drawType) {
 
     // - Iterate through each chunk
     // - Set the model matrix based on new X, Z
@@ -298,8 +298,14 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
 
             shaderProgram->setModelMatrix(translation);
             // use drawInterleaved to draw the interleaved buffer data
-            shaderProgram->drawInterleaved(*chunk);
-
+            switch (drawType) {
+            case (TerrainDrawType::opaque):
+                shaderProgram->drawInterleaved(*chunk);
+                break;
+            case (TerrainDrawType::transparent):
+                shaderProgram->drawTransparentInterleaved(*chunk);
+                break;
+            }
         }
     }
 }

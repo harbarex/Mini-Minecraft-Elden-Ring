@@ -47,6 +47,8 @@ public:
     void drawInstanced(InstancedDrawable &d);
     // Draw the given object with interleaved buffer data
     void drawInterleaved(Drawable &d);
+    // Draw the given object (transparent block) with interleaved buffer data
+    void drawTransparentInterleaved(Drawable &d);
     // Utility function used in create()
     char* textFileRead(const char*);
     // Utility function that prints any shader compilation errors to the console

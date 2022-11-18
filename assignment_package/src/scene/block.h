@@ -1,6 +1,7 @@
 #pragma once
 #include "glm_includes.h"
 #include <unordered_map>
+#include <unordered_set>
 #include <array>
 
 
@@ -86,11 +87,17 @@ public:
     // the relationship between string in uv text file and the corresponding BlockType
     static std::unordered_map<std::string, BlockType> blockTypeMap;
 
+    // a collection of transparent block type
+    static std::unordered_set<BlockType> transparentBlockTypes;
+
     // the rule to determine whether a given block is opaque or not
     static bool isOpaque(BlockType type);
 
     // the rule to determine whether a given block is transparent or not
     static bool isTransparent(BlockType type);
+
+    // the rule to determine whether a given block is empty or not
+    static bool isEmpty(BlockType type);
 
     // the function that defines the color of each block type
     static glm::vec4 getColors(BlockType type);

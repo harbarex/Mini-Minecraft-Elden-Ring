@@ -2,9 +2,9 @@
 #include <glm_includes.h>
 
 Drawable::Drawable(OpenGLContext* context)
-    : m_count(-1), m_bufIdx(), m_bufPos(), m_bufNor(), m_bufCol(), m_bufUV(),
+    : m_count(-1), m_transparentCount(-1), m_bufIdx(), m_bufPos(), m_bufNor(), m_bufCol(), m_bufUV(), m_bufTransparentData(), m_bufTransparentIdx(),
       m_idxGenerated(false), m_posGenerated(false), m_norGenerated(false), m_colGenerated(false), m_uvGenerated(false),
-      mp_context(context)
+      m_transparentDataGenerated(false), m_transparentIdxGenerated(false), mp_context(context)
 {}
 
 Drawable::~Drawable()
@@ -18,8 +18,12 @@ void Drawable::destroyVBOdata()
     mp_context->glDeleteBuffers(1, &m_bufNor);
     mp_context->glDeleteBuffers(1, &m_bufCol);
     mp_context->glDeleteBuffers(1, &m_bufUV);
+    mp_context->glDeleteBuffers(1, &m_bufTransparentData);
+    mp_context->glDeleteBuffers(1, &m_bufTransparentIdx);
     m_idxGenerated = m_posGenerated = m_norGenerated = m_colGenerated = m_uvGenerated = false;
+    m_transparentDataGenerated = m_transparentIdxGenerated = false;
     m_count = -1;
+    m_transparentCount = -1;
 }
 
 GLenum Drawable::drawMode()
@@ -38,6 +42,11 @@ int Drawable::elemCount()
     return m_count;
 }
 
+int Drawable::transparentElemCount()
+{
+    return m_transparentCount;
+}
+
 void Drawable::generateIdx()
 {
     m_idxGenerated = true;
@@ -45,11 +54,26 @@ void Drawable::generateIdx()
     mp_context->glGenBuffers(1, &m_bufIdx);
 }
 
+void Drawable::generateTransparentIdx()
+{
+    m_transparentIdxGenerated = true;
+    // Create a VBO on our GPU and store its handle in bufTransparentIdx
+    mp_context->glGenBuffers(1, &m_bufTransparentIdx);
+}
+
 void Drawable::generatePos()
 {
     m_posGenerated = true;
     // Create a VBO on our GPU and store its handle in bufPos
     mp_context->glGenBuffers(1, &m_bufPos);
+}
+
+// for transparent vbo
+void Drawable::generateTransparentData()
+{
+    m_transparentDataGenerated = true;
+    // Create a VBO on our GPU and store transparent data in bufTransparentData
+    mp_context->glGenBuffers(1, &m_bufTransparentData);
 }
 
 void Drawable::generateNor()
@@ -81,12 +105,28 @@ bool Drawable::bindIdx()
     return m_idxGenerated;
 }
 
+bool Drawable::bindTransparentIdx()
+{
+    if(m_transparentIdxGenerated) {
+        mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufTransparentIdx);
+    }
+    return m_transparentIdxGenerated;
+}
+
 bool Drawable::bindPos()
 {
     if(m_posGenerated){
         mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufPos);
     }
     return m_posGenerated;
+}
+
+bool Drawable::bindTransparentData()
+{
+    if(m_transparentDataGenerated){
+        mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufTransparentData);
+    }
+    return m_transparentDataGenerated;
 }
 
 bool Drawable::bindNor()
