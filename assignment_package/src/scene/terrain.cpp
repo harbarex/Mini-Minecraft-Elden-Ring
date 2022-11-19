@@ -666,6 +666,32 @@ FillBlocksWorker::FillBlocksWorker(int x,
       completedChunks(completedChunks), completedChunksLock(completedChunksLock)
 {}
 
+void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height){
+    if( height < 136){
+        chunk->setBlockAt(x, height, z, WATER);
+        for(int y_dirt=128; y_dirt<height; y_dirt++){
+            chunk->setBlockAt(x, y_dirt, z, WATER);
+        }
+    }
+    else if( height < 142){
+        chunk->setBlockAt(x, height, z, GRASS);
+        for(int y_dirt=128; y_dirt<height; y_dirt++){
+            chunk->setBlockAt(x, y_dirt, z, DIRT);
+        }
+    }
+    else if (height > 190){
+        chunk->setBlockAt(x, height, z, SNOW);
+        for(int y_stone=128; y_stone<height; y_stone++){
+            chunk->setBlockAt(x, y_stone, z, STONE);
+        }
+    }
+    else{
+        chunk->setBlockAt(x, height, z, STONE);
+        for(int y_dirt=128; y_dirt<height; y_dirt++){
+            chunk->setBlockAt(x, y_dirt, z, DIRT);
+        }
+    }
+}
 
 /**
  * @brief FillBlocksWorker::setBlocks
@@ -680,45 +706,23 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
     Noise terrainHeightMap;
 
     for (int x = 0; x < 16; x++) {
-
         for (int z = 0; z < 16; z++) {
-
-            // TODO: wrap up the logics later
             double y = terrainHeightMap.getHeight(chunkXCorner + x , chunkZCorner + z);
+            setSurfaceTerrain(chunk, x, z, y);
 
-            // x, z need to be the offset (not the global x, z)
-            if( y < 136){
-                chunk->setBlockAt(x, y, z, WATER);
-                for(int y_dirt=128; y_dirt<y; y_dirt++){
-                    chunk->setBlockAt(x, y_dirt, z, WATER);
-                }
-            }
-            else if( y < 142){
-                chunk->setBlockAt(x, y, z, GRASS);
-                for(int y_dirt=128; y_dirt<y; y_dirt++){
-                    chunk->setBlockAt(x, y_dirt, z, DIRT);
-                }
-            }
-            else if (y > 190){
-                chunk->setBlockAt(x, y, z, SNOW);
-                for(int y_stone=128; y_stone<y; y_stone++){
-                    chunk->setBlockAt(x, y_stone, z, STONE);
-                }
-            }
-            else{
-                chunk->setBlockAt(x, y, z, STONE);
-                for(int y_dirt=128; y_dirt<y; y_dirt++){
-                    chunk->setBlockAt(x, y_dirt, z, DIRT);
-                }
-            }
-
-            // Set DIRT from 0-128 height values
+            // Make Caves
             for(int y_underground=0; y_underground<128;y_underground++){
-                chunk->setBlockAt(x, y_underground, z, STONE);
+                float h = terrainHeightMap.getCaveHeight(x, z, y_underground);
+                //std::cout<<"\nCurrent Cave h: "<<h<<std::endl;
+                if(h > 0.f){
+                    chunk->setBlockAt(x, y_underground, z, EMPTY);
+                } else {
+                    chunk->setBlockAt(x, y_underground, z, STONE);
+                }
+
             }
 
         }
-
     }
 
     // already filled the blocks
