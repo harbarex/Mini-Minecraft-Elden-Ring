@@ -11,7 +11,7 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
-      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
+      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), frameCount(0),
       prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this),
       prevExpandTime(QDateTime::currentMSecsSinceEpoch())
 {
@@ -155,6 +155,8 @@ void MyGL::paintGL() {
     m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
 //    m_progInstanced.setViewProjMatrix(m_player.mcr_camera.getViewProj());
 
+    m_progLambert.setTime(frameCount);
+
     renderTerrain(TerrainDrawType::opaque);
 
     glEnable(GL_BLEND);
@@ -167,6 +169,8 @@ void MyGL::paintGL() {
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progFlat.draw(m_worldAxes);
     glEnable(GL_DEPTH_TEST);
+
+    frameCount++;
 }
 
 // TODO: Change this so it renders the nine zones of generated

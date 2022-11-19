@@ -13,6 +13,7 @@
 
 uniform vec4 u_Color; // The color with which to render this instance of geometry.
 uniform sampler2D u_Texture;
+uniform int u_Time;
 
 // These are the interpolated values out of the rasterizer, so you can't know
 // their specific values without knowing the vertices that contributed to them
@@ -74,7 +75,7 @@ float fbm(vec3 p) {
 void main()
 {
     // Material base color (before shading)
-//        vec4 diffuseColor = fs_Col;
+
         vec4 diffuseColor = texture(u_Texture, fs_UV);
         diffuseColor = diffuseColor * (0.5 * fbm(fs_Pos.xyz) + 0.5);
 

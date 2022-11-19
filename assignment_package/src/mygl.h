@@ -34,6 +34,7 @@ private:
 
     QTimer m_timer; // Timer linked to tick(). Fires approximately 60 times per second.
 
+    int frameCount; // the number of processing frame, treated as time in shader
     long long prevFrameTime; // time in previous frame, for calculating delta-time in player tick funciton
 
     int prevMouseX;

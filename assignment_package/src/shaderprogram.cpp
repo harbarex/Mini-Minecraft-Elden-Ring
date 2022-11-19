@@ -10,7 +10,7 @@ ShaderProgram::ShaderProgram(OpenGLContext *context)
     : vertShader(), fragShader(), prog(),
       attrPos(-1), attrNor(-1), attrCol(-1), attrUV(-1), attrAnimatableFlag(-1),
       unifModel(-1), unifModelInvTr(-1), unifViewProj(-1), unifColor(-1), unifTexture(-1),
-      context(context)
+      unifTime(-1), context(context)
 {}
 
 void ShaderProgram::create(const char *vertfile, const char *fragfile)
@@ -74,6 +74,7 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     unifViewProj   = context->glGetUniformLocation(prog, "u_ViewProj");
     unifColor      = context->glGetUniformLocation(prog, "u_Color");
     unifTexture    = context->glGetUniformLocation(prog, "u_Texture");
+    unifTime       = context->glGetUniformLocation(prog, "u_Time");
 }
 
 void ShaderProgram::useMe()
@@ -460,5 +461,14 @@ void ShaderProgram::setTexture() {
 
     if (unifTexture != -1) {
         context->glUniform1i(unifTexture, 0);
+    }
+}
+
+void ShaderProgram::setTime(int time) {
+    useMe();
+
+    if(unifTime != -1)
+    {
+        context->glUniform1i(unifTime, time);
     }
 }
