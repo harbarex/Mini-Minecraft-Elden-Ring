@@ -34,6 +34,20 @@ int Noise::getHeight(int x, int z) {
 
 }
 
+int Noise::getCaveHeight(int x, int y, int z){
+    x /= 256;
+    //y /= 256;
+    z /= 256;
+
+    int caveMin = 64;
+    int caveMax = 128;
+
+    return FBM3D(x, y, z, 0.5, "perlin");
+
+    //return caveMin + (caveMax - caveMin) * FBM3D(x, y, z, 0.5, "perlin");
+
+}
+
 float Noise::getGrassHeight(float x, float z){
     x /= 512;
     z /= 512;
@@ -55,8 +69,8 @@ float Noise::getMountainousRockHeight(float x, float z) {
 }
 
 float Noise::getWaterHeight(float x, float z){
-    x /= 512;
-    z /= 512;
+    x /= 1024;
+    z /= 1024;
 
     int waterMin = 128;
     int waterMax = 135;
@@ -128,6 +142,25 @@ float Noise::FBM2D(float x, float z, float persistence, std::string noiseFn, int
     return total;
 }
 
+float Noise::FBM3D(float x, float y, float z, float persistence, std::string noiseFn) {
+    float total = 0;
+    int octaves = 8;
+
+    for (int i = 0; i < octaves; i++) {
+        float frequency = pow(2, i);
+        float amplitude = pow(persistence, i);
+
+        if (noiseFn == "perlin") {
+            total += PerlinNoise3D(glm::vec3(x * frequency, y * frequency, z * frequency)) * amplitude;
+        }
+//        if (noiseFn == "regular") {
+//            total += interpolationNoise3D(x * frequency, y * frequency, z * frequency) * amplitude;
+//        }
+    }
+
+    return total;
+}
+
 
 ///////////////////////////////////////////////////
 ///////////////// Perlin Noise ////////////////////
@@ -136,13 +169,21 @@ float Noise::FBM2D(float x, float z, float persistence, std::string noiseFn, int
 /**
  * @brief pow
  *
- * Raise a given glm::vec2 to a particular power
+ * Raise a given glm::vec2 or glm::vec3 to a particular power
  * @param v     : vector
  * @param power : exponent
  * @return
  */
 glm::vec2 pow(glm::vec2 v, int power) {
     glm::vec2 p = v;
+    for (int i = 0; i < power-1; i++) {
+        p *= v;
+    }
+    return p;
+}
+
+glm::vec3 pow(glm::vec3 v, int power) {
+    glm::vec3 p = v;
     for (int i = 0; i < power-1; i++) {
         p *= v;
     }
@@ -161,12 +202,49 @@ float Noise::surflet(glm::vec2 p, glm::vec2 gridPoint, int primeSet) {
     return height * t.x * t.y;
 }
 
-float Noise::PerlinNoise2D(glm::vec2 uv, int primeSet) {
+glm::vec3 random3(glm::vec3 c) {
+    float j = 4096.0*sin(glm::dot(c,glm::vec3(17.0, 59.4, 15.0)));
+    glm::vec3 r;
+    r.z = glm::fract(512.0*j);
+    j *= .125;
+    r.x = glm::fract(512.0*j);
+    j *= .125;
+    r.y = glm::fract(512.0*j);
+    return r - glm::vec3(0.5);
+}
+
+float Noise::surflet3D(glm::vec3 p, glm::vec3 gridPoint) {
+    glm::vec3 t2 = glm::abs(p - gridPoint);
+    glm::vec3 t = glm::vec3(1.f) - 6.f * pow(t2, 5) + 15.f * pow(t2, 4) - 10.f * pow(t2, 3);
+
+    glm::vec3 gradient = random3(gridPoint) * 2.f - glm::vec3(1,1,1);
+    glm::vec3 diff = p - gridPoint;
+
+    float height = glm::dot(diff, gradient);
+
+    return height * t.x * t.y * t.z;
+}
+
+float Noise::PerlinNoise2D(glm::vec2 p, int primeSet) {
     float surfletSum = 0.f;
 
     for (int dx = 0; dx <= 1; ++dx) {
         for (int dy = 0; dy <= 1; ++dy) {
-            surfletSum += surflet(uv, glm::floor(uv) + glm::vec2(dx, dy), primeSet);
+            surfletSum += surflet(p, glm::floor(p) + glm::vec2(dx, dy), primeSet);
+        }
+    }
+
+    return surfletSum;
+}
+
+float Noise::PerlinNoise3D(glm::vec3 p){
+    float surfletSum = 0.f;
+
+    for (int dx = 0; dx <= 1; ++dx) {
+        for (int dy = 0; dy <= 1; ++dy) {
+            for(int dz = 0; dz <=1; ++dz){
+                surfletSum += surflet3D(p, glm::floor(p) + glm::vec3(dx, dy, dz));
+            }
         }
     }
 
