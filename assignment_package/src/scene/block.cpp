@@ -89,6 +89,32 @@ bool Block::isTransparent(BlockType type)
 }
 
 /**
+ * @brief Block::isAnimatable
+ *  The helper function to determine whether a given block type
+ *  is animatable or not
+ * @param type
+ * @return
+ */
+bool Block::isAnimatable(BlockType type)
+{
+    return (animatableBlockTypes.find(type) != animatableBlockTypes.end());
+}
+
+/**
+ * @brief Block::getAnimatableFlag
+ *  Get the predefined animatable flag depending on the block type
+ * @return float, 1 is animatable block, -1 is non-animatable block
+ */
+float Block::getAnimatableFlag(BlockType type)
+{
+    if (isAnimatable(type)) {
+        return 1.f;
+    }
+
+    return -1.f;
+}
+
+/**
  * @brief Block::isEmpty
  *  The helper function to determine whether a given block type
  *  is treated as empty or not.
@@ -160,4 +186,8 @@ std::unordered_map<std::string, BlockType> Block::blockTypeMap = {
 
 std::unordered_set<BlockType> Block::transparentBlockTypes = {
     EMPTY, WATER
+};
+
+std::unordered_set<BlockType> Block::animatableBlockTypes = {
+    WATER
 };
