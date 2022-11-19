@@ -106,7 +106,7 @@ public:
     static bool isAnimatable(BlockType type);
 
     // the function that defines the animatable flag of each block type
-    static float getAnimatableFlag(BlockType type);
+    static glm::vec2 getAnimatableFlag(BlockType type);
 
     // the function that defines the color of each block type
     static glm::vec4 getColors(BlockType type);

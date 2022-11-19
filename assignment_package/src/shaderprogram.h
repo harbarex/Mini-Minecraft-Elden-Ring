@@ -19,6 +19,7 @@ public:
     int attrNor; // A handle for the "in" vec4 representing vertex normal in the vertex shader
     int attrCol; // A handle for the "in" vec4 representing vertex color in the vertex shader
     int attrUV;  // A handle for the "in" vec4 representing vertex uv in the vertex shader
+    int attrAnimatableFlag; // A handle for the "in" vec4 representing float animatable flag in the vertex shader
     int attrPosOffset; // A handle for a vec3 used only in the instanced rendering shader
 
     int unifModel; // A handle for the "uniform" mat4 representing model matrix in the vertex shader

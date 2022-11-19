@@ -8,7 +8,7 @@
 
 ShaderProgram::ShaderProgram(OpenGLContext *context)
     : vertShader(), fragShader(), prog(),
-      attrPos(-1), attrNor(-1), attrCol(-1), attrUV(-1),
+      attrPos(-1), attrNor(-1), attrCol(-1), attrUV(-1), attrAnimatableFlag(-1),
       unifModel(-1), unifModelInvTr(-1), unifViewProj(-1), unifColor(-1), unifTexture(-1),
       context(context)
 {}
@@ -67,6 +67,7 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     attrUV  = context->glGetAttribLocation(prog, "vs_UV");
     if(attrCol == -1) attrCol = context->glGetAttribLocation(prog, "vs_ColInstanced");
     attrPosOffset = context->glGetAttribLocation(prog, "vs_OffsetInstanced");
+    attrAnimatableFlag = context->glGetAttribLocation(prog, "vs_AnimatableFlag");
 
     unifModel      = context->glGetUniformLocation(prog, "u_Model");
     unifModelInvTr = context->glGetUniformLocation(prog, "u_ModelInvTr");
@@ -207,24 +208,32 @@ void ShaderProgram::drawInterleaved(Drawable &d)
     // glBindBuffer on the Drawable's VBO for vertex position,
     // meaning that glVertexAttribPointer associates vs_Pos
     // (referred to by attrPos) with that VBO
+
+    int size = 3 * sizeof(glm::vec4) + 2 * sizeof(glm::vec2);
+
     if (attrPos != -1 && d.bindPos()) {
         context->glEnableVertexAttribArray(attrPos);
-        context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)0);
+        context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, size, (void*)0);
     }
 
     if (attrNor != -1 && d.bindPos()) {
         context->glEnableVertexAttribArray(attrNor);
-        context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)sizeof(glm::vec4));
+        context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, size, (void*)sizeof(glm::vec4));
     }
 
     if (attrCol != -1 && d.bindPos()) {
         context->glEnableVertexAttribArray(attrCol);
-        context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)(2 * sizeof(glm::vec4)));
+        context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, size, (void*)(2 * sizeof(glm::vec4)));
     }
 
     if (attrUV  != -1 && d.bindPos())  {
         context->glEnableVertexAttribArray(attrUV);
-        context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)(3 * sizeof(glm::vec4)));
+        context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, size, (void*)(3 * sizeof(glm::vec4)));
+    }
+
+    if (attrAnimatableFlag != -1 && d.bindPos()) {
+        context->glEnableVertexAttribArray(attrAnimatableFlag);
+        context->glVertexAttribPointer(attrAnimatableFlag, 2, GL_FLOAT, false, size, (void*)(3 * sizeof(glm::vec4) + sizeof(glm::vec2)));
     }
 
     // Bind the index buffer and then draw shapes from it.
@@ -236,6 +245,7 @@ void ShaderProgram::drawInterleaved(Drawable &d)
     if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
     if (attrCol != -1) context->glDisableVertexAttribArray(attrCol);
     if (attrUV != -1) context->glDisableVertexAttribArray(attrUV);
+    if (attrAnimatableFlag != -1) context->glDisableVertexAttribArray(attrAnimatableFlag);
 
     context->printGLErrorLog();
 }
@@ -257,24 +267,32 @@ void ShaderProgram::drawTransparentInterleaved(Drawable &d)
     // glBindBuffer on the Drawable's VBO for vertex position,
     // meaning that glVertexAttribPointer associates vs_Pos
     // (referred to by attrPos) with that VBO
+
+    int size = 3 * sizeof(glm::vec4) + 2 * sizeof(glm::vec2);
+
     if (attrPos != -1 && d.bindTransparentData()) {
         context->glEnableVertexAttribArray(attrPos);
-        context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)0);
+        context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, size, (void*)0);
     }
 
     if (attrNor != -1 && d.bindTransparentData()) {
         context->glEnableVertexAttribArray(attrNor);
-        context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)sizeof(glm::vec4));
+        context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, size, (void*)sizeof(glm::vec4));
     }
 
     if (attrCol != -1 && d.bindTransparentData()) {
         context->glEnableVertexAttribArray(attrCol);
-        context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)(2 * sizeof(glm::vec4)));
+        context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, size, (void*)(2 * sizeof(glm::vec4)));
     }
 
     if (attrUV  != -1 && d.bindTransparentData())  {
         context->glEnableVertexAttribArray(attrUV);
-        context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, 3 * sizeof(glm::vec4) + sizeof(glm::vec2), (void*)(3 * sizeof(glm::vec4)));
+        context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, size, (void*)(3 * sizeof(glm::vec4)));
+    }
+
+    if (attrAnimatableFlag != -1 && d.bindTransparentData()) {
+        context->glEnableVertexAttribArray(attrAnimatableFlag);
+        context->glVertexAttribPointer(attrAnimatableFlag, 2, GL_FLOAT, false, size, (void*)(3 * sizeof(glm::vec4) + sizeof(glm::vec2)));
     }
 
     // Bind the index buffer and then draw shapes from it.
@@ -286,6 +304,7 @@ void ShaderProgram::drawTransparentInterleaved(Drawable &d)
     if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
     if (attrCol != -1) context->glDisableVertexAttribArray(attrCol);
     if (attrUV != -1) context->glDisableVertexAttribArray(attrUV);
+    if (attrAnimatableFlag != -1) context->glDisableVertexAttribArray(attrAnimatableFlag);
 
     context->printGLErrorLog();
 }

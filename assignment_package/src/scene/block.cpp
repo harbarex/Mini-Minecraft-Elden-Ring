@@ -103,15 +103,16 @@ bool Block::isAnimatable(BlockType type)
 /**
  * @brief Block::getAnimatableFlag
  *  Get the predefined animatable flag depending on the block type
- * @return float, 1 is animatable block, -1 is non-animatable block
+ *  Use vector for convenience in passing data to GPU
+ * @return float, vec2(1) is animatable block, vec2(-1) is non-animatable block
  */
-float Block::getAnimatableFlag(BlockType type)
+glm::vec2 Block::getAnimatableFlag(BlockType type)
 {
     if (isAnimatable(type)) {
-        return 1.f;
+        return glm::vec2(1.f);
     }
 
-    return -1.f;
+    return glm::vec2(-1.f);
 }
 
 /**

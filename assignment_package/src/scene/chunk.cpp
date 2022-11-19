@@ -221,6 +221,7 @@ void Chunk::generateVBOdataDrawType(ChunkVBOdata &vbo, TerrainDrawType drawType)
                         pushVec4ToBuffer(*processingBuffer, face.normal);
                         pushVec4ToBuffer(*processingBuffer, Block::getColors(blockType));
                         pushVec2ToBuffer(*processingBuffer, vert.uv);
+                        pushVec2ToBuffer(*processingBuffer, Block::getAnimatableFlag(blockType));
                     }
                     // add indices for each face (4 vertices)
                     for (int index : faceIndices) {

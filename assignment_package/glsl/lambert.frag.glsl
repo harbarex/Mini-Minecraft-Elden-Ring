@@ -21,6 +21,7 @@ in vec4 fs_Nor;
 in vec4 fs_LightVec;
 in vec4 fs_Col;
 in vec2 fs_UV;
+in vec2 fs_AnimatableFlag;
 
 out vec4 out_Col; // This is the final output color that you will see on your
                   // screen for the pixel that is currently being processed.
@@ -89,5 +90,10 @@ void main()
                                                             //lit by our point light are not completely black.
 
         // Compute final shaded color
-        out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
+
+        if (fs_AnimatableFlag[1] > 0) {
+            out_Col = vec4(fs_AnimatableFlag[0]);
+        } else {
+            out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
+        }
 }
