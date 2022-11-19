@@ -114,7 +114,7 @@ void MyGL::tick() {
         m_terrain.loadInitialTerrain(m_player.mcr_position[0], m_player.mcr_position[2], 2);
         prevExpandTime = QDateTime::currentMSecsSinceEpoch();
     }
-    else if ((QDateTime::currentMSecsSinceEpoch() - prevExpandTime) >= 500)
+    else if ((QDateTime::currentMSecsSinceEpoch() - prevExpandTime) >= 300)
     {
         m_terrain.expand(m_player.mcr_position[0], m_player.mcr_position[2], 2);
         prevExpandTime = QDateTime::currentMSecsSinceEpoch();

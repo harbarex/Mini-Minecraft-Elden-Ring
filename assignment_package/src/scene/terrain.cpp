@@ -434,7 +434,7 @@ void Terrain::expand(float playerX, float playerZ, int halfGridSize)
     }
 
     // check current border zones
-    for (int64_t currZoneKey : currBorderZones) {
+    for (int64_t currZoneKey : currZones) {
 
         glm::ivec2 coord = toCoords(currZoneKey);
 
@@ -780,7 +780,7 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
     completedChunks->insert(chunk);
     // neighbors to re-create vbo
     for (const std::pair<Direction, Chunk*> p : chunk->getNeighbors()) {
-        if (p.second != nullptr) {
+        if (p.second != nullptr && p.second->isVBOLoaded()) {
             completedChunks->insert(p.second);
         }
     }
