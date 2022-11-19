@@ -1,5 +1,6 @@
 # To add new blocks, you also need to update blockTypeMap in Block::blockTypeMap
-# Each block is followed by 6 uv coords of face with corresponding direction with the following order
+# For special block (e.g. transparent, animatable...), update the corresponding set in block.cpp
+# Each block is followed by 6 uv coords (bottom-left) of face with corresponding direction with the following order
 # XPOS, XNEG, YPOS, YNEG, ZPOS, ZNEG
 # Every direction is written in one line, and x and y are separated by the space " "
 # the program would ignore empty line and line that starts with #
@@ -43,6 +44,7 @@ STONE
 
 # x: 13*0.0625
 # y: 3*0.0625
+# transparent and animatable
 WATER
 0.8125 0.1875
 0.8125 0.1875
@@ -60,3 +62,60 @@ SNOW
 0.125 0.6875
 0.125 0.6875
 0.125 0.6875
+
+# x: 13*0.0625
+# y: 2*0.0625
+# animatable
+LAVA
+0.8125 0.125
+0.8125 0.125
+0.8125 0.125
+0.8125 0.125
+0.8125 0.125
+0.8125 0.125
+
+# x: 1*0.0625
+# y: 14*0.0625
+# unbreakable
+BEDROCK
+0.0625 0.875
+0.0625 0.875
+0.0625 0.875
+0.0625 0.875
+0.0625 0.875
+0.0625 0.875
+
+# x: 3*0.0625
+# y: 11*0.0625
+# transparent
+ICE
+0.1875 0.6875
+0.1875 0.6875
+0.1875 0.6875
+0.1875 0.6875
+0.1875 0.6875
+0.1875 0.6875
+
+# X and Z
+# x: 4*0.0625
+# y: 14*0.0625
+# Y
+# x: 5*0.0625
+# y: 14*0.0625
+WOOD
+0.25 0.875
+0.25 0.875
+0.3125 0.875
+0.3125 0.875
+0.25 0.875
+0.25 0.875
+
+# x: 5*0.0625
+# y: 12*0.0625
+LEAF
+0.3125 0.75
+0.3125 0.75
+0.3125 0.75
+0.3125 0.75
+0.3125 0.75
+0.3125 0.75

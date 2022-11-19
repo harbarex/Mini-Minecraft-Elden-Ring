@@ -4,7 +4,8 @@
 Player::Player(glm::vec3 pos, Terrain &terrain)
     : Entity(pos), m_velocity(0,0,0), m_acceleration(0,0,0),
       m_camera(pos + glm::vec3(0, 1.5f, 0)), mcr_terrain(terrain),
-      m_velocity_val(20.f), m_acceleration_val(40.f), cameraBlockDist(3.f), flightMode(true),
+      flight_velocity_max(15.f), non_flight_velocity_max(10.f), m_velocity_val(flight_velocity_max),
+      m_acceleration_val(40.f), cameraBlockDist(3.f), flightMode(true),
       destroyBufferTime(0.f), creationBufferTime(0.f), minWaitTime(0.5f), mcr_camera(m_camera)
 {}
 
@@ -197,10 +198,10 @@ void Player::toggleFlightMode() {
     // adjust the maximum velocity
     if (flightMode) {
         flightMode = false;
-        m_velocity_val = 20.f;
+        m_velocity_val = non_flight_velocity_max;
     } else {
         flightMode = true;
-        m_velocity_val = 40.f;
+        m_velocity_val = flight_velocity_max;
     }
 }
 

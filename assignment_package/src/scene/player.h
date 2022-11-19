@@ -12,6 +12,7 @@ private:
     Camera m_camera;
     Terrain &mcr_terrain;
 
+    float flight_velocity_max, non_flight_velocity_max;
     float m_velocity_val, m_acceleration_val; // length of the vector
     float cameraBlockDist; // max distance from the camera while using ray tracing
     bool flightMode; // determine the current mode
