@@ -1,4 +1,5 @@
 #pragma once
+
 #include "smartpointerhelp.h"
 #include "glm_includes.h"
 #include "chunk.h"
@@ -147,6 +148,7 @@ private:
     QMutex *completedChunksLock;
 
     // helper to set the blocks of each chunk
+    void setSurfaceTerrain(Chunk *chunk, int x, int z, int height);
     void setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorner);
 
 public:
