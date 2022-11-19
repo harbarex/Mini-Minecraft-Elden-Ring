@@ -12,8 +12,10 @@ public:
     Noise();
     virtual ~Noise();
 
-    // General Function for Grass x Mountain
+    // General Function for Grass x Mountain x Waterbody
     int getHeight(int, int);
+
+    int getCaveHeight(int, int, int);
 
     // Individual Terrain Height Maps
     float getGrassHeight(float, float);
@@ -42,17 +44,21 @@ private:
     float worleyNoise2D(float,float);
 
     float FBM2D(float,float,float,std::string, int);
+    float FBM3D(float,float,float,float,std::string);
 
     glm::vec2 noise2DNormalVector(glm::vec2, int);
     float surflet(glm::vec2, glm::vec2, int);
     float PerlinNoise2D(glm::vec2, int);
+
+    float surflet3D(glm::vec3, glm::vec3);
+    float PerlinNoise3D(glm::vec3);
 
     float noise2D(float, float);
     float smoothNoise2D(float,float);
     float linearInterpolation(float,float,float);
     float cosineInterpolation(float,float,float);
     float interpolationNoise2D(float,float);
-
+    float interpolationNoise3D(float,float,float);
 };
 
 
