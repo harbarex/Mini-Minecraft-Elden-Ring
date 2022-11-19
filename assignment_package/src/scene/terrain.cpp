@@ -334,15 +334,8 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
             translation[3] = glm::vec4(x, 0, z, 1);
 
             shaderProgram->setModelMatrix(translation);
-            // use drawInterleaved to draw the interleaved buffer data
-            switch (drawType) {
-            case (TerrainDrawType::opaque):
-                shaderProgram->drawInterleaved(*chunk);
-                break;
-            case (TerrainDrawType::transparent):
-                shaderProgram->drawTransparentInterleaved(*chunk);
-                break;
-            }
+            // use drawInterleavedTerrainDrawType to draw the interleaved buffer data given specific terrain draw type
+            shaderProgram->drawInterleavedTerrainDrawType(*chunk, drawType);
         }
     }
 }

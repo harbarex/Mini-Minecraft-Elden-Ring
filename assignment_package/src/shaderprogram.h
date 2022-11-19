@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 
 #include "drawable.h"
+#include "utils.h"
 
 
 class ShaderProgram
@@ -48,8 +49,8 @@ public:
     void drawInstanced(InstancedDrawable &d);
     // Draw the given object with interleaved buffer data
     void drawInterleaved(Drawable &d);
-    // Draw the given object (transparent block) with interleaved buffer data
-    void drawTransparentInterleaved(Drawable &d);
+    // Draw the given object with interleaved buffer data based on TerrainDrawType
+    void drawInterleavedTerrainDrawType(Drawable &d, TerrainDrawType drawType);
     // Utility function used in create()
     char* textFileRead(const char*);
     // Utility function that prints any shader compilation errors to the console

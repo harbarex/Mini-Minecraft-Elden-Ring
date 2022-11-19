@@ -250,12 +250,26 @@ void ShaderProgram::drawInterleaved(Drawable &d)
     context->printGLErrorLog();
 }
 
-void ShaderProgram::drawTransparentInterleaved(Drawable &d)
+void ShaderProgram::drawInterleavedTerrainDrawType(Drawable &d, TerrainDrawType drawType)
 {
     useMe();
 
-    if(d.transparentElemCount() < 0) {
-        throw std::out_of_range("Attempting to draw a drawable with m_count of " + std::to_string(d.transparentElemCount()) + "!");
+    int elemCount;
+    bool bindData;
+
+    switch (drawType) {
+    case (TerrainDrawType::opaque):
+        elemCount = d.elemCount();
+        bindData = d.bindPos();
+        break;
+    case (TerrainDrawType::transparent):
+        elemCount = d.transparentElemCount();
+        bindData = d.bindTransparentData();
+        break;
+    }
+
+    if(elemCount < 0) {
+        throw std::out_of_range("Attempting to draw a drawable with m_count of " + std::to_string(elemCount) + "!");
     }
 
     // Each of the following blocks checks that:
@@ -270,35 +284,43 @@ void ShaderProgram::drawTransparentInterleaved(Drawable &d)
 
     int size = 3 * sizeof(glm::vec4) + 2 * sizeof(glm::vec2);
 
-    if (attrPos != -1 && d.bindTransparentData()) {
+    if (attrPos != -1 && bindData) {
         context->glEnableVertexAttribArray(attrPos);
         context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, size, (void*)0);
     }
 
-    if (attrNor != -1 && d.bindTransparentData()) {
+    if (attrNor != -1 && bindData) {
         context->glEnableVertexAttribArray(attrNor);
         context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, size, (void*)sizeof(glm::vec4));
     }
 
-    if (attrCol != -1 && d.bindTransparentData()) {
+    if (attrCol != -1 && bindData) {
         context->glEnableVertexAttribArray(attrCol);
         context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, size, (void*)(2 * sizeof(glm::vec4)));
     }
 
-    if (attrUV  != -1 && d.bindTransparentData())  {
+    if (attrUV  != -1 && bindData)  {
         context->glEnableVertexAttribArray(attrUV);
         context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, size, (void*)(3 * sizeof(glm::vec4)));
     }
 
-    if (attrAnimatableFlag != -1 && d.bindTransparentData()) {
+    if (attrAnimatableFlag != -1 && bindData) {
         context->glEnableVertexAttribArray(attrAnimatableFlag);
         context->glVertexAttribPointer(attrAnimatableFlag, 2, GL_FLOAT, false, size, (void*)(3 * sizeof(glm::vec4) + sizeof(glm::vec2)));
     }
 
     // Bind the index buffer and then draw shapes from it.
     // This invokes the shader program, which accesses the vertex buffers.
-    d.bindTransparentIdx();
-    context->glDrawElements(d.drawMode(), d.transparentElemCount(), GL_UNSIGNED_INT, 0);
+    switch (drawType) {
+    case (TerrainDrawType::opaque):
+        d.bindIdx();
+        break;
+    case (TerrainDrawType::transparent):
+        d.bindTransparentIdx();
+        break;
+    }
+
+    context->glDrawElements(d.drawMode(), elemCount, GL_UNSIGNED_INT, 0);
 
     if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
     if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
