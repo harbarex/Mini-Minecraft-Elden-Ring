@@ -143,7 +143,7 @@ void pushVec2ToBuffer(std::vector<float> &buf, const glm::vec2 &vec)
 /**
  * @brief Chunk::generateVBOdata
  *  This method generates the needed vertex buffer & index data for this chunk.
- *  Note: the order of the vertex buffer is (pos, normal, color, uv).
+ *  Note: the order of the vertex buffer is (pos, normal, uv, animatable flag).
  *  All of them are put in a vector<float>.
  * @return
  */
@@ -161,7 +161,7 @@ ChunkVBOdata Chunk::generateVBOdata()
 /**
  * @brief Chunk::generateVBOdata
  *  This method generates the needed vertex buffer & index data for this chunk.
- *  Note: the order of the vertex buffer is (pos, normal, color, uv).
+ *  Note: the order of the vertex buffer is (pos, normal, uv, animatable flag).
  *  All of them are put in a vector<float>.
  * @param vbo, ChunkVBOdata
  * @param drawType, TerrainDrawType
@@ -219,7 +219,6 @@ void Chunk::generateVBOdataDrawType(ChunkVBOdata &vbo, TerrainDrawType drawType)
                         // buffer: pos0nor0col0uv0
                         pushVec4ToBuffer(*processingBuffer, vert.pos + glm::vec4(x, y, z, 0));
                         pushVec4ToBuffer(*processingBuffer, face.normal);
-                        pushVec4ToBuffer(*processingBuffer, Block::getColors(blockType));
                         pushVec2ToBuffer(*processingBuffer, vert.uv);
                         pushVec2ToBuffer(*processingBuffer, Block::getAnimatableFlag(blockType));
                     }

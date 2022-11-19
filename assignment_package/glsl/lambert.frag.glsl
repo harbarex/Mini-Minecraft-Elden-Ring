@@ -19,7 +19,7 @@ uniform sampler2D u_Texture;
 in vec4 fs_Pos;
 in vec4 fs_Nor;
 in vec4 fs_LightVec;
-in vec4 fs_Col;
+//in vec4 fs_Col;
 in vec2 fs_UV;
 in vec2 fs_AnimatableFlag;
 
@@ -90,10 +90,5 @@ void main()
                                                             //lit by our point light are not completely black.
 
         // Compute final shaded color
-
-        if (fs_AnimatableFlag[1] > 0) {
-            out_Col = vec4(fs_AnimatableFlag[0]);
-        } else {
-            out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
-        }
+        out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
 }

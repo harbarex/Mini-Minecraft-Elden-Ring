@@ -26,7 +26,7 @@ in vec4 vs_Pos;             // The array of vertex positions passed to the shade
 
 in vec4 vs_Nor;             // The array of vertex normals passed to the shader
 
-in vec4 vs_Col;             // The array of vertex colors passed to the shader.
+//in vec4 vs_Col;             // The array of vertex colors passed to the shader.
 
 in vec2 vs_UV;              // The array of vertex uv passed to the shader
 
@@ -35,7 +35,7 @@ in vec2 vs_AnimatableFlag;  // The array of vertex animatableFlag passed to the 
 out vec4 fs_Pos;
 out vec4 fs_Nor;            // The array of normals that has been transformed by u_ModelInvTr. This is implicitly passed to the fragment shader.
 out vec4 fs_LightVec;       // The direction in which our virtual light lies, relative to each vertex. This is implicitly passed to the fragment shader.
-out vec4 fs_Col;            // The color of each vertex. This is implicitly passed to the fragment shader.
+//out vec4 fs_Col;            // The color of each vertex. This is implicitly passed to the fragment shader.
 out vec2 fs_UV;             // The uv of each vertex. This is implicitly passed to the fragment shader.
 out vec2 fs_AnimatableFlag; // The animatable flag of each vertex. This is implicitly passed to the fragment shader.
 
@@ -46,7 +46,7 @@ void main()
 {
     fs_UV = vs_UV;
     fs_Pos = vs_Pos;
-    fs_Col = vs_Col;                         // Pass the vertex colors to the fragment shader for interpolation
+//    fs_Col = vs_Col;                         // Pass the vertex colors to the fragment shader for interpolation
     fs_AnimatableFlag = vs_AnimatableFlag;
 
     mat3 invTranspose = mat3(u_ModelInvTr);
