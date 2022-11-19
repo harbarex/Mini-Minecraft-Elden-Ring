@@ -25,6 +25,8 @@ MyGL::MyGL(QWidget *parent)
     setCursor(Qt::BlankCursor); // Make the cursor invisible
     prevMouseX = width() / 2;
     prevMouseY = height() / 2;
+
+    m_player.setBlocksHold();
 }
 
 MyGL::~MyGL() {
@@ -224,6 +226,11 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
         m_inputs.qPressed = true;
     } else if (e->key() == Qt::Key_E) {
         m_inputs.ePressed = true;
+    } else if (e->key() == Qt::Key_P) {
+        m_inputs.debugButtonPressed = true;
+    } else if (e->key() == Qt::Key_N) {
+        m_inputs.nPressed = true;
+        m_player.selectNextBlock(m_inputs);
     } else if (e->key() == Qt::Key_Space) {
         m_inputs.spacePressed = true;
     } else if (e->key() == Qt::Key_F) {
@@ -245,6 +252,10 @@ void MyGL::keyReleaseEvent(QKeyEvent *e)
         m_inputs.qPressed = false;
     } else if (e->key() == Qt::Key_E) {
         m_inputs.ePressed = false;
+    } else if (e->key() == Qt::Key_P) {
+        m_inputs.debugButtonPressed = false;
+    } else if (e->key() == Qt::Key_N) {
+        m_inputs.nPressed = false;
     } else if (e->key() == Qt::Key_Space) {
         m_inputs.spacePressed = false;
     }

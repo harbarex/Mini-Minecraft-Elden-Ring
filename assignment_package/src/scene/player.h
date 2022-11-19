@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "terrain.h"
 #include <iostream>
+#include <set>
 
 enum class VelocityCond {stop, max, move};
 
@@ -28,6 +29,10 @@ private:
     void implementJumping();
     void destroyBlock(InputBundle &inputs, Terrain &terrain); // destroy the block within 3 unit from camera pos when left mouse button is pressed
     void placeNewBlock(InputBundle &inputs, Terrain &terrain);
+    void placeBlock(InputBundle &inputs, Terrain &terrain, BlockType blockType);
+
+    std::vector<BlockType> blocksHold;
+    int selectedBlockPtr;
 
 public:
     // Readonly public reference to our camera
@@ -83,5 +88,8 @@ public:
 
     bool gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, float *out_dist, glm::ivec3 *out_blockHit);
     bool gridMarchPrevBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, glm::ivec3 *out_prevBlock, glm::ivec3 *out_blockHit);
+
+    void setBlocksHold();
+    void selectNextBlock(InputBundle &inputs);
 };
 
