@@ -766,18 +766,20 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
 
             chunk->setBlockAt(x, 0, z, STONE);
 
+            int lavaLevel = 30;
+
             // Make Caves
             for(int y_underground=1; y_underground<125;y_underground++){
                 float h = terrainHeightMap.getCaveHeight(chunkXCorner + x, y_underground, chunkZCorner + z);
                 if(h > 0.f){
-                    chunk->setBlockAt(x, y_underground, z, EMPTY);
-                } else {
-                    if(y_underground < 40){
+                    if(y_underground <= lavaLevel){
                         chunk->setBlockAt(x, y_underground, z, LAVA);
                     }
                     else{
-                        chunk->setBlockAt(x, y_underground, z, STONE);
+                        chunk->setBlockAt(x, y_underground, z, EMPTY);
                     }
+                } else {
+                    chunk->setBlockAt(x, y_underground, z, STONE);
                 }
 
             }
