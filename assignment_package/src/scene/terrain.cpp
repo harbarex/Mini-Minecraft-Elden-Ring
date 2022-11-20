@@ -769,11 +769,10 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
             // Make Caves
             for(int y_underground=1; y_underground<125;y_underground++){
                 float h = terrainHeightMap.getCaveHeight(chunkXCorner + x, y_underground, chunkZCorner + z);
-                //std::cout<<"Current Cave h: "<<h<<std::endl;
                 if(h > 0.f){
                     chunk->setBlockAt(x, y_underground, z, EMPTY);
                 } else {
-                    if(y_underground < 64){
+                    if(y_underground < 40){
                         chunk->setBlockAt(x, y_underground, z, LAVA);
                     }
                     else{
