@@ -760,17 +760,30 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
 
     for (int x = 0; x < 16; x++) {
         for (int z = 0; z < 16; z++) {
+
+            // Make Surface Terrain
             double y = terrainHeightMap.getHeight(chunkXCorner + x , chunkZCorner + z);
             setSurfaceTerrain(chunk, x, z, y);
 
+            for(int y_underground=125; y_underground<128; y_underground++){
+                chunk->setBlockAt(x, y_underground, z, DIRT);
+            }
+
+            chunk->setBlockAt(x, 0, z, STONE);
+
             // Make Caves
-            for(int y_underground=0; y_underground<128;y_underground++){
-                float h = terrainHeightMap.getCaveHeight(x, z, y_underground);
-                //std::cout<<"\nCurrent Cave h: "<<h<<std::endl;
+            for(int y_underground=1; y_underground<125;y_underground++){
+                float h = terrainHeightMap.getCaveHeight(chunkXCorner + x, y_underground, chunkZCorner + z);
+                //std::cout<<"Current Cave h: "<<h<<std::endl;
                 if(h > 0.f){
                     chunk->setBlockAt(x, y_underground, z, EMPTY);
                 } else {
-                    chunk->setBlockAt(x, y_underground, z, STONE);
+                    if(y_underground < 64){
+                        chunk->setBlockAt(x, y_underground, z, LAVA);
+                    }
+                    else{
+                        chunk->setBlockAt(x, y_underground, z, STONE);
+                    }
                 }
 
             }
