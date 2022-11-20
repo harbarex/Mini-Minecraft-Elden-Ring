@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include "shaderprogram.h"
 #include "cube.h"
+#include "utils.h"
 #include <QMutex>
 #include <QThreadPool>
 
@@ -16,8 +17,6 @@
 // Helper functions to convert (x, z) to and from hash map key
 int64_t toKey(int x, int z);
 glm::ivec2 toCoords(int64_t k);
-
-enum class TerrainDrawType{ opaque, transparent };
 
 // The container class for all of the Chunks in the game.
 // Ultimately, while Terrain will always store all Chunks,

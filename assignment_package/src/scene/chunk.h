@@ -3,6 +3,7 @@
 #include "smartpointerhelp.h"
 #include "glm_includes.h"
 #include "block.h"
+#include "utils.h"
 #include <array>
 #include <unordered_map>
 #include <cstddef>
@@ -58,6 +59,15 @@ private:
     // TODO: a member variable to mark vboLoaded
     bool vboLoaded;
 
+    // generate the vbo data associate with the block type, called by generateVBOdata()
+    void generateVBOdataDrawType(ChunkVBOdata &vbo, TerrainDrawType drawType);
+
+    // check if current block needs to be drawn
+    bool checkBlockDrawing(TerrainDrawType drawType, BlockType blockType) const ;
+
+    // check if current block face needs to be drawn
+    bool checkBlockFaceDrawing(TerrainDrawType drawType, BlockType neighborBlockType) const ;
+
 public:
     // constructor as a subclass of Drawable
     Chunk(OpenGLContext *context);
@@ -71,7 +81,7 @@ public:
     virtual void createVBOdata() override;
 
     // this generates the vbo data for further rendering
-    ChunkVBOdata generateVBOdata() const;
+    ChunkVBOdata generateVBOdata();
 
     // this takes ChunkVBOdata in and buffers them into this Chunk (Drawable)
     void createVBOdata(ChunkVBOdata &vbo);

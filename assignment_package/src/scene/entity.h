@@ -8,13 +8,15 @@ struct InputBundle {
     // flight mode is inactive
     bool spacePressed;
     bool leftMouseButtonPressed, rightMouseButtonPressed;
+    bool debugButtonPressed;
+    bool nPressed;
     float mouseX, mouseY;
 
     InputBundle()
         : wPressed(false), aPressed(false), sPressed(false),
           dPressed(false), spacePressed(false), mouseX(0.f), mouseY(0.f),
           qPressed(false), ePressed(false), leftMouseButtonPressed(false),
-          rightMouseButtonPressed(false)
+          rightMouseButtonPressed(false), debugButtonPressed(false), nPressed(false)
     {}
 };
 
