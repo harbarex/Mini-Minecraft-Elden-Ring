@@ -89,6 +89,33 @@ bool Block::isTransparent(BlockType type)
 }
 
 /**
+ * @brief Block::isAnimatable
+ *  The helper function to determine whether a given block type
+ *  is animatable or not
+ * @param type
+ * @return
+ */
+bool Block::isAnimatable(BlockType type)
+{
+    return (animatableBlockTypes.find(type) != animatableBlockTypes.end());
+}
+
+/**
+ * @brief Block::getAnimatableFlag
+ *  Get the predefined animatable flag depending on the block type
+ *  Use vector for convenience in passing data to GPU
+ * @return float, vec2(1) is animatable block, vec2(-1) is non-animatable block
+ */
+glm::vec2 Block::getAnimatableFlag(BlockType type)
+{
+    if (isAnimatable(type)) {
+        return glm::vec2(1.f);
+    }
+
+    return glm::vec2(-1.f);
+}
+
+/**
  * @brief Block::isEmpty
  *  The helper function to determine whether a given block type
  *  is treated as empty or not.
@@ -155,9 +182,18 @@ std::unordered_map<std::string, BlockType> Block::blockTypeMap = {
     {"DIRT", DIRT},
     {"STONE", STONE},
     {"WATER", WATER},
-    {"SNOW", SNOW}}
+    {"SNOW", SNOW},
+    {"LAVA", LAVA},
+    {"BEDROCK", BEDROCK},
+    {"ICE", ICE},
+    {"WOOD", WOOD},
+    {"LEAF", LEAF}}
 };
 
 std::unordered_set<BlockType> Block::transparentBlockTypes = {
-    EMPTY, WATER
+    EMPTY, WATER, ICE
+};
+
+std::unordered_set<BlockType> Block::animatableBlockTypes = {
+    WATER, LAVA
 };

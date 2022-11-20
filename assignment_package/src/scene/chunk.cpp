@@ -143,14 +143,31 @@ void pushVec2ToBuffer(std::vector<float> &buf, const glm::vec2 &vec)
 /**
  * @brief Chunk::generateVBOdata
  *  This method generates the needed vertex buffer & index data for this chunk.
- *  Note: the order of the vertex buffer is (pos, normal, color, uv).
+ *  Note: the order of the vertex buffer is (pos, normal, uv, animatable flag).
  *  All of them are put in a vector<float>.
  * @return
  */
-ChunkVBOdata Chunk::generateVBOdata() const
+ChunkVBOdata Chunk::generateVBOdata()
 {
     // init
     ChunkVBOdata vbo = ChunkVBOdata((Chunk*)(this));
+
+    generateVBOdataDrawType(vbo, TerrainDrawType::opaque);
+    generateVBOdataDrawType(vbo, TerrainDrawType::transparent);
+
+    return vbo;
+}
+
+/**
+ * @brief Chunk::generateVBOdata
+ *  This method generates the needed vertex buffer & index data for this chunk.
+ *  Note: the order of the vertex buffer is (pos, normal, uv, animatable flag).
+ *  All of them are put in a vector<float>.
+ * @param vbo, ChunkVBOdata
+ * @param drawType, TerrainDrawType
+ * @return
+ */
+void Chunk::generateVBOdataDrawType(ChunkVBOdata &vbo, TerrainDrawType drawType) {
 
     // basically, iterate through all the blocks contained in a chunk
     // each chunk : 16 x 256 x 16
@@ -160,52 +177,20 @@ ChunkVBOdata Chunk::generateVBOdata() const
     // Used as the indices for triangulation
     std::vector<GLuint> faceIndices = {0, 1, 2, 0, 2, 3};
     glm::vec4 out = glm::vec4();
+    std::vector<float>* processingBuffer;
+    std::vector<GLuint>* processingIndices;
 
-    for (int x = 0; x < 16; x++) {
-        for (int y = 0; y < 256; y++) {
-            for (int z = 0; z < 16; z++) {
-
-                // get each block at (x, y, z) in this chunk
-                // remember, there are 6 faces for a block
-                BlockType blockType = getBlockAt(x, y, z);
-
-                // If it is opaque, prepare to add to the buffer
-                if (Block::isOpaque(blockType)) {
-
-                    // iterate through each face and see if it has an opague neighbor
-                    // Block::BlockCollection contains the faces of various kinds of blocks
-                    for (const BlockFace &face : Block::BlockCollection[blockType]) {
-
-                        // the neighboring block might be in the neighboring chunk
-                        BlockType neighbor = getNeighborBlock(x, y, z, face.normal);
-                        // draw (add data to buffer) if the neighbor is not opaque
-                        if (Block::isTransparent(neighbor)) {
-                            // add this face
-                            for (const VertexData &vert : face.vertices) {
-                                // buffer: pos0nor0col0uv0
-                                pushVec4ToBuffer(vbo.buffer, vert.pos + glm::vec4(x, y, z, 0));
-                                pushVec4ToBuffer(vbo.buffer, face.normal);
-                                pushVec4ToBuffer(vbo.buffer, Block::getColors(blockType));
-                                pushVec2ToBuffer(vbo.buffer, vert.uv);
-                            }
-                            // add indices for each face (4 vertices)
-                            for (int index : faceIndices) {
-                                vbo.indices.push_back(nVert + index);
-                            }
-                            // move the offset for indices
-                            nVert += 4;
-                        }
-                    }
-                }
-            }
-        }
-
+    switch (drawType) {
+    case (TerrainDrawType::opaque):
+        processingBuffer = &vbo.buffer;
+        processingIndices = &vbo.indices;
+        break;
+    case (TerrainDrawType::transparent):
+        processingBuffer = &vbo.transparentBuffer;
+        processingIndices = &vbo.transparentIndices;
+        break;
     }
 
-    nVert = 0;
-    out = glm::vec4();
-
-    // TODO: for transparent block
     for (int x = 0; x < 16; x++) {
         for (int y = 0; y < 256; y++) {
             for (int z = 0; z < 16; z++) {
@@ -214,8 +199,7 @@ ChunkVBOdata Chunk::generateVBOdata() const
                 // remember, there are 6 faces for a block
                 BlockType blockType = getBlockAt(x, y, z);
 
-                // If it is opaque, skip it
-                if (Block::isOpaque(blockType) || Block::isEmpty(blockType)) {
+                if (!checkBlockDrawing(drawType, blockType)) {
                     continue;
                 }
 
@@ -224,35 +208,80 @@ ChunkVBOdata Chunk::generateVBOdata() const
                 for (const BlockFace &face : Block::BlockCollection[blockType]) {
 
                     // the neighboring block might be in the neighboring chunk
-                    BlockType neighbor = getNeighborBlock(x, y, z, face.normal);
+                    BlockType neighborBlockType = getNeighborBlock(x, y, z, face.normal);
 
-                    // draw (add data to buffer) the face of transparent block if the neighbor is empty
-                    if (!Block::isEmpty(neighbor)) {
+                    if (!checkBlockFaceDrawing(drawType, neighborBlockType)) {
                         continue;
                     }
 
                     // add this face
                     for (const VertexData &vert : face.vertices) {
                         // buffer: pos0nor0col0uv0
-                        pushVec4ToBuffer(vbo.transparentBuffer, vert.pos + glm::vec4(x, y, z, 0));
-                        pushVec4ToBuffer(vbo.transparentBuffer, face.normal);
-                        pushVec4ToBuffer(vbo.transparentBuffer, Block::getColors(blockType));
-                        pushVec2ToBuffer(vbo.transparentBuffer, vert.uv);
+                        pushVec4ToBuffer(*processingBuffer, vert.pos + glm::vec4(x, y, z, 0));
+                        pushVec4ToBuffer(*processingBuffer, face.normal);
+                        pushVec2ToBuffer(*processingBuffer, vert.uv);
+                        pushVec2ToBuffer(*processingBuffer, Block::getAnimatableFlag(blockType));
                     }
                     // add indices for each face (4 vertices)
                     for (int index : faceIndices) {
-                        vbo.transparentIndices.push_back(nVert + index);
+                        (*processingIndices).push_back(nVert + index);
                     }
                     // move the offset for indices
                     nVert += 4;
                 }
-
             }
         }
+    }
+}
 
+/**
+ * @brief Chunk::checkBlockDrawing
+ *  check if current block needs to be drawn
+ * @param drawType : TerrainDrawType
+ * @param blockType : BlockType
+ * @return boolean indicating if we need to draw current block or not
+ */
+bool Chunk::checkBlockDrawing(TerrainDrawType drawType, BlockType blockType) const {
+
+    // skip empty block
+    if (Block::isEmpty(blockType)) {
+        return false;
     }
 
-    return vbo;
+    // skip transparent block in opaque drawing
+    if (drawType == TerrainDrawType::opaque && Block::isTransparent(blockType)) {
+        return false;
+    }
+
+    // skip opaque block in transparent drawing
+    if (drawType == TerrainDrawType::transparent && Block::isOpaque(blockType)) {
+        return false;
+    }
+
+    return true;
+}
+
+//
+/**
+ * @brief Chunk::checkBlockFaceDrawing
+ *  check if current block face needs to be drawn
+ * @param drawType : TerrainDrawType
+ * @param blockType : BlockType, adjacent block
+ * @return boolean indicating if we need to draw current block or not
+ */
+bool Chunk::checkBlockFaceDrawing(TerrainDrawType drawType, BlockType neighborBlockType) const {
+
+    // skip face adjacent to opaque block
+    if (Block::isOpaque(neighborBlockType)) {
+        return false;
+    }
+
+    // skip face adjacent to non-empty block in transparent drawing
+    if (drawType == TerrainDrawType::transparent && !Block::isEmpty(neighborBlockType)) {
+        return false;
+    }
+
+    return true;
 }
 
 

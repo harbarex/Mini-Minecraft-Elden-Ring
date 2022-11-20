@@ -41,4 +41,5 @@ HEADERS += \
     $$PWD/scene/camera.h \
     $$PWD/playerinfo.h \
     $$PWD/scene/chunk.h \
-    $$PWD/texture.h
+    $$PWD/texture.h \
+    $$PWD/utils.h

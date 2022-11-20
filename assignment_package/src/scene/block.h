@@ -13,7 +13,7 @@
 // block types, but in the scope of this project we'll never get anywhere near that many.
 enum BlockType : unsigned char
 {
-    EMPTY, GRASS, DIRT, STONE, WATER, SNOW
+    EMPTY, GRASS, DIRT, STONE, WATER, SNOW, LAVA, BEDROCK, ICE, WOOD, LEAF
 };
 
 // The six cardinal directions in 3D space
@@ -90,6 +90,9 @@ public:
     // a collection of transparent block type
     static std::unordered_set<BlockType> transparentBlockTypes;
 
+    // a collection of animatable block type
+    static std::unordered_set<BlockType> animatableBlockTypes;
+
     // the rule to determine whether a given block is opaque or not
     static bool isOpaque(BlockType type);
 
@@ -98,6 +101,12 @@ public:
 
     // the rule to determine whether a given block is empty or not
     static bool isEmpty(BlockType type);
+
+    // the rule to determine whether a given block is animatable or not
+    static bool isAnimatable(BlockType type);
+
+    // the function that defines the animatable flag of each block type
+    static glm::vec2 getAnimatableFlag(BlockType type);
 
     // the function that defines the color of each block type
     static glm::vec4 getColors(BlockType type);

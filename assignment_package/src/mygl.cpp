@@ -11,7 +11,7 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
-      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
+      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), frameCount(0),
       prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this),
       prevExpandTime(QDateTime::currentMSecsSinceEpoch())
 {
@@ -25,6 +25,8 @@ MyGL::MyGL(QWidget *parent)
     setCursor(Qt::BlankCursor); // Make the cursor invisible
     prevMouseX = width() / 2;
     prevMouseY = height() / 2;
+
+    m_player.setBlocksHold();
 }
 
 MyGL::~MyGL() {
@@ -114,7 +116,7 @@ void MyGL::tick() {
         m_terrain.loadInitialTerrain(m_player.mcr_position[0], m_player.mcr_position[2], 2);
         prevExpandTime = QDateTime::currentMSecsSinceEpoch();
     }
-    else if ((QDateTime::currentMSecsSinceEpoch() - prevExpandTime) >= 300)
+    else if ((QDateTime::currentMSecsSinceEpoch() - prevExpandTime) >= 100)
     {
         m_terrain.expand(m_player.mcr_position[0], m_player.mcr_position[2], 2);
         prevExpandTime = QDateTime::currentMSecsSinceEpoch();
@@ -155,6 +157,8 @@ void MyGL::paintGL() {
     m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
 //    m_progInstanced.setViewProjMatrix(m_player.mcr_camera.getViewProj());
 
+    m_progLambert.setTime(frameCount);
+
     renderTerrain(TerrainDrawType::opaque);
 
     glEnable(GL_BLEND);
@@ -167,6 +171,8 @@ void MyGL::paintGL() {
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progFlat.draw(m_worldAxes);
     glEnable(GL_DEPTH_TEST);
+
+    frameCount++;
 }
 
 // TODO: Change this so it renders the nine zones of generated
@@ -220,6 +226,11 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
         m_inputs.qPressed = true;
     } else if (e->key() == Qt::Key_E) {
         m_inputs.ePressed = true;
+    } else if (e->key() == Qt::Key_P) {
+        m_inputs.debugButtonPressed = true;
+    } else if (e->key() == Qt::Key_N) {
+        m_inputs.nPressed = true;
+        m_player.selectNextBlock(m_inputs);
     } else if (e->key() == Qt::Key_Space) {
         m_inputs.spacePressed = true;
     } else if (e->key() == Qt::Key_F) {
@@ -241,6 +252,10 @@ void MyGL::keyReleaseEvent(QKeyEvent *e)
         m_inputs.qPressed = false;
     } else if (e->key() == Qt::Key_E) {
         m_inputs.ePressed = false;
+    } else if (e->key() == Qt::Key_P) {
+        m_inputs.debugButtonPressed = false;
+    } else if (e->key() == Qt::Key_N) {
+        m_inputs.nPressed = false;
     } else if (e->key() == Qt::Key_Space) {
         m_inputs.spacePressed = false;
     }

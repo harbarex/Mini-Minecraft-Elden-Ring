@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 
 #include "drawable.h"
+#include "utils.h"
 
 
 class ShaderProgram
@@ -19,6 +20,7 @@ public:
     int attrNor; // A handle for the "in" vec4 representing vertex normal in the vertex shader
     int attrCol; // A handle for the "in" vec4 representing vertex color in the vertex shader
     int attrUV;  // A handle for the "in" vec4 representing vertex uv in the vertex shader
+    int attrAnimatableFlag; // A handle for the "in" vec4 representing float animatable flag in the vertex shader
     int attrPosOffset; // A handle for a vec3 used only in the instanced rendering shader
 
     int unifModel; // A handle for the "uniform" mat4 representing model matrix in the vertex shader
@@ -26,6 +28,7 @@ public:
     int unifViewProj; // A handle for the "uniform" mat4 representing combined projection and view matrices in the vertex shader
     int unifColor; // A handle for the "uniform" vec4 representing color of geometry in the vertex shader
     int unifTexture; // A handle for the "uniform" sampler2D that will be used to read the texture containing the scene render
+    int unifTime; // A handle for the "uniform" int representing current time (actually is number of frames)
 
 public:
     ShaderProgram(OpenGLContext* context);
@@ -35,6 +38,8 @@ public:
     void useMe();
     // Pass the given texture map to this shader on the GPU
     void setTexture();
+    // Pass current time (frame count) to this shader on the GPU
+    void setTime(int time);
     // Pass the given model matrix to this shader on the GPU
     void setModelMatrix(const glm::mat4 &model);
     // Pass the given Projection * View matrix to this shader on the GPU
@@ -47,8 +52,8 @@ public:
     void drawInstanced(InstancedDrawable &d);
     // Draw the given object with interleaved buffer data
     void drawInterleaved(Drawable &d);
-    // Draw the given object (transparent block) with interleaved buffer data
-    void drawTransparentInterleaved(Drawable &d);
+    // Draw the given object with interleaved buffer data based on TerrainDrawType
+    void drawInterleavedTerrainDrawType(Drawable &d, TerrainDrawType drawType);
     // Utility function used in create()
     char* textFileRead(const char*);
     // Utility function that prints any shader compilation errors to the console
