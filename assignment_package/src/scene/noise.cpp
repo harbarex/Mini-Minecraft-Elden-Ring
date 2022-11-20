@@ -36,7 +36,7 @@ int Noise::getHeight(int x, int z) {
 }
 
 float Noise::getCaveHeight(int x, int y, int z){
-    float factor = 30.f;
+    float factor = 25.f;
     return PerlinNoise3D(glm::vec3(float(x/factor),float(y/factor),float(z/factor)));
 
 }
