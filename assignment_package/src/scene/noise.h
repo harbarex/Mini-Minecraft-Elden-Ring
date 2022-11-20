@@ -15,7 +15,7 @@ public:
     // General Function for Grass x Mountain x Waterbody
     int getHeight(int, int);
 
-    int getCaveHeight(int, int, int);
+    float getCaveHeight(int, int, int);
 
     // Individual Terrain Height Maps
     float getGrassHeight(float, float);
