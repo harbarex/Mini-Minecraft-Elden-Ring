@@ -396,8 +396,10 @@ void Terrain::destroyZoneVBOs(int xCorner, int zCorner)
             // find the chunk =>
             if (hasChunkAt(x, z)) {
                 Chunk *chunk = getChunkAt(x, z).get();
-                // deload
-                chunk->destroyVBOdata();
+                // only deload the vbo when it is loaded
+                if (chunk->isVBOLoaded()) {
+                    chunk->destroyVBOdata();
+                }
             }
         }
     }
@@ -788,10 +790,23 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
 void FillBlocksWorker::run()
 {
     // TODO: iterate through each chunks in the zone
+    std::unordered_set<Chunk*> chunksWithBlocks = std::unordered_set<Chunk*>();
     for (std::pair<int64_t, Chunk*> p : chunks) {
         glm::ivec2 coord = toCoords(p.first);
         setBlocks(p.second, coord[0], coord[1]);
+        chunksWithBlocks.insert(p.second);
+        for (const std::pair<Direction, Chunk*> pp : p.second->getNeighbors()) {
+            if (pp.second != nullptr && pp.second->isVBOLoaded()) {
+                chunksWithBlocks.insert(pp.second);
+            }
+        }
     }
+
+    completedChunksLock->lock();
+    for (Chunk *chunk : chunksWithBlocks) {
+        completedChunks->insert(chunk);
+    }
+    completedChunksLock->unlock();
 }
 
 
