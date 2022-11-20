@@ -4,6 +4,7 @@
 #include <random>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -34,17 +35,9 @@ int Noise::getHeight(int x, int z) {
 
 }
 
-int Noise::getCaveHeight(int x, int y, int z){
-    x /= 256;
-    //y /= 256;
-    z /= 256;
-
-    int caveMin = 64;
-    int caveMax = 128;
-
-    return FBM3D(x, y, z, 0.5, "perlin");
-
-    //return caveMin + (caveMax - caveMin) * FBM3D(x, y, z, 0.5, "perlin");
+float Noise::getCaveHeight(int x, int y, int z){
+    float factor = 30.f;
+    return PerlinNoise3D(glm::vec3(float(x/factor),float(y/factor),float(z/factor)));
 
 }
 
@@ -213,12 +206,14 @@ glm::vec3 random3(glm::vec3 c) {
     return r - glm::vec3(0.5);
 }
 
-float Noise::surflet3D(glm::vec3 p, glm::vec3 gridPoint) {
-    glm::vec3 t2 = glm::abs(p - gridPoint);
-    glm::vec3 t = glm::vec3(1.f) - 6.f * pow(t2, 5) + 15.f * pow(t2, 4) - 10.f * pow(t2, 3);
 
-    glm::vec3 gradient = random3(gridPoint) * 2.f - glm::vec3(1,1,1);
-    glm::vec3 diff = p - gridPoint;
+float Noise::surflet3D(glm::vec3 p, glm::vec3 gridPoint) {
+
+    glm::vec3 t2    = glm::abs(p - gridPoint);
+    glm::vec3 t     = glm::vec3(1.f) - 6.f * pow(t2, 5.f) + 15.f * pow(t2, 4.f) - 10.f * pow(t2, 3.f);
+
+    glm::vec3 gradient  = glm::normalize(random3(gridPoint) * 2.f - glm::vec3(1.f));
+    glm::vec3 diff      = p - gridPoint;
 
     float height = glm::dot(diff, gradient);
 
