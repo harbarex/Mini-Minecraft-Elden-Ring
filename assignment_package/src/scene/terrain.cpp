@@ -769,18 +769,6 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
 
     }
 
-    // already filled the blocks
-    // TODO: push to the collection of completed Chunks
-    completedChunksLock->lock();
-    completedChunks->insert(chunk);
-    // neighbors to re-create vbo
-    for (const std::pair<Direction, Chunk*> p : chunk->getNeighbors()) {
-        if (p.second != nullptr && p.second->isVBOLoaded()) {
-            completedChunks->insert(p.second);
-        }
-    }
-    completedChunksLock->unlock();
-
 }
 
 /**
