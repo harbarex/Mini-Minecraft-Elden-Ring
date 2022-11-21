@@ -8,5 +8,6 @@
         <file>glsl/post/lava.frag.glsl</file>
         <file>glsl/post/underwater.frag.glsl</file>
         <file>glsl/post/overlay.vert.glsl</file>
+        <file>glsl/post/overlay.frag.glsl</file>
     </qresource>
 </RCC>
