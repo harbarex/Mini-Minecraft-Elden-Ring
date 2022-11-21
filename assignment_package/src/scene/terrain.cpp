@@ -716,8 +716,8 @@ FillBlocksWorker::FillBlocksWorker(int x,
 
 void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height){
     if( height < 136){
-        chunk->setBlockAt(x, height, z, WATER);
-        for(int y_dirt=128; y_dirt<height; y_dirt++){
+        //chunk->setBlockAt(x, height, z, WATER);
+        for(int y_dirt=128; y_dirt<136; y_dirt++){
             chunk->setBlockAt(x, y_dirt, z, WATER);
         }
     }
@@ -764,7 +764,7 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
                 chunk->setBlockAt(x, y_underground, z, DIRT);
             }
 
-            chunk->setBlockAt(x, 0, z, STONE);
+            chunk->setBlockAt(x, 0, z, BEDROCK);
 
             int lavaLevel = 30;
 

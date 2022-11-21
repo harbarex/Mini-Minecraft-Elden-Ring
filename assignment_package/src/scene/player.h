@@ -86,6 +86,10 @@ public:
     // check the effect of acceleration on current velocity
     VelocityCond currVelocityCond(float dT, InputBundle &inputs);
 
+    bool isOnGround(const Terrain &terrain, InputBundle &inputs);
+    bool isUnderWater(const Terrain &terrain, InputBundle &inputs);
+    bool isUnderLava(const Terrain &terrain, InputBundle &inputs);
+
     bool gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, float *out_dist, glm::ivec3 *out_blockHit);
     bool gridMarchPrevBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, glm::ivec3 *out_prevBlock, glm::ivec3 *out_blockHit);
 

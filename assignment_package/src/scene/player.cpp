@@ -544,6 +544,72 @@ void Player::implementJumping() {
 }
 
 /**
+ * @brief Player::isOnGround
+ * Check if player is on ground
+ * @param terrain
+ * @param input
+ */
+bool Player::isOnGround(const Terrain &terrain, InputBundle &input) {
+    glm::vec3 bottomLeftVertex = this->m_position - glm::vec3(0.5f, 0, 0.5f);
+    for (int x = 0; x <= 1; x++) {
+        for (int z = 0; z <= 1; z++) {
+            glm::vec3 p = glm::vec3(floor(bottomLeftVertex.x) + x, floor(bottomLeftVertex.y - 0.005f),
+                          floor(bottomLeftVertex.z) + z);
+            if (terrain.getBlockAt(p) != EMPTY
+                    && terrain.getBlockAt(p) != WATER
+                    && terrain.getBlockAt(p) != LAVA) {
+                input.onGround = true;
+            } else {
+                input.onGround = false;
+            }
+        }
+    }
+    return input.onGround;
+}
+
+/**
+ * @brief Player::isUnderWater
+ * Check if Player is under water
+ * @param terrain
+ * @param input
+ */
+bool Player::isUnderWater(const Terrain &terrain, InputBundle &input) {
+    input.underWater = false;
+    glm::vec3 topLeftVertex = this->m_position + glm::vec3(0.5f, 1.5f, 0.5f);
+    for (int x = 0; x <= 1; x++) {
+        for (int z = 0; z <= 1; z++) {
+            glm::vec3 p = glm::vec3(floor(topLeftVertex.x) + x, floor(topLeftVertex.y - 0.005f),
+                          floor(topLeftVertex.z) + z);
+            if (terrain.getBlockAt(p) == WATER) {
+                input.underWater = true;
+            }
+        }
+    }
+    return input.underWater;
+}
+
+/**
+ * @brief Player::isUnderLava
+ * Check if Player is under lava
+ * @param terrain
+ * @param input
+ */
+bool Player::isUnderLava(const Terrain &terrain, InputBundle &input) {
+    input.underLava = false;
+    glm::vec3 topLeftVertex = this->m_position + glm::vec3(0.5f, 1.5f, 0.5f);
+    for (int x = 0; x <= 1; x++) {
+        for (int z = 0; z <= 1; z++) {
+            glm::vec3 p = glm::vec3(floor(topLeftVertex.x) + x, floor(topLeftVertex.y - 0.005f),
+                          floor(topLeftVertex.z) + z);
+            if (terrain.getBlockAt(p) == LAVA) {
+                input.underLava = true;
+            }
+        }
+    }
+    return input.underLava;
+}
+
+/**
  * @brief Player::destroyBlock
  *  Destroy the hit block
  * @param inputs : InputBundle, state of key pressed
