@@ -38,6 +38,8 @@ public:
     void useMe();
     // Pass the given texture map to this shader on the GPU
     void setTexture();
+    // Pass the given texture map to this shader on the GPU
+    void setTexture(int textureSlot);
     // Pass current time (frame count) to this shader on the GPU
     void setTime(int time);
     // Pass the given model matrix to this shader on the GPU
