@@ -64,10 +64,10 @@ float fbm(vec3 p) {
 void main()
 {
     //background texture
-//    vec4 texture_color  = texture(u_Texture, fs_UV);
-//    texture_color       = texture_color * (0.5 * fbm(fs_Pos.xyz) + 0.5);
+    vec4 texture_color  = texture(u_Texture, fs_UV);
+    texture_color       = texture_color * (0.5 * fbm(fs_Pos.xyz) + 0.5);
 
-    vec4 texture_color = vec4(1,1,1,0);
+    //vec4 texture_color = vec4(1,1,1,0);
 
     vec4 water_color = vec4(0.192156862745098, 0.6627450980392157, 0.9333333333333333, 1.0);
 
