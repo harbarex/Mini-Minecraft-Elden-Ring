@@ -1,6 +1,26 @@
 
 # Feature Implementation
 
+## Texturing and Texture Animation
+
+### Load Texture
+
+Load bottom-left uv coordinate of 6 faces of each block from text file, set uv coordinate for each vertex and pass it to GPU, and load texture 2D image in GPU.
+
+### Split VBO
+
+Split the vbo for transparent blocks and opaque blocks, respectively. Call draw function for two times in order to apply alpha blending to transparent block.
+
+### Texture Animation
+
+#### Animatable Flag
+
+Pass animatable flag (1 or -1) to GPU and apply UV offset if the current processing block is animatable (which is 1)
+
+#### Time
+
+Set the processing number of frame as the time and pass it to GPU (u_Time). Apply u_Time with mod in uv offset for simulating the animation for animatable block (LAVA and WATER)
+
 ## Game Engine Tick Function and Player Physics (Meng-Chuan Chang)
 
 ### Movement
