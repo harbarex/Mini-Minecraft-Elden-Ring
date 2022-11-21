@@ -1,6 +1,7 @@
 #ifndef MYGL_H
 #define MYGL_H
 
+#include "framebuffer.h"
 #include "openglcontext.h"
 #include "scene/quad.h"
 #include "scene/worldaxes.h"
@@ -28,6 +29,8 @@ private:
     ShaderProgram m_progUnderwater;
     ShaderProgram m_progLava;
     Quad m_quad;
+
+    FrameBuffer m_frameBuffer;
 
     GLuint vao; // A handle for our vertex array object. This will store the VBOs created in our geometry classes.
                 // Don't worry too much about this. Just know it is necessary in order to render geometry.
