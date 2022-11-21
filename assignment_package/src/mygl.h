@@ -2,7 +2,7 @@
 #define MYGL_H
 
 #include "openglcontext.h"
-#include "shaderprogram.h"
+#include "scene/quad.h"
 #include "scene/worldaxes.h"
 #include "scene/camera.h"
 #include "scene/terrain.h"
@@ -23,7 +23,11 @@ private:
     WorldAxes m_worldAxes; // A wireframe representation of the world axes. It is hard-coded to sit centered at (32, 128, 32).
     ShaderProgram m_progLambert;// A shader program that uses lambertian reflection
     ShaderProgram m_progFlat;// A shader program that uses "flat" reflection (no shadowing at all)
-//    ShaderProgram m_progInstanced;// A shader program that is designed to be compatible with instanced rendering
+
+    // Post-process Shaders
+    ShaderProgram m_progUnderwater;
+    ShaderProgram m_progLava;
+    Quad m_quad;
 
     GLuint vao; // A handle for our vertex array object. This will store the VBOs created in our geometry classes.
                 // Don't worry too much about this. Just know it is necessary in order to render geometry.

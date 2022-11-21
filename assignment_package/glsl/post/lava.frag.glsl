@@ -2,12 +2,11 @@
 
 uniform ivec2 u_Dimensions;
 uniform int u_Time;
+uniform sampler2D u_Texture;
 
 in vec2 fs_UV;
 
-out vec3 color;
-
-uniform sampler2D u_RenderedTexture;
+out vec4 color;
 
 float hash21(in vec2 n){ return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453); }
 mat2 makem2(in float theta){float c = cos(theta);float s = sin(theta);return mat2(c,-s,s,c);}
@@ -104,6 +103,7 @@ void main()
         float rz = flow(p);
 
         vec3 col = vec3(.2,0.07,0.01)/rz;
-        color = texture(u_RenderedTexture, fs_UV).rgb + col;
+        //color   = vec4(col, 1);
+        color = vec4(texture(u_Texture, fs_UV).rgb + col, 1);
         //color = texture(u_RenderedTexture, fs_UV).rgb * pow(col,vec3(1.4));
 }

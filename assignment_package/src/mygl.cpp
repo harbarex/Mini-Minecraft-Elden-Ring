@@ -11,7 +11,9 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
-      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), frameCount(0),
+      m_progUnderwater(this), m_progLava(this), m_quad(this),
+      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
+      frameCount(0),
       prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this),
       prevExpandTime(QDateTime::currentMSecsSinceEpoch())
 {
@@ -32,6 +34,9 @@ MyGL::MyGL(QWidget *parent)
 MyGL::~MyGL() {
     makeCurrent();
     glDeleteVertexArrays(1, &vao);
+
+    m_quad.destroyVBOdata();
+    m_worldAxes.destroyVBOdata();
 }
 
 
@@ -62,6 +67,9 @@ void MyGL::initializeGL()
     // Create a Vertex Attribute Object
     glGenVertexArrays(1, &vao);
 
+    // Create the instance of the post-process quad
+    m_quad.createVBOdata();
+
     //Create the instance of the world axes
     m_worldAxes.createVBOdata();
 
@@ -70,6 +78,10 @@ void MyGL::initializeGL()
     // Create and set up the flat lighting shader
     m_progFlat.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
 //    m_progInstanced.create(":/glsl/instanced.vert.glsl", ":/glsl/lambert.frag.glsl");
+
+    m_progUnderwater.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/underwater.frag.glsl");
+    m_progLava.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/lava.frag.glsl");
+    m_quad.createVBOdata();
 
     createTexture();
 
@@ -97,6 +109,7 @@ void MyGL::resizeGL(int w, int h) {
 
     m_progLambert.setViewProjMatrix(viewproj);
     m_progFlat.setViewProjMatrix(viewproj);
+    m_progUnderwater.setViewProjMatrix(viewproj);
 
     printGLErrorLog();
 }
@@ -158,19 +171,33 @@ void MyGL::paintGL() {
 //    m_progInstanced.setViewProjMatrix(m_player.mcr_camera.getViewProj());
 
     m_progLambert.setTime(frameCount);
+    m_progLava.setTime(frameCount);
+    m_progUnderwater.setTime(frameCount);
 
     renderTerrain(TerrainDrawType::opaque);
+
+    glDisable(GL_DEPTH_TEST);
+
+    m_progFlat.setModelMatrix(glm::mat4());
+    m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
+    m_progFlat.draw(m_worldAxes);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
+    //glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Post-process Shaders
+    //m_progUnderwater.drawOverlay(m_quad);
+    m_progLava.drawOverlay(m_quad);
+
+    glEnable(GL_DEPTH_TEST);
+
+
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     renderTerrain(TerrainDrawType::transparent);
     glDisable(GL_BLEND);
-
-    glDisable(GL_DEPTH_TEST);
-    m_progFlat.setModelMatrix(glm::mat4());
-    m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
-    m_progFlat.draw(m_worldAxes);
-    glEnable(GL_DEPTH_TEST);
 
     frameCount++;
 }
