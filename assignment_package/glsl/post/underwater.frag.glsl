@@ -67,8 +67,6 @@ void main()
     vec4 texture_color  = texture(u_Texture, fs_UV);
     texture_color       = texture_color * (0.5 * fbm(fs_Pos.xyz) + 0.5);
 
-    //vec4 texture_color = vec4(1,1,1,0);
-
     vec4 water_color = vec4(0.192156862745098, 0.6627450980392157, 0.9333333333333333, 1.0);
 
     vec4 k = vec4(u_Time)*0.025;
@@ -78,7 +76,5 @@ void main()
     float val3 = length(0.5-fract(k.xyw*=mat3(vec3(-2.0,-1.0,0.0), vec3(3.0,-1.0,1.0), vec3(1.0,-1.0,-1.0))*0.5));
 
     vec4 color = (pow(min(min(val1,val2),val3), 7.0) * 3.0)+texture_color * water_color * 1.7;
-
     out_Col = vec4 (color.rgb, texture_color.a);
-    //color = water_color;
 }
