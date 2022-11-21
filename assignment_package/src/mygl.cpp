@@ -11,7 +11,7 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
-      m_progUnderwater(this), m_progLava(this), m_quad(this),
+      m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_quad(this),
       m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
       m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
       frameCount(0),
@@ -86,6 +86,8 @@ void MyGL::initializeGL()
 
     m_progUnderwater.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/underwater.frag.glsl");
     m_progLava.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/lava.frag.glsl");
+    m_progNoOp.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/overlay.frag.glsl");
+
     m_quad.createVBOdata();
 
     createTexture();
@@ -175,7 +177,8 @@ void MyGL::paintGL() {
     // Clear the screen so that we only see newly drawn images
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
+    // Bind FrameBuffer for Overlay
+    m_frameBuffer.bindFrameBuffer();
     glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -188,13 +191,13 @@ void MyGL::paintGL() {
 
     renderTerrain(TerrainDrawType::opaque);
 
-//    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
 
-//    m_progFlat.setModelMatrix(glm::mat4());
-//    m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
-//    m_progFlat.draw(m_worldAxes);
+    m_progFlat.setModelMatrix(glm::mat4());
+    m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
+    m_progFlat.draw(m_worldAxes);
 
-//    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -202,15 +205,26 @@ void MyGL::paintGL() {
     glDisable(GL_BLEND);
 
 
-    // Bind FrameBuffer for Overlay
-    m_frameBuffer.bindFrameBuffer();
+    glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
     glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Post-process Shaders
     m_frameBuffer.bindToTextureSlot(1);
-    //m_progUnderwater.drawOverlay(m_quad);
-    m_progLava.drawOverlay(m_quad);
+
+
+    // Post-process Shaders
+    if(m_player.isUnderWater(m_terrain, m_inputs)){
+        m_progUnderwater.setTexture(m_frameBuffer.getTextureSlot());
+        m_progUnderwater.drawOverlay(m_quad);
+    }
+    else if(m_player.isUnderWater(m_terrain, m_inputs)){
+        m_progLava.setTexture(m_frameBuffer.getTextureSlot());
+        m_progLava.drawOverlay(m_quad);
+    }
+    else{
+        m_progNoOp.setTexture(m_frameBuffer.getTextureSlot());
+        m_progNoOp.drawOverlay(m_quad);
+    }
 
     frameCount++;
 }
