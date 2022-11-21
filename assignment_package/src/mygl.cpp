@@ -12,6 +12,7 @@ MyGL::MyGL(QWidget *parent)
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
       m_progUnderwater(this), m_progLava(this), m_quad(this),
+      m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
       m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
       frameCount(0),
       prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this),
@@ -36,6 +37,7 @@ MyGL::~MyGL() {
     glDeleteVertexArrays(1, &vao);
 
     m_quad.destroyVBOdata();
+    m_frameBuffer.destroy();
     m_worldAxes.destroyVBOdata();
 }
 
@@ -72,6 +74,9 @@ void MyGL::initializeGL()
 
     //Create the instance of the world axes
     m_worldAxes.createVBOdata();
+
+    // Initiailize frame buffer
+    m_frameBuffer.create();
 
     // Create and set up the diffuse shader
     m_progLambert.create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
@@ -110,6 +115,10 @@ void MyGL::resizeGL(int w, int h) {
     m_progLambert.setViewProjMatrix(viewproj);
     m_progFlat.setViewProjMatrix(viewproj);
     m_progUnderwater.setViewProjMatrix(viewproj);
+
+    m_frameBuffer.resize(this->width(), this->height(), this->devicePixelRatio());
+    m_frameBuffer.destroy();
+    m_frameBuffer.create();
 
     printGLErrorLog();
 }
@@ -166,6 +175,11 @@ void MyGL::paintGL() {
     // Clear the screen so that we only see newly drawn images
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // bind frame buffer for overlay
+    m_frameBuffer.bindFrameBuffer();
+    glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
 //    m_progInstanced.setViewProjMatrix(m_player.mcr_camera.getViewProj());
@@ -182,12 +196,9 @@ void MyGL::paintGL() {
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progFlat.draw(m_worldAxes);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
-    //glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     // Post-process Shaders
     //m_progUnderwater.drawOverlay(m_quad);
+    m_frameBuffer.bindToTextureSlot(2);
     m_progLava.drawOverlay(m_quad);
 
     glEnable(GL_DEPTH_TEST);
