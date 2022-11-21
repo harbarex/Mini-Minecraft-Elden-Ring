@@ -1,5 +1,4 @@
 #include "quad.h"
-#include <GL/gl.h>
 
 Quad::Quad(OpenGLContext *context) : Drawable(context)
 {}
