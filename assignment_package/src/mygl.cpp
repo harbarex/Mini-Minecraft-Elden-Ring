@@ -175,11 +175,6 @@ void MyGL::paintGL() {
     // Clear the screen so that we only see newly drawn images
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // bind frame buffer for overlay
-    m_frameBuffer.bindFrameBuffer();
-    glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
 //    m_progInstanced.setViewProjMatrix(m_player.mcr_camera.getViewProj());
@@ -196,13 +191,17 @@ void MyGL::paintGL() {
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progFlat.draw(m_worldAxes);
 
+    glEnable(GL_DEPTH_TEST);
+
+    // bind frame buffer for overlay
+    m_frameBuffer.bindFrameBuffer();
+    glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     // Post-process Shaders
     //m_progUnderwater.drawOverlay(m_quad);
     m_frameBuffer.bindToTextureSlot(2);
     m_progLava.drawOverlay(m_quad);
-
-    glEnable(GL_DEPTH_TEST);
-
 
 
     glEnable(GL_BLEND);
