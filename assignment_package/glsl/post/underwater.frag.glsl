@@ -77,7 +77,7 @@ void main()
     float val2 = length(0.5-fract(k.xyw*=mat3(vec3(-2.0,-1.0,0.0), vec3(3.0,-1.0,1.0), vec3(1.0,-1.0,-1.0))*0.2));
     float val3 = length(0.5-fract(k.xyw*=mat3(vec3(-2.0,-1.0,0.0), vec3(3.0,-1.0,1.0), vec3(1.0,-1.0,-1.0))*0.5));
 
-    vec4 color = (pow(min(min(val1,val2),val3), 7.0) * 3.0)+texture_color * water_color;
+    vec4 color = (pow(min(min(val1,val2),val3), 7.0) * 3.0)+texture_color * water_color * 1.7;
 
     out_Col = vec4 (color.rgb, texture_color.a);
     //color = water_color;
