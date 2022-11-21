@@ -28,6 +28,7 @@ private:
     // Post-process Shaders
     ShaderProgram m_progUnderwater;
     ShaderProgram m_progLava;
+    ShaderProgram m_progNoOp;
     Quad m_quad;
 
     FrameBuffer m_frameBuffer;
