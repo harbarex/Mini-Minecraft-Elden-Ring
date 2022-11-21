@@ -578,10 +578,12 @@ bool Player::isUnderWater(const Terrain &terrain, InputBundle &input) {
     glm::vec3 topLeftVertex = this->m_position + glm::vec3(0.5f, 1.5f, 0.5f);
     for (int x = 0; x <= 1; x++) {
         for (int z = 0; z <= 1; z++) {
-            glm::vec3 p = glm::vec3(floor(topLeftVertex.x) + x, floor(topLeftVertex.y - 0.005f),
-                          floor(topLeftVertex.z) + z);
-            if (terrain.getBlockAt(p) == WATER) {
-                input.underWater = true;
+            if(terrain.hasChunkAt(x,z)){
+                glm::vec3 p = glm::vec3(floor(topLeftVertex.x) + x, floor(topLeftVertex.y - 0.005f),
+                              floor(topLeftVertex.z) + z);
+                if (terrain.getBlockAt(p) == WATER) {
+                    input.underWater = true;
+                }
             }
         }
     }
@@ -599,11 +601,14 @@ bool Player::isUnderLava(const Terrain &terrain, InputBundle &input) {
     glm::vec3 topLeftVertex = this->m_position + glm::vec3(0.5f, 1.5f, 0.5f);
     for (int x = 0; x <= 1; x++) {
         for (int z = 0; z <= 1; z++) {
-            glm::vec3 p = glm::vec3(floor(topLeftVertex.x) + x, floor(topLeftVertex.y - 0.005f),
-                          floor(topLeftVertex.z) + z);
-            if (terrain.getBlockAt(p) == LAVA) {
-                input.underLava = true;
+            if(terrain.hasChunkAt(x,z)){
+                glm::vec3 p = glm::vec3(floor(topLeftVertex.x) + x, floor(topLeftVertex.y - 0.005f),
+                              floor(topLeftVertex.z) + z);
+                if (terrain.getBlockAt(p) == LAVA) {
+                    input.underLava = true;
+                }
             }
+
         }
     }
     return input.underLava;
