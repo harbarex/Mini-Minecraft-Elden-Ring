@@ -504,6 +504,14 @@ void ShaderProgram::setTexture() {
     }
 }
 
+void ShaderProgram::setTexture(int textureSlot) {
+    useMe();
+
+    if (unifTexture != -1) {
+        context->glUniform1i(unifTexture, textureSlot);
+    }
+}
+
 void ShaderProgram::setTime(int time) {
     useMe();
 
