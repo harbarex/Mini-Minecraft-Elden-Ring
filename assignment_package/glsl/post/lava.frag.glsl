@@ -103,7 +103,6 @@ void main()
         float rz = flow(p);
 
         vec3 col = vec3(.4,0.07,0.01)/rz;
-        //color   = vec4(col, 1);
         color = vec4(texture(u_Texture, fs_UV).rgb + col, 1);
         //color = texture(u_RenderedTexture, fs_UV).rgb * pow(col,vec3(1.4));
 }
