@@ -175,8 +175,7 @@ void MyGL::paintGL() {
     // Clear the screen so that we only see newly drawn images
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Bind FrameBuffer for Overlay
-    m_frameBuffer.bindFrameBuffer();
+    glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
     glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -202,7 +201,9 @@ void MyGL::paintGL() {
     renderTerrain(TerrainDrawType::transparent);
     glDisable(GL_BLEND);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
+
+    // Bind FrameBuffer for Overlay
+    m_frameBuffer.bindFrameBuffer();
     glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
