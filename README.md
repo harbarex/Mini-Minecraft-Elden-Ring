@@ -1,7 +1,7 @@
 
 # Feature Implementation
 
-## Texturing and Texture Animation
+## Texturing and Texture Animation (Meng-Chuan Chang)
 
 ### Load Texture
 
