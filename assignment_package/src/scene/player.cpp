@@ -113,10 +113,10 @@ void Player::computePhysics(float dT, const Terrain &terrain, InputBundle &input
         implementJumping(terrain, inputs);
     }
 
-//    if (isUnderLava(terrain, inputs) || isUnderWater(terrain, inputs)) {
-////        liquidFactor = 2.f/3.f;
-//    }
-//    m_velocity = liquidFactor * m_velocity;
+    if (!flightMode && (isUnderLava(terrain, inputs) || isUnderWater(terrain, inputs))) {
+        liquidFactor = 2.f/3.f;
+    }
+    m_velocity = liquidFactor * m_velocity;
     displacement = m_velocity * dampingFactor * dT;
     moveAlongVector(displacement);
 
