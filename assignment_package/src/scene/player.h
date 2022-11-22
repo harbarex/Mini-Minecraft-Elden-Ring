@@ -26,7 +26,7 @@ private:
 
     bool checkXZCollision(int idx, const Terrain &terrain); // determine if current movement collide in X or Z axis (with idx 0 and 2)
     bool checkYCollision(const Terrain &terrain); // determine if current movement collide in Y axis (specifically for the ground)
-    void implementJumping();
+    void implementJumping(const Terrain &terrain, InputBundle &inputs);
     void destroyBlock(InputBundle &inputs, Terrain &terrain); // destroy the block within 3 unit from camera pos when left mouse button is pressed
     void placeNewBlock(InputBundle &inputs, Terrain &terrain);
     void placeBlock(InputBundle &inputs, Terrain &terrain, BlockType blockType);

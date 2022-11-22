@@ -83,6 +83,7 @@ void Player::computePhysics(float dT, const Terrain &terrain, InputBundle &input
     // and velocity, and also perform collision detection.
 
     float dampingFactor = 0.9f;
+    float liquidFactor = 1.f;
     glm::vec3 displacement(0.f);
 
     switch (currVelocityCond(dT, inputs)){
@@ -109,9 +110,13 @@ void Player::computePhysics(float dT, const Terrain &terrain, InputBundle &input
     }
 
     if (inputs.spacePressed) {
-        implementJumping();
+        implementJumping(terrain, inputs);
     }
 
+//    if (isUnderLava(terrain, inputs) || isUnderWater(terrain, inputs)) {
+////        liquidFactor = 2.f/3.f;
+//    }
+//    m_velocity = liquidFactor * m_velocity;
     displacement = m_velocity * dampingFactor * dT;
     moveAlongVector(displacement);
 
@@ -536,7 +541,12 @@ bool Player::checkYCollision(const Terrain &terrain) {
  * @brief Player::implementJumping
  *  Assign initial velocity in +y direction for player to jump
  */
-void Player::implementJumping() {
+void Player::implementJumping(const Terrain &terrain, InputBundle &inputs) {
+    if (isUnderLava(terrain, inputs) || isUnderWater(terrain, inputs)) {
+        m_velocity[1] = 5.f;
+        return;
+    }
+
     if (flightMode || m_velocity[1] != 0.f) {
         return;
     }
