@@ -65,6 +65,33 @@ We treat the displacement of cursor on x and y axis on the screen as the angle c
 
 In MacOS, there is an issue in QCursor::setPos. It only works on Mac at the first time. Therefore, we need to manually delete MiniMinecraft.app in accessibility everytime before running the program.
 
+## Multithreaded Terrain Generation
+
+### FillBlocksWorker
+
+If a zone is not created, all the chunks inside this zone would be instantiated and the raw pointers of those chunks would be sent to FillBlocksWorker.
+
+Each worker is responsible for the blocks in a given zone.
+
+### VBOWorker
+
+If the zone is already created and the zone is not part of the previous visted zones, the raw pointers of a zone would be sent to VBOWorker to create VBO data of this zone.
+
+### Lock
+
+Basically, whenever each worker is about to finish its work, it needs to retrieve the lock and push the raw pointers of the chunks or the VBO data into the collections (in shared memory).
+
+### The Issue encountered when destroy VBOs
+
+Each time, when doing the terrain expansion, some of the previously visited zones would be destroyed (their VBOs). If directly iterate through the chunks inside these zones, and then destroy the VBOs of those chunks without
+
+checking whether those chunks have VBOs or not, we found that some errors might occur when the player quickly moved around 4 adjacent zones. 
+
+More specifically, in that case, when the player quickly moved around 4 adjacent zones, the zones on the border are being frequently destroyed and created. 
+
+The program might crash or get glsl operation error if the gpu is reading the vbo while the main thread is destroying those chunks.
+
+Thus, the solution is to check whether those chunks' vbo is loaded or not before destroying it. (Only destroy the VBOs if they were loaded).
 
 ## Efficient Terrain Rendering and Chunking (Chun-Fu Yeh)
 
