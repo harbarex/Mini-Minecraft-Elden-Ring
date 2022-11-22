@@ -97,7 +97,7 @@ Thus, the solution is to check whether those chunks' vbo is loaded or not before
 
 ### Cave Generation
 
-3D Perlin Noise was used to procedurally generate the cave systems, which exist uniformly below the whole surface terrain.
+3D Perlin Noise was used to procedurally generate the cave systems, which exist uniformly below the whole surface terrain. If the noise value returned from `getCaveHeight(x,y,z)` is less than `0`, we place `STONE` blocks, otherwise `LAVA` or `EMPTY` blocks are placed according to height.
 
 ### Post-Process Overlays
 
