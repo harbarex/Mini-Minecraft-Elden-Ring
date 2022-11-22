@@ -93,6 +93,17 @@ The program might crash or get glsl operation error if the gpu is reading the vb
 
 Thus, the solution is to check whether those chunks' vbo is loaded or not before destroying it. (Only destroy the VBOs if they were loaded).
 
+## Cave Systems (Ankit Billa)
+
+### Disable collision in liquid (Meng-Chuan Chang)
+
+We would not set the velocity to 0 if the hit block is liquid (WATER, LAVA)
+
+### velocity change (Meng-Chuan Chang)
+
+Slow down the velocity in all direction if the player is in the liquid.
+Keep assigning velocity while pressing space and the player is in the liquid.
+
 ## Efficient Terrain Rendering and Chunking (Chun-Fu Yeh)
 
 ### Add block.h & block.cpp
