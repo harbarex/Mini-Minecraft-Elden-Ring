@@ -217,7 +217,7 @@ void MyGL::paintGL() {
         m_progUnderwater.setTexture(m_frameBuffer.getTextureSlot());
         m_progUnderwater.drawOverlay(m_quad);
     }
-    else if(m_player.isUnderWater(m_terrain, m_inputs)){
+    else if(m_player.isUnderLava(m_terrain, m_inputs)){
         m_progLava.setTexture(m_frameBuffer.getTextureSlot());
         m_progLava.drawOverlay(m_quad);
     }
