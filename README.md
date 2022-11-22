@@ -95,6 +95,20 @@ Thus, the solution is to check whether those chunks' vbo is loaded or not before
 
 ## Cave Systems (Ankit Billa)
 
+### Cave Generation
+
+3D Perlin Noise was used to procedurally generate the cave systems, which exist uniformly below the whole surface terrain.
+
+### Post-Process Overlays
+
+#### Underwater
+
+To simulate being underwater, a simple fluid distortion noise was overlayed on the screen as soon as the player goes below a water block.
+
+#### Under Lava
+
+To simulate being under lava, a fluid distortion using a combination of multi-directional flows and worley noise was overlayed on the screen when a player goes below a lava block.
+
 ### Disable collision in liquid (Meng-Chuan Chang)
 
 We would not set the velocity to 0 if the hit block is liquid (WATER, LAVA)
