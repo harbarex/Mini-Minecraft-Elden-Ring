@@ -29,6 +29,7 @@ public:
     int unifColor; // A handle for the "uniform" vec4 representing color of geometry in the vertex shader
     int unifTexture; // A handle for the "uniform" sampler2D that will be used to read the texture containing the scene render
     int unifTime; // A handle for the "uniform" int representing current time (actually is number of frames)
+    int unifDimensions; // A handle for the "uniform" vec2 u_Dimensions
 
 public:
     ShaderProgram(OpenGLContext* context);
@@ -48,6 +49,8 @@ public:
     void setViewProjMatrix(const glm::mat4 &vp);
     // Pass the given color to this shader on the GPU
     void setGeometryColor(glm::vec4 color);
+    // Set dimension
+    void setDimensions(glm::ivec2 dims);
     // Draw the given object to our screen using this ShaderProgram's shaders
     void draw(Drawable &d);
     // Draw the given object to our screen multiple times using instanced rendering

@@ -116,7 +116,10 @@ void MyGL::resizeGL(int w, int h) {
 
     m_progLambert.setViewProjMatrix(viewproj);
     m_progFlat.setViewProjMatrix(viewproj);
-    m_progUnderwater.setViewProjMatrix(viewproj);
+
+    m_progNoOp.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
+    m_progUnderwater.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
+    m_progLava.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
 
     m_frameBuffer.resize(this->width(), this->height(), this->devicePixelRatio());
     m_frameBuffer.destroy();
@@ -211,9 +214,8 @@ void MyGL::paintGL() {
 
     m_frameBuffer.bindToTextureSlot(1);
 
-
     // Post-process Shaders
-    if(m_player.isUnderWater(m_terrain, m_inputs)){
+    if(m_player.isUnderWater(m_terrain, m_inputs)){    
         m_progUnderwater.setTexture(m_frameBuffer.getTextureSlot());
         m_progUnderwater.drawOverlay(m_quad);
     }
