@@ -89,6 +89,8 @@ public:
     bool isOnGround(const Terrain &terrain, InputBundle &inputs);
     bool isUnderWater(const Terrain &terrain, InputBundle &inputs);
     bool isUnderLava(const Terrain &terrain, InputBundle &inputs);
+    // check if the given position is liquid or not
+    bool isLiquid(const Terrain &terrain, glm::ivec3* pos);
 
     bool gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, float *out_dist, glm::ivec3 *out_blockHit);
     bool gridMarchPrevBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, glm::ivec3 *out_prevBlock, glm::ivec3 *out_blockHit);

@@ -88,6 +88,11 @@ bool Block::isTransparent(BlockType type)
     return (transparentBlockTypes.find(type) != transparentBlockTypes.end());
 }
 
+bool Block::isLiquid(BlockType type)
+{
+    return (liquidBlockTypes.find(type) != liquidBlockTypes.end());
+}
+
 /**
  * @brief Block::isAnimatable
  *  The helper function to determine whether a given block type
@@ -195,5 +200,9 @@ std::unordered_set<BlockType> Block::transparentBlockTypes = {
 };
 
 std::unordered_set<BlockType> Block::animatableBlockTypes = {
+    WATER, LAVA
+};
+
+std::unordered_set<BlockType> Block::liquidBlockTypes = {
     WATER, LAVA
 };

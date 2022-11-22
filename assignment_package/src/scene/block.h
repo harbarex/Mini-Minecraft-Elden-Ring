@@ -93,6 +93,9 @@ public:
     // a collection of animatable block type
     static std::unordered_set<BlockType> animatableBlockTypes;
 
+    // a collection of liqui block type
+    static std::unordered_set<BlockType> liquidBlockTypes;
+
     // the rule to determine whether a given block is opaque or not
     static bool isOpaque(BlockType type);
 
@@ -104,6 +107,9 @@ public:
 
     // the rule to determine whether a given block is animatable or not
     static bool isAnimatable(BlockType type);
+
+    // the rule to determine whether a given block is liquid or not
+    static bool isLiquid(BlockType Type);
 
     // the function that defines the animatable flag of each block type
     static glm::vec2 getAnimatableFlag(BlockType type);
