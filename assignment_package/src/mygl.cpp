@@ -122,6 +122,14 @@ void MyGL::resizeGL(int w, int h) {
     m_frameBuffer.destroy();
     m_frameBuffer.create();
 
+    m_progNoOp.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
+    m_progUnderwater.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
+    m_progLava.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
+
+    m_frameBuffer.resize(this->width(), this->height(), this->devicePixelRatio());
+    m_frameBuffer.destroy();
+    m_frameBuffer.create();
+
     printGLErrorLog();
 }
 
@@ -210,7 +218,6 @@ void MyGL::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_frameBuffer.bindToTextureSlot(1);
-
 
     // Post-process Shaders
     if(m_player.isUnderWater(m_terrain, m_inputs)){

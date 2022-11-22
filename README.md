@@ -1,6 +1,26 @@
 
 # Feature Implementation
 
+## Texturing and Texture Animation (Meng-Chuan Chang)
+
+### Load Texture
+
+Load bottom-left uv coordinate of 6 faces of each block from text file, set uv coordinate for each vertex and pass it to GPU, and load texture 2D image in GPU.
+
+### Split VBO
+
+Split the vbo for transparent blocks and opaque blocks, respectively. Call draw function for two times in order to apply alpha blending to transparent block.
+
+### Texture Animation
+
+#### Animatable Flag
+
+Pass animatable flag (1 or -1) to GPU and apply UV offset if the current processing block is animatable (which is 1)
+
+#### Time
+
+Set the processing number of frame as the time and pass it to GPU (u_Time). Apply u_Time with mod in uv offset for simulating the animation for animatable block (LAVA and WATER)
+
 ## Game Engine Tick Function and Player Physics (Meng-Chuan Chang)
 
 ### Movement
@@ -45,6 +65,44 @@ We treat the displacement of cursor on x and y axis on the screen as the angle c
 
 In MacOS, there is an issue in QCursor::setPos. It only works on Mac at the first time. Therefore, we need to manually delete MiniMinecraft.app in accessibility everytime before running the program.
 
+## Multithreaded Terrain Generation
+
+### FillBlocksWorker
+
+If a zone is not created, all the chunks inside this zone would be instantiated and the raw pointers of those chunks would be sent to FillBlocksWorker.
+
+Each worker is responsible for the blocks in a given zone.
+
+### VBOWorker
+
+If the zone is already created and the zone is not part of the previous visted zones, the raw pointers of a zone would be sent to VBOWorker to create VBO data of this zone.
+
+### Lock
+
+Basically, whenever each worker is about to finish its work, it needs to retrieve the lock and push the raw pointers of the chunks or the VBO data into the collections (in shared memory).
+
+### The Issue encountered when destroy VBOs
+
+Each time, when doing the terrain expansion, some of the previously visited zones would be destroyed (their VBOs). If directly iterate through the chunks inside these zones, and then destroy the VBOs of those chunks without
+
+checking whether those chunks have VBOs or not, we found that some errors might occur when the player quickly moved around 4 adjacent zones. 
+
+More specifically, in that case, when the player quickly moved around 4 adjacent zones, the zones on the border are being frequently destroyed and created. 
+
+The program might crash or get glsl operation error if the gpu is reading the vbo while the main thread is destroying those chunks.
+
+Thus, the solution is to check whether those chunks' vbo is loaded or not before destroying it. (Only destroy the VBOs if they were loaded).
+
+## Cave Systems (Ankit Billa)
+
+### Disable collision in liquid (Meng-Chuan Chang)
+
+We would not set the velocity to 0 if the hit block is liquid (WATER, LAVA)
+
+### velocity change (Meng-Chuan Chang)
+
+Slow down the velocity in all direction if the player is in the liquid.
+Keep assigning velocity while pressing space and the player is in the liquid.
 
 ## Efficient Terrain Rendering and Chunking (Chun-Fu Yeh)
 

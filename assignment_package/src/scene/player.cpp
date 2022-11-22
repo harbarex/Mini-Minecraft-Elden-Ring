@@ -83,6 +83,7 @@ void Player::computePhysics(float dT, const Terrain &terrain, InputBundle &input
     // and velocity, and also perform collision detection.
 
     float dampingFactor = 0.9f;
+    float liquidFactor = 1.f;
     glm::vec3 displacement(0.f);
 
     switch (currVelocityCond(dT, inputs)){
@@ -109,9 +110,13 @@ void Player::computePhysics(float dT, const Terrain &terrain, InputBundle &input
     }
 
     if (inputs.spacePressed) {
-        implementJumping();
+        implementJumping(terrain, inputs);
     }
 
+    if (!flightMode && (isUnderLava(terrain, inputs) || isUnderWater(terrain, inputs))) {
+        liquidFactor = 2.f/3.f;
+    }
+    m_velocity = liquidFactor * m_velocity;
     displacement = m_velocity * dampingFactor * dT;
     moveAlongVector(displacement);
 
@@ -492,7 +497,7 @@ bool Player::checkXZCollision(int idx, const Terrain &terrain) {
 
         for (auto& corner: cornerArr) {
             bool cornerHit = gridMarch(corner, fowardDir*currForward, terrain, &out_dist, &out_blockHit);
-            if (cornerHit && out_dist < horizontalDistTolerance && m_velocity[idx] * forwardDeg[idx] >= 0) {
+            if (cornerHit && out_dist < horizontalDistTolerance && m_velocity[idx] * forwardDeg[idx] >= 0 && !isLiquid(terrain, &out_blockHit)) {
                 return false;
             }
         }
@@ -512,19 +517,20 @@ bool Player::checkYCollision(const Terrain &terrain) {
         return true;
     }
 
-    glm::ivec3 out_blockHit(0);
+    glm::ivec3 out_blockHit_ground(0);
+    glm::ivec3 out_blockHit_ceiling(0);
     float out_dist_neg_y = 0.f;
     float out_dist_pos_y = 0.f;
 
     // check if the player touches the ground
     float negYTolerance = 0.4f; // (specifically for gravity) max velocity: 10, average dt: 0.016 > displacement: 10 * 0.016 = 0.16
     float posYTolerance = 0.4f;
-    bool playerGroundHit = gridMarch(m_position, glm::vec3(0.f, -1.f, 0.f), terrain, &out_dist_neg_y, &out_blockHit);
-    bool playerCeilingHit = gridMarch(m_camera.getCurrentPos(), glm::vec3(0.f, 1.f, 0.f), terrain, &out_dist_pos_y, &out_blockHit);
-    if (playerGroundHit && out_dist_neg_y < negYTolerance && m_velocity[1] <= 0) {
+    bool playerGroundHit = gridMarch(m_position, glm::vec3(0.f, -1.f, 0.f), terrain, &out_dist_neg_y, &out_blockHit_ground);
+    bool playerCeilingHit = gridMarch(m_camera.getCurrentPos(), glm::vec3(0.f, 1.f, 0.f), terrain, &out_dist_pos_y, &out_blockHit_ceiling);
+    if (playerGroundHit && out_dist_neg_y < negYTolerance && m_velocity[1] <= 0 && !isLiquid(terrain, &out_blockHit_ground)) {
         return false;
     }
-    if (playerCeilingHit && out_dist_pos_y < posYTolerance && m_velocity[1] >= 0) {
+    if (playerCeilingHit && out_dist_pos_y < posYTolerance && m_velocity[1] >= 0 && !isLiquid(terrain, &out_blockHit_ceiling)) {
         return false;
     }
     return true;
@@ -535,7 +541,12 @@ bool Player::checkYCollision(const Terrain &terrain) {
  * @brief Player::implementJumping
  *  Assign initial velocity in +y direction for player to jump
  */
-void Player::implementJumping() {
+void Player::implementJumping(const Terrain &terrain, InputBundle &inputs) {
+    if (isUnderLava(terrain, inputs) || isUnderWater(terrain, inputs)) {
+        m_velocity[1] = 5.f;
+        return;
+    }
+
     if (flightMode || m_velocity[1] != 0.f) {
         return;
     }
@@ -742,6 +753,11 @@ void Player::selectNextBlock(InputBundle &inputs) {
     if (selectedBlockPtr >= (int)blocksHold.size()) {
         selectedBlockPtr = 0;
     }
+}
+
+bool Player::isLiquid(const Terrain &terrain, glm::ivec3* pos) {
+    BlockType blockType = terrain.getBlockAt((*pos).x, (*pos).y, (*pos).z);
+    return Block::isLiquid(blockType);
 }
 
 

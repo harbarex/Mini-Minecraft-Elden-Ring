@@ -26,7 +26,7 @@ private:
 
     bool checkXZCollision(int idx, const Terrain &terrain); // determine if current movement collide in X or Z axis (with idx 0 and 2)
     bool checkYCollision(const Terrain &terrain); // determine if current movement collide in Y axis (specifically for the ground)
-    void implementJumping();
+    void implementJumping(const Terrain &terrain, InputBundle &inputs);
     void destroyBlock(InputBundle &inputs, Terrain &terrain); // destroy the block within 3 unit from camera pos when left mouse button is pressed
     void placeNewBlock(InputBundle &inputs, Terrain &terrain);
     void placeBlock(InputBundle &inputs, Terrain &terrain, BlockType blockType);
@@ -89,6 +89,9 @@ public:
     bool isOnGround(const Terrain &terrain, InputBundle &inputs);
     bool isUnderWater(const Terrain &terrain, InputBundle &inputs);
     bool isUnderLava(const Terrain &terrain, InputBundle &inputs);
+
+    // check if the given position is liquid or not
+    bool isLiquid(const Terrain &terrain, glm::ivec3* pos);
 
     bool gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, float *out_dist, glm::ivec3 *out_blockHit);
     bool gridMarchPrevBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, glm::ivec3 *out_prevBlock, glm::ivec3 *out_blockHit);
