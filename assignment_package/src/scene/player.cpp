@@ -6,7 +6,7 @@ Player::Player(glm::vec3 pos, Terrain &terrain)
       m_camera(pos + glm::vec3(0, 1.5f, 0)), mcr_terrain(terrain),
       flight_velocity_max(15.f), non_flight_velocity_max(10.f), m_velocity_val(flight_velocity_max),
       m_acceleration_val(40.f), cameraBlockDist(3.f), flightMode(true),
-      destroyBufferTime(0.f), creationBufferTime(0.f), minWaitTime(0.5f), selectedBlockPtr(0), mcr_camera(m_camera)
+      destroyBufferTime(0.f), creationBufferTime(0.f), minWaitTime(0.5f), mcr_camera(m_camera)
 {}
 
 Player::~Player()
@@ -16,8 +16,7 @@ void Player::tick(float dT, InputBundle &input) {
     destroyBufferTime += dT;
     creationBufferTime += dT;
     destroyBlock(input, mcr_terrain);
-    placeNewBlock(input, mcr_terrain);
-    placeBlock(input, mcr_terrain, blocksHold[selectedBlockPtr]);
+    placeBlock(input, mcr_terrain);
     processInputs(input);
     computePhysics(dT, mcr_terrain, input);
 }
@@ -651,6 +650,10 @@ void Player::destroyBlock(InputBundle &inputs, Terrain &terrain) {
         return;
     }
 
+    // add destroyed block to inventory
+    BlockType destroyedBlockType = terrain.getBlockAt(glm::vec3(out_blockHit));
+    inventory.storeBlock(destroyedBlockType);
+
     // remove hit block
     terrain.placeBlockAt(out_blockHit[0], out_blockHit[1], out_blockHit[2], EMPTY);
 
@@ -662,13 +665,12 @@ void Player::destroyBlock(InputBundle &inputs, Terrain &terrain) {
 }
 
 /**
- * @brief Player::placeNewBlock
- *  Place new block at the face of hit block,
- *  and set its type as that of hit block
+ * @brief Player::placeBlock
+ *  Place new block at the face of hit block with given blocktype
  * @param inputs : InputBundle, state of key pressed
  * @param terrain : Terrain, terrain storing block data
  */
-void Player::placeNewBlock(InputBundle &inputs, Terrain &terrain) {
+void Player::placeBlock(InputBundle &inputs, Terrain &terrain) {
 
     if (!inputs.rightMouseButtonPressed) {
         return;
@@ -688,59 +690,19 @@ void Player::placeNewBlock(InputBundle &inputs, Terrain &terrain) {
         return;
     }
 
-    // set the type of new block same as target hit block
-    BlockType prevCellType = terrain.getBlockAt(out_blockHit.x, out_blockHit.y, out_blockHit.z);
+    BlockType placeBlockType = inventory.placeBlock();
 
-    terrain.placeBlockAt(out_blockHitPrev.x, out_blockHitPrev.y, out_blockHitPrev.z, prevCellType);
+    if (Block::isEmpty(placeBlockType)) {
+        return;
+    }
+
+    terrain.placeBlockAt(out_blockHitPrev.x, out_blockHitPrev.y, out_blockHitPrev.z, placeBlockType);
 
     // reset the buffer time
     creationBufferTime = 0.f;
 
     return;
 
-}
-
-/**
- * @brief Player::placeBlock
- *  Place new block at the face of hit block with given blocktype
- * @param inputs : InputBundle, state of key pressed
- * @param terrain : Terrain, terrain storing block data
- * @param blocktype : BlockType, type of block user want to add
- */
-void Player::placeBlock(InputBundle &inputs, Terrain &terrain, BlockType blockType) {
-
-    if (!inputs.debugButtonPressed) {
-        return;
-    }
-
-    if (creationBufferTime < minWaitTime) {
-        return;
-    }
-
-    glm::ivec3 out_blockHit(0);
-    glm::ivec3 out_blockHitPrev(0);
-    glm::vec3 cameraRay(cameraBlockDist * m_camera.getForward());
-
-    bool newBlockHit = gridMarchPrevBlock(m_camera.getCurrentPos(), cameraRay, terrain, &out_blockHitPrev, &out_blockHit);
-
-    if (!newBlockHit) {
-        return;
-    }
-
-    terrain.placeBlockAt(out_blockHitPrev.x, out_blockHitPrev.y, out_blockHitPrev.z, blockType);
-
-    // reset the buffer time
-    creationBufferTime = 0.f;
-
-    return;
-
-}
-
-void Player::setBlocksHold() {
-    for (auto const& iter : Block::blockTypeMap) {
-        blocksHold.push_back(iter.second);
-    }
-    std::cout << blocksHold.size() << std::endl;
 }
 
 void Player::selectNextBlock(InputBundle &inputs) {
@@ -748,11 +710,7 @@ void Player::selectNextBlock(InputBundle &inputs) {
         return;
     }
 
-    selectedBlockPtr += 1;
-
-    if (selectedBlockPtr >= (int)blocksHold.size()) {
-        selectedBlockPtr = 0;
-    }
+    inventory.changeSelectedBlock();
 }
 
 bool Player::isLiquid(const Terrain &terrain, glm::ivec3* pos) {

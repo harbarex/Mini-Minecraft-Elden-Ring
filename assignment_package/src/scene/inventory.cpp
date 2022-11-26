@@ -1,44 +1,27 @@
 #include "inventory.h"
 
 Inventory::Inventory()
-    : selectedBlockPtr(0), max_blocks(64), blocksOnHandSize(10), blocksInInventorySize(64)
+    : selectedBlockPtr(0), max_blocks(64), blocksOnHandSize(10), blocksInInventorySize(blocksOnHandSize+64)
 {
     initBlocks();
 }
 
 void Inventory::initBlocks() {
-    // init blocks on hand
-    blocksOnHand.clear();
     blocksInInventory.clear();
 
-    for (int i = 0; i < blocksOnHandSize; ++i) {
-        blocksOnHand.push_back(std::make_pair(EMPTY, 0));
-    }
     // init blocks in inventory
     for (int j = 0; j < blocksInInventorySize; ++j) {
         blocksInInventory.push_back(std::make_pair(EMPTY, 0));
     }
 }
 
-void Inventory::setBlocks(std::vector<BlockType> blockTypes, int count) {
+void Inventory::setBlocks(std::vector<BlockType>& blockTypes, int count) {
 
     count = fmin(count, max_blocks);
-
-    if ((int)blockTypes.size() < blocksOnHandSize) {
-        for (int i = 0; i < (int)blockTypes.size(); ++i) {
-            blocksOnHand[i] = std::make_pair(blockTypes[i], count);
-        }
-        return;
-    }
-
-    for (int i = 0; i < blocksOnHandSize; ++i) {
-        blocksOnHand[i] = std::make_pair(blockTypes[i], count);
-    }
-
-    int inventory_count = fmin(blockTypes.size() - blocksOnHandSize, blocksInInventorySize);
+    int inventory_count = fmin(blockTypes.size(), blocksInInventorySize);
 
     for (int j = 0; j < inventory_count; ++j) {
-        blocksInInventory[j] = (std::make_pair(blockTypes[j+blocksOnHandSize], count));
+        blocksInInventory[j] = (std::make_pair(blockTypes[j], count));
     }
 
     return;
@@ -57,27 +40,6 @@ void Inventory::setBlocks() {
     setBlocks(blockTypes, max_blocks);
 }
 
-bool Inventory::checkIdx(int idx, BlockSelectedState state) {
-    if (idx < 0) {
-        return false;
-    }
-
-    switch (state) {
-    case (BlockSelectedState::inventory):
-        if (idx >= blocksInInventorySize) {
-            return false;
-        }
-        break;
-    case (BlockSelectedState::hand):
-        if (idx >= blocksOnHandSize) {
-            return false;
-        }
-        break;
-    }
-
-    return true;
-}
-
 int Inventory::getBlocksOnHandSize() {
     return blocksOnHandSize;
 }
@@ -86,28 +48,67 @@ int Inventory::getBlocksInInventorySize() {
     return blocksInInventorySize;
 }
 
-bool Inventory::storeBlock(BlockType blockType) {
-    return true;
+bool Inventory::storeBlock(BlockType blockType) {    
+
+    int firstEmptyIdxInInventory = -1;
+
+    for (int i = 0; i < blocksInInventorySize; ++i) {
+        if (blocksInInventory[i].first == blockType && blocksInInventory[i].second < max_blocks) {
+            blocksInInventory[i].second += 1;
+            return true;
+        }
+
+        if (firstEmptyIdxInInventory < 0 && Block::isEmpty(blocksInInventory[i].first)) {
+            firstEmptyIdxInInventory = i;
+        }
+    }
+
+    if (firstEmptyIdxInInventory >= 0) {
+        blocksInInventory[firstEmptyIdxInInventory].first = blockType;
+        blocksInInventory[firstEmptyIdxInInventory].second = 1;
+        return true;
+    }
+    return false;
 }
 
-BlockType Inventory::putBlock() {
-    return EMPTY;
+BlockType Inventory::placeBlock() {
+    if (Block::isEmpty(blocksInInventory[selectedBlockPtr].first)) {
+        return EMPTY;
+    }
+
+    blocksInInventory[selectedBlockPtr].second -= 1;
+    BlockType targetBlockType = blocksInInventory[selectedBlockPtr].first;
+
+    if (blocksInInventory[selectedBlockPtr].second == 0) {
+        blocksInInventory[selectedBlockPtr].first = EMPTY;
+    }
+
+    return targetBlockType;
 }
 
 BlockType Inventory::changeSelectedBlock(int newBlockIdx) {
-    if (!checkIdx(newBlockIdx, BlockSelectedState::hand)) {
+    if (newBlockIdx < 0 || newBlockIdx >= blocksOnHandSize) {
         return EMPTY;
     }
 
     selectedBlockPtr = newBlockIdx;
 
-    return blocksOnHand[selectedBlockPtr].first;
+    return blocksInInventory[selectedBlockPtr].first;
 }
 
-bool Inventory::switchBlocks(int blockIdxFrom, BlockSelectedState state) {
-    if (!checkIdx(blockIdxFrom, state)) {
-        return false;
+BlockType Inventory::changeSelectedBlock() {
+    int targetIdx = selectedBlockPtr + 1;
+
+    if (targetIdx >= blocksOnHandSize) {
+        targetIdx = 0;
     }
+
+    return changeSelectedBlock(targetIdx);
+}
+
+bool Inventory::switchBlocks(int blockIdxFrom) {
+    // TODO: fill the pos with same blockType first
+    // if no available blocktype and no empty pos: return false
 
     return true;
 }

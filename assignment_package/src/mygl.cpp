@@ -28,8 +28,6 @@ MyGL::MyGL(QWidget *parent)
     setCursor(Qt::BlankCursor); // Make the cursor invisible
     prevMouseX = width() / 2;
     prevMouseY = height() / 2;
-
-    m_player.setBlocksHold();
 }
 
 MyGL::~MyGL() {
