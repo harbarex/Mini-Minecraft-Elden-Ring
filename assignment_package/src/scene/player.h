@@ -2,6 +2,7 @@
 #include "entity.h"
 #include "camera.h"
 #include "terrain.h"
+#include "inventory.h"
 #include <iostream>
 #include <set>
 
@@ -23,6 +24,8 @@ private:
 
     void processInputs(InputBundle &inputs);
     void computePhysics(float dT, const Terrain &terrain, InputBundle &inputs);
+
+    uPtr<Inventory> inventory = mkU<Inventory>();
 
     bool checkXZCollision(int idx, const Terrain &terrain); // determine if current movement collide in X or Z axis (with idx 0 and 2)
     bool checkYCollision(const Terrain &terrain); // determine if current movement collide in Y axis (specifically for the ground)

@@ -6,6 +6,7 @@ SOURCES += \
     $$PWD/main.cpp \
     $$PWD/mainwindow.cpp \
     $$PWD/mygl.cpp \
+    $$PWD/scene/inventory.cpp \
     $$PWD/scene/noise.cpp \
     $$PWD/scene/block.cpp \
     $$PWD/scene/quad.cpp \
@@ -28,6 +29,7 @@ HEADERS += \
     $$PWD/la.h \
     $$PWD/mainwindow.h \
     $$PWD/mygl.h \
+    $$PWD/scene/inventory.h \
     $$PWD/scene/noise.h \
     $$PWD/scene/block.h \
     $$PWD/scene/quad.h \
