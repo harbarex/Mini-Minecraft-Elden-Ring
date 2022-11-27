@@ -11,7 +11,7 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
-      m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventory(this), m_quad(this),
+      m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventory(this), m_quad(this), inventoryOnHand(this),
       m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
       m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
       frameCount(0),
@@ -202,7 +202,6 @@ void MyGL::paintGL() {
     m_progLambert.setTime(frameCount);
     m_progLava.setTime(frameCount);
     m_progUnderwater.setTime(frameCount);
-    m_progInventory.setTime(frameCount);
 
     renderTerrain(TerrainDrawType::opaque);
 
@@ -239,6 +238,14 @@ void MyGL::paintGL() {
         m_progNoOp.setTexture(m_frameBuffer.getTextureSlot());
         m_progNoOp.drawOverlay(m_quad);
     }
+
+    // draw the widget at last
+    glDisable(GL_DEPTH_TEST);
+    // On hand
+    renderWidget(inventoryTexture, m_progInventory, 2, inventoryOnHand);
+    // In box
+    glEnable(GL_DEPTH_TEST);
+
 
     frameCount++;
 }
@@ -429,4 +436,10 @@ void MyGL::loadTextureUVCoord() {
 void MyGL::bindTexture(Texture& texture, ShaderProgram& shaderProgram, int slot) {
     texture.bind(slot);
     shaderProgram.setTexture(slot);
+}
+
+void MyGL::renderWidget(Texture& texture, ShaderProgram& shaderProgram, int slot, Widget& widget) {
+    shaderProgram.setTime(frameCount);
+    bindTexture(texture, shaderProgram, slot);
+    shaderProgram.drawWidget(widget);
 }

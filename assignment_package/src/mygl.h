@@ -9,6 +9,7 @@
 #include "scene/terrain.h"
 #include "scene/player.h"
 #include "scene/block.h"
+#include "scene/widget.h"
 
 #include "texture.h"
 
@@ -31,6 +32,7 @@ private:
     ShaderProgram m_progNoOp;
     ShaderProgram m_progInventory;
     Quad m_quad;
+    Widget inventoryOnHand;
 
     FrameBuffer m_frameBuffer;
 
@@ -83,6 +85,10 @@ public:
     // Called from paintGL().
     // Calls Terrain::draw().
     void renderTerrain(TerrainDrawType drawType);
+
+    // Called from paintGL()
+    // Render the widget
+    void renderWidget(Texture& texture, ShaderProgram& shaderProgram, int slot, Widget& widget);
 
 protected:
     // Automatically invoked when the user

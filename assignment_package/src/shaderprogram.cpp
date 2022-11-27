@@ -421,6 +421,10 @@ void ShaderProgram::drawOverlay(Drawable &d) {
     context->printGLErrorLog();
 }
 
+void ShaderProgram::drawWidget(Drawable &d) {
+    // TODO: write the draw function for widget
+}
+
 char* ShaderProgram::textFileRead(const char* fileName) {
     char* text;
 
