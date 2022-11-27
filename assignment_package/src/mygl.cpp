@@ -88,7 +88,7 @@ void MyGL::initializeGL()
     m_progNoOp.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/overlay.frag.glsl");
     m_progInventory.create(":/glsl/post/inventory.vert.glsl", ":/glsl/post/inventory.frag.glsl");
 
-    inventoryOnHand.createVBOdata();
+
 
     ////////////////////////////////////////////////////////////////////////////////////
     /// loading texture map from png
@@ -100,6 +100,8 @@ void MyGL::initializeGL()
 
     // widget texture map
     createTexture(inventoryTexture, ":/textures/minecraft_textures_widgets.png", 2);
+    inventoryOnHand.loadCoordFromText(":/textures/widget_on_hand_info.txt");
+    inventoryOnHand.createVBOdata();
     ////////////////////////////////////////////////////////////////////////////////////
 
 

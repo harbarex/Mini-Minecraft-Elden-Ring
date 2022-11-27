@@ -123,7 +123,7 @@ public:
     static void insertNewUVCoord(BlockType blockType, std::array<glm::vec2, 6> uv);
 
     // load uv coordinate of all blocktypes from text file
-    static void loadUVCoordFromText(const char* img_path);
+    static void loadUVCoordFromText(const char* text_path);
 
 };
 

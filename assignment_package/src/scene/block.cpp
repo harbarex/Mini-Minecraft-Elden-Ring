@@ -172,9 +172,9 @@ void Block::insertNewUVCoord(BlockType blockType, std::array<glm::vec2, 6> uv) {
     BlockCollection[blockType] = Block::createBlockFaces(uv);
 }
 
-void Block::loadUVCoordFromText(const char* img_path) {
+void Block::loadUVCoordFromText(const char* text_path) {
     // read text file
-    QFile f(img_path);
+    QFile f(text_path);
     f.open(QIODevice::ReadOnly);
     QTextStream s(&f);
     QString line;

@@ -3,6 +3,52 @@
 Widget::Widget(OpenGLContext *context) : Drawable(context)
 {}
 
+void Widget::insertNewInfos(std::string infoType, std::array<glm::vec2, 2> infos) {
+    for (int i = 0; i < (int)infos.size(); ++i) {
+        widgetInfoMap[infoType][i] = infos[i];
+    }
+    return;
+}
+
+void Widget::loadCoordFromText(const char* text_path) {
+    // read text file
+    QFile f(text_path);
+    f.open(QIODevice::ReadOnly);
+    QTextStream s(&f);
+    QString line;
+    bool isReadInfo = false;
+    int dataReadCount = 0;
+    int dataReadCountMax = 2;
+    std::array<glm::vec2, 2> infos;
+    std::string currInfoType;
+
+    while (!s.atEnd()) {
+        line = s.readLine();
+        if (line.size() == 0 || line.startsWith("#")) {
+            // skip empty line and line starts with #
+            continue;
+        }
+
+        if (isReadInfo) {
+            // store uv coordinate into temp array
+            infos[dataReadCount] = glm::vec2(line.split(" ")[0].toDouble(), line.split(" ")[1].toDouble());
+            dataReadCount += 1;
+        } else if (widgetInfoMap.find(line.toStdString()) != widgetInfoMap.end()) {
+            // identify which block
+            currInfoType = line.toStdString();
+            isReadInfo = true;
+        }
+
+        if (dataReadCount == dataReadCountMax) {
+            // store 2 uv coordinates into Widget object
+            insertNewInfos(currInfoType, infos);
+            infos.empty();
+            dataReadCount = 0;
+            isReadInfo = false;
+        }
+    }
+}
+
 void Widget::createVBOdata(){
     GLuint idx[6]{0, 1, 2, 0, 2, 3};
     glm::vec4 vert_pos[4] {glm::vec4(0.f, 0.f, 0.999999f, 1.f),

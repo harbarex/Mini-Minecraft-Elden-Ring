@@ -1,0 +1,43 @@
+# The text file is for setup widget info
+# Every data is written in one line, and x and y are separated by the space " "
+# the program would ignore empty line and line that starts with #
+
+# first: top-left coords
+# second: bottom-right coords
+# origin pos: (0, 0) to (181, 21) in 256*256
+widgetUV
+0 1
+0.707 0.918
+
+# first: top-left coords
+# second: bottom-right coords
+# origin pos: (600, 1276) to (1560, 1390) in 2160*1440
+# mapping range from (-1, -1) to (1, 1)
+widgetScreen
+-0.44444 -0.7722
+0.44444 -0.9305
+
+
+# first: top-left coords
+# second: bottom-right coords
+# origin pos: (0, 22) to (23, 45) in 256*256
+selectedFrameUV
+0 0.914
+0.0898 0.8242
+
+
+# first: top-left coords
+# second: bottom-right coords
+# origin pos: (600, 1276) to (706, 1390) in 2160*1440
+# mapping range from (-1, -1) to (1, 1)
+selectedFrameScreen
+-0.44444 -0.7722
+-0.3463 -0.9305
+
+# first: shift dist of selected frame
+# mapping range from (-1, -1) to (1, 1)
+# second: size of the widget
+frameShiftInfo
+0.111111 0.1111111
+9 1
+

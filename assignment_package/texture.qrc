@@ -4,5 +4,6 @@
         <file>textures/minecraft_normals_all.png</file>
         <file>textures/uv_coord_texture_all.txt</file>
         <file>textures/minecraft_textures_widgets.png</file>
+        <file>textures/widget_on_hand_info.txt</file>
     </qresource>
 </RCC>
