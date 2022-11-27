@@ -497,14 +497,6 @@ void ShaderProgram::printLinkInfoLog(int prog)
     }
 }
 
-void ShaderProgram::setTexture() {
-    useMe();
-
-    if (unifTexture != -1) {
-        context->glUniform1i(unifTexture, 0);
-    }
-}
-
 void ShaderProgram::setTexture(int textureSlot) {
     useMe();
 

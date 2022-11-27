@@ -56,9 +56,9 @@ private:
 
     void sendPlayerDataToGUI() const;
 
-    void createTexture();
+    void createTexture(Texture& texture, const char* img_path, int slot);
     void loadTextureUVCoord();
-    void bindTexture();
+    void bindTexture(Texture& texture, ShaderProgram& shaderProgram, int slot);
 
     long long prevExpandTime;
 

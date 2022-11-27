@@ -88,7 +88,17 @@ void MyGL::initializeGL()
 
     m_quad.createVBOdata();
 
-    createTexture();
+    ////////////////////////////////////////////////////////////////////////////////////
+    /// loading texture map from png
+    ////////////////////////////////////////////////////////////////////////////////////
+    // main texture map (slot = 0)
+    createTexture(textureAll, ":/textures/minecraft_textures_all.png", 0);
+    // loading uv coordinate of main texture map from text file
+    loadTextureUVCoord();
+
+    // widget texture map
+    ////////////////////////////////////////////////////////////////////////////////////
+
 
     // Set a color with which to draw geometry.
     // This will ultimately not be used when you change
@@ -235,7 +245,7 @@ void MyGL::paintGL() {
 void MyGL::renderTerrain(TerrainDrawType drawType) {
 
     // bind the texture
-    bindTexture();
+    bindTexture(textureAll, m_progLambert, 0);
 
     // only draw the 3 x 3 chunks around the player
     glm::vec3 pos = m_player.mcr_position;
@@ -366,10 +376,9 @@ void MyGL::mouseReleaseEvent(QMouseEvent *e) {
     }
 }
 
-void MyGL::createTexture() {
-    loadTextureUVCoord();
-    textureAll.create(":/textures/minecraft_textures_all.png");
-    textureAll.load(0);
+void MyGL::createTexture(Texture& texture, const char* img_path, int slot) {
+    texture.create(img_path);
+    texture.load(slot);
 }
 
 // This function is used to load uv coordinate of the block from text file
@@ -413,7 +422,7 @@ void MyGL::loadTextureUVCoord() {
     }
 }
 
-void MyGL::bindTexture() {
-    textureAll.bind(0);
-    m_progLambert.setTexture();
+void MyGL::bindTexture(Texture& texture, ShaderProgram& shaderProgram, int slot) {
+    texture.bind(slot);
+    shaderProgram.setTexture(slot);
 }
