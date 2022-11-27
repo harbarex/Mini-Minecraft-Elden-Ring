@@ -1,6 +1,7 @@
 #include "widget.h"
 
-Widget::Widget(OpenGLContext *context) : Drawable(context)
+Widget::Widget(OpenGLContext *context)
+    : Drawable(context), currShift(0)
 {}
 
 /**
@@ -89,8 +90,8 @@ void Widget::createVBOdata(){
     int nVert = 0;
 
     // selected frame shift info
-    float frameShiftX = 8 * widgetInfoMap["frameShiftInfo"][0][0];
-    float frameShiftY = 0 * widgetInfoMap["frameShiftInfo"][0][1];
+    float frameShiftX = currShift.x * widgetInfoMap["frameShiftInfo"][0].x;
+    float frameShiftY = currShift.y * widgetInfoMap["frameShiftInfo"][0].y;
     glm::vec2 frameShift(frameShiftX, frameShiftY);
 
     for (int i = 0; i < loadWidgetCount; ++i) {
@@ -105,8 +106,8 @@ void Widget::createVBOdata(){
     // position of widget
     glm::vec2 topLeftPos = widgetInfoMap["widgetScreen"][0];
     glm::vec2 bottomRightPos = widgetInfoMap["widgetScreen"][1];
-    glm::vec2 topRightPos(widgetInfoMap["widgetScreen"][1][0], widgetInfoMap["widgetScreen"][0][1]);
-    glm::vec2 bottomLeftPos(widgetInfoMap["widgetScreen"][0][0], widgetInfoMap["widgetScreen"][1][1]);
+    glm::vec2 topRightPos(widgetInfoMap["widgetScreen"][1].x, widgetInfoMap["widgetScreen"][0].y);
+    glm::vec2 bottomLeftPos(widgetInfoMap["widgetScreen"][0].x, widgetInfoMap["widgetScreen"][1].y);
 
     pushVec4ToBuffer(buffer_pos, glm::vec4(bottomLeftPos, 0.999999f, 1.f));
     pushVec4ToBuffer(buffer_pos, glm::vec4(bottomRightPos, 0.999999f, 1.f));
@@ -116,8 +117,8 @@ void Widget::createVBOdata(){
     // uv of widget
     glm::vec2 topLeftUV = widgetInfoMap["widgetUV"][0];
     glm::vec2 bottomRightUV = widgetInfoMap["widgetUV"][1];
-    glm::vec2 topRightUV(widgetInfoMap["widgetUV"][1][0], widgetInfoMap["widgetUV"][0][1]);
-    glm::vec2 bottomLeftUV(widgetInfoMap["widgetUV"][0][0], widgetInfoMap["widgetUV"][1][1]);
+    glm::vec2 topRightUV(widgetInfoMap["widgetUV"][1].x, widgetInfoMap["widgetUV"][0].y);
+    glm::vec2 bottomLeftUV(widgetInfoMap["widgetUV"][0].x, widgetInfoMap["widgetUV"][1].y);
 
     pushVec2ToBuffer(buffer_uv, bottomLeftUV);
     pushVec2ToBuffer(buffer_uv, bottomRightUV);
@@ -127,9 +128,9 @@ void Widget::createVBOdata(){
     // position of selected frame
     glm::vec2 topLeftFramePos = widgetInfoMap["selectedFrameScreen"][0] + frameShift;
     glm::vec2 bottomRightFramePos = widgetInfoMap["selectedFrameScreen"][1] + frameShift;
-    glm::vec2 topRightFramePos(widgetInfoMap["selectedFrameScreen"][1][0], widgetInfoMap["selectedFrameScreen"][0][1]);
+    glm::vec2 topRightFramePos(widgetInfoMap["selectedFrameScreen"][1].x, widgetInfoMap["selectedFrameScreen"][0].y);
     topRightFramePos += frameShift;
-    glm::vec2 bottomLeftFramePos(widgetInfoMap["selectedFrameScreen"][0][0], widgetInfoMap["selectedFrameScreen"][1][1]);
+    glm::vec2 bottomLeftFramePos(widgetInfoMap["selectedFrameScreen"][0].x, widgetInfoMap["selectedFrameScreen"][1].y);
     bottomLeftFramePos += frameShift;
 
     pushVec4ToBuffer(buffer_pos, glm::vec4(bottomLeftFramePos, 0.999999f, 1.f));
@@ -140,8 +141,8 @@ void Widget::createVBOdata(){
     // uv of selected frame
     glm::vec2 topLeftFrameUV = widgetInfoMap["selectedFrameUV"][0];
     glm::vec2 bottomRightFrameUV = widgetInfoMap["selectedFrameUV"][1];
-    glm::vec2 topRightFrameUV(widgetInfoMap["selectedFrameUV"][1][0], widgetInfoMap["selectedFrameUV"][0][1]);
-    glm::vec2 bottomLeftFrameUV(widgetInfoMap["selectedFrameUV"][0][0], widgetInfoMap["selectedFrameUV"][1][1]);
+    glm::vec2 topRightFrameUV(widgetInfoMap["selectedFrameUV"][1].x, widgetInfoMap["selectedFrameUV"][0].y);
+    glm::vec2 bottomLeftFrameUV(widgetInfoMap["selectedFrameUV"][0].x, widgetInfoMap["selectedFrameUV"][1].y);
 
     pushVec2ToBuffer(buffer_uv, bottomLeftFrameUV);
     pushVec2ToBuffer(buffer_uv, bottomRightFrameUV);

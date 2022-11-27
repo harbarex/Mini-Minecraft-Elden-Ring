@@ -38,6 +38,9 @@ private:
     // 0 < x, y and are expected as integer
     std::array<glm::vec2, 2> frameShiftInfo;
 
+    // current shift info of selected frame
+    glm::vec2 currShift;
+
     // used for loading coordinates from text file
     std::unordered_map<std::string, std::array<glm::vec2, 2>> widgetInfoMap = {
         {"widgetUV", widgetUVCoord},
