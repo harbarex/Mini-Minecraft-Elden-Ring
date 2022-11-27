@@ -51,15 +51,26 @@ void Widget::loadCoordFromText(const char* text_path) {
 
 void Widget::createVBOdata(){
     GLuint idx[6]{0, 1, 2, 0, 2, 3};
-    glm::vec4 vert_pos[4] {glm::vec4(0.f, 0.f, 0.999999f, 1.f),
-                           glm::vec4(1.f, 0.f, 0.999999f, 1.f),
-                           glm::vec4(1.f, 1.f, 0.999999f, 1.f),
-                           glm::vec4(0.f, 1.f, 0.999999f, 1.f)};
 
-    glm::vec2 vert_UV[4] {glm::vec2(0.5f, 0.5f),
-                          glm::vec2(1.f, 0.5f),
-                          glm::vec2(1.f, 1.f),
-                          glm::vec2(0.5f, 1.f)};
+    glm::vec2 topLeftPos = widgetInfoMap["widgetScreen"][0];
+    glm::vec2 bottomRightPos = widgetInfoMap["widgetScreen"][1];
+    glm::vec2 topRightPos(widgetInfoMap["widgetScreen"][1][0], widgetInfoMap["widgetScreen"][0][1]);
+    glm::vec2 bottomLeftPos(widgetInfoMap["widgetScreen"][0][0], widgetInfoMap["widgetScreen"][1][1]);
+
+    glm::vec4 vert_pos[4] {glm::vec4(bottomLeftPos, 0.999999f, 1.f),
+                           glm::vec4(bottomRightPos, 0.999999f, 1.f),
+                           glm::vec4(topRightPos, 0.999999f, 1.f),
+                           glm::vec4(topLeftPos, 0.999999f, 1.f)};
+
+    glm::vec2 topLeftUV = widgetInfoMap["widgetUV"][0];
+    glm::vec2 bottomRightUV = widgetInfoMap["widgetUV"][1];
+    glm::vec2 topRightUV(widgetInfoMap["widgetUV"][1][0], widgetInfoMap["widgetUV"][0][1]);
+    glm::vec2 bottomLeftUV(widgetInfoMap["widgetUV"][0][0], widgetInfoMap["widgetUV"][1][1]);
+
+    glm::vec2 vert_UV[4] {bottomLeftUV,
+                          bottomRightUV,
+                          topRightUV,
+                          topLeftUV};
 
     m_count = 6;
 
