@@ -9,5 +9,7 @@
         <file>glsl/post/underwater.frag.glsl</file>
         <file>glsl/post/overlay.vert.glsl</file>
         <file>glsl/post/overlay.frag.glsl</file>
+        <file>glsl/post/inventory.vert.glsl</file>
+        <file>glsl/post/inventory.frag.glsl</file>
     </qresource>
 </RCC>
