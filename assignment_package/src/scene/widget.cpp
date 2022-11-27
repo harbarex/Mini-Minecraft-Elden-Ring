@@ -79,6 +79,18 @@ void Widget::loadCoordFromText(const char* text_path) {
     }
 }
 
+/**
+ * @brief Widget::setCurrShift
+ *  Set how much the selected frame need to move (unit: element, not pixel)
+ *  0-indexed, start from top-left corner
+ * @param x : int, destination x coordinate in widget grid system (left)
+ * @param y : int, destination x coordinate in widget grid system (down)
+ * @return
+ */
+bool Widget::setCurrShift(int x, int y) {
+    currShift = glm::vec2(x, y);
+}
+
 void Widget::createVBOdata(){
 
     int loadWidgetCount = 2;

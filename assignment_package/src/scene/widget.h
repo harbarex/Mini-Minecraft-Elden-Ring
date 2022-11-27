@@ -56,11 +56,12 @@ private:
 
 public:
     Widget(OpenGLContext* context);
-    void setupWidgetCoord(float uv_x, float uv_y, float screen_x, float screen_y);
-    void setupSelectedFrameCoord(float uv_x, float uv_y, float screen_x, float screen_y);
-    void setupSelectedFrameShiftInfo(float dist_x, float dist_y, int colLimit, int rowLimit);
+//    void setupWidgetCoord(float uv_x, float uv_y, float screen_x, float screen_y);
+//    void setupSelectedFrameCoord(float uv_x, float uv_y, float screen_x, float screen_y);
+//    void setupSelectedFrameShiftInfo(float dist_x, float dist_y, int colLimit, int rowLimit);
     void loadCoordFromText(const char* text_path);
     void insertNewInfos(std::string infoType, std::array<glm::vec2, 2> infos);
+    bool setCurrShift(int x, int y);
 
     virtual void createVBOdata();
 };

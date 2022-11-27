@@ -13,7 +13,7 @@ MyGL::MyGL(QWidget *parent)
       m_progLambert(this), m_progFlat(this),
       m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventory(this), m_quad(this), inventoryOnHand(this),
       m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
-      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
+      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain, inventoryOnHand),
       frameCount(0),
       prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this), inventoryTexture(this),
       prevExpandTime(QDateTime::currentMSecsSinceEpoch())
@@ -101,7 +101,6 @@ void MyGL::initializeGL()
     // widget texture map
     createTexture(inventoryTexture, ":/textures/minecraft_textures_widgets.png", 2);
     inventoryOnHand.loadCoordFromText(":/textures/widget_on_hand_info.txt");
-    inventoryOnHand.createVBOdata();
     ////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -308,11 +307,31 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
         m_inputs.debugButtonPressed = true;
     } else if (e->key() == Qt::Key_N) {
         m_inputs.nPressed = true;
-        m_player.selectNextBlock(m_inputs);
+        m_player.selectNextBlockOnHand(m_inputs);
     } else if (e->key() == Qt::Key_Space) {
         m_inputs.spacePressed = true;
     } else if (e->key() == Qt::Key_F) {
         m_player.toggleFlightMode();
+    } else if (e->key() == Qt::Key_0) {
+        m_inputs.numberPressed[0] = true;
+    } else if (e->key() == Qt::Key_1) {
+        m_inputs.numberPressed[1] = true;
+    } else if (e->key() == Qt::Key_2) {
+        m_inputs.numberPressed[2] = true;
+    } else if (e->key() == Qt::Key_3) {
+        m_inputs.numberPressed[3] = true;
+    } else if (e->key() == Qt::Key_4) {
+        m_inputs.numberPressed[4] = true;
+    } else if (e->key() == Qt::Key_5) {
+        m_inputs.numberPressed[5] = true;
+    } else if (e->key() == Qt::Key_6) {
+        m_inputs.numberPressed[6] = true;
+    } else if (e->key() == Qt::Key_7) {
+        m_inputs.numberPressed[7] = true;
+    } else if (e->key() == Qt::Key_8) {
+        m_inputs.numberPressed[8] = true;
+    } else if (e->key() == Qt::Key_9) {
+        m_inputs.numberPressed[9] = true;
     }
 }
 
@@ -336,6 +355,26 @@ void MyGL::keyReleaseEvent(QKeyEvent *e)
         m_inputs.nPressed = false;
     } else if (e->key() == Qt::Key_Space) {
         m_inputs.spacePressed = false;
+    } else if (e->key() == Qt::Key_0) {
+        m_inputs.numberPressed[0] = false;
+    } else if (e->key() == Qt::Key_1) {
+        m_inputs.numberPressed[1] = false;
+    } else if (e->key() == Qt::Key_2) {
+        m_inputs.numberPressed[2] = false;
+    } else if (e->key() == Qt::Key_3) {
+        m_inputs.numberPressed[3] = false;
+    } else if (e->key() == Qt::Key_4) {
+        m_inputs.numberPressed[4] = false;
+    } else if (e->key() == Qt::Key_5) {
+        m_inputs.numberPressed[5] = false;
+    } else if (e->key() == Qt::Key_6) {
+        m_inputs.numberPressed[6] = false;
+    } else if (e->key() == Qt::Key_7) {
+        m_inputs.numberPressed[7] = false;
+    } else if (e->key() == Qt::Key_8) {
+        m_inputs.numberPressed[8] = false;
+    } else if (e->key() == Qt::Key_9) {
+        m_inputs.numberPressed[9] = false;
     }
 }
 
@@ -401,6 +440,7 @@ void MyGL::bindTexture(Texture& texture, ShaderProgram& shaderProgram, int slot)
 }
 
 void MyGL::renderWidget(Texture& texture, ShaderProgram& shaderProgram, int slot, Widget& widget) {
+    widget.createVBOdata();
     shaderProgram.setTime(frameCount);
     bindTexture(texture, shaderProgram, slot);
     shaderProgram.drawWidget(widget);

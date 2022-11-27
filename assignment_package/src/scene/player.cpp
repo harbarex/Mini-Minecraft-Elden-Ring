@@ -1,12 +1,12 @@
 #include "player.h"
 #include <QString>
 
-Player::Player(glm::vec3 pos, Terrain &terrain)
+Player::Player(glm::vec3 pos, Terrain &terrain, Widget &inventoryOnHand)
     : Entity(pos), m_velocity(0,0,0), m_acceleration(0,0,0),
       m_camera(pos + glm::vec3(0, 1.5f, 0)), mcr_terrain(terrain),
       flight_velocity_max(15.f), non_flight_velocity_max(10.f), m_velocity_val(flight_velocity_max),
-      m_acceleration_val(40.f), cameraBlockDist(3.f), flightMode(true),
-      destroyBufferTime(0.f), creationBufferTime(0.f), minWaitTime(0.5f), mcr_camera(m_camera)
+      m_acceleration_val(40.f), cameraBlockDist(3.f), flightMode(true), destroyBufferTime(0.f),
+      creationBufferTime(0.f), minWaitTime(0.5f), inventoryOnHand(inventoryOnHand), mcr_camera(m_camera)
 {}
 
 Player::~Player()
@@ -17,6 +17,7 @@ void Player::tick(float dT, InputBundle &input) {
     creationBufferTime += dT;
     destroyBlock(input, mcr_terrain);
     placeBlock(input, mcr_terrain);
+    selectBlockOnHand(input);
     processInputs(input);
     computePhysics(dT, mcr_terrain, input);
 }
@@ -705,12 +706,43 @@ void Player::placeBlock(InputBundle &inputs, Terrain &terrain) {
 
 }
 
-void Player::selectNextBlock(InputBundle &inputs) {
+void Player::selectNextBlockOnHand(InputBundle &inputs) {
     if (!inputs.nPressed) {
         return;
     }
 
     inventory.changeSelectedBlock();
+}
+
+/**
+ * @brief Player::selectBlockOnHand
+ *  change the selected block based on the input key (1-9)
+ * @param inputs : InputBundle, state of key pressed
+ */
+void Player::selectBlockOnHand(InputBundle &inputs) {
+
+    int ptr = -1;
+    // check if number from 1 to 9 is pressed or not
+    for (int i=1; i<10; ++i) {
+        if (inputs.numberPressed[i]) {
+            ptr = i-1;
+            break;
+        }
+    }
+
+    // return if no number is pressed
+    if (ptr < 0) {
+        return;
+    }
+
+    // setup the new selected pointer in inventory
+    inventory.changeSelectedBlock(ptr);
+
+    // setup the new selected pointer in widget
+    inventoryOnHand.setCurrShift(ptr, 0);
+
+    return;
+
 }
 
 bool Player::isLiquid(const Terrain &terrain, glm::ivec3* pos) {

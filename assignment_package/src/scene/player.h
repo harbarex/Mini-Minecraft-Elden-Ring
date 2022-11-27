@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "terrain.h"
 #include "inventory.h"
+#include "widget.h"
 #include <iostream>
 #include <set>
 
@@ -26,6 +27,7 @@ private:
     void computePhysics(float dT, const Terrain &terrain, InputBundle &inputs);
 
     Inventory inventory;
+    Widget &inventoryOnHand;
 
     bool checkXZCollision(int idx, const Terrain &terrain); // determine if current movement collide in X or Z axis (with idx 0 and 2)
     bool checkYCollision(const Terrain &terrain); // determine if current movement collide in Y axis (specifically for the ground)
@@ -38,7 +40,7 @@ public:
     // for easy access from MyGL
     const Camera& mcr_camera;
 
-    Player(glm::vec3 pos, Terrain &terrain);
+    Player(glm::vec3 pos, Terrain &terrain, Widget &inventoryOnHand);
     virtual ~Player() override;
 
     void setCameraWidthHeight(unsigned int w, unsigned int h);
@@ -95,6 +97,7 @@ public:
     bool gridMarchPrevBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, glm::ivec3 *out_prevBlock, glm::ivec3 *out_blockHit);
 
     void setBlocksHold();
-    void selectNextBlock(InputBundle &inputs);
+    void selectNextBlockOnHand(InputBundle &inputs);
+    void selectBlockOnHand(InputBundle &inputs);
 };
 
