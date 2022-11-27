@@ -15,7 +15,7 @@ MyGL::MyGL(QWidget *parent)
       m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
       m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
       frameCount(0),
-      prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this),
+      prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this), inventoryTexture(this),
       prevExpandTime(QDateTime::currentMSecsSinceEpoch())
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
@@ -97,6 +97,7 @@ void MyGL::initializeGL()
     loadTextureUVCoord();
 
     // widget texture map
+    createTexture(inventoryTexture, ":/textures/minecraft_textures_widgets.png", 2);
     ////////////////////////////////////////////////////////////////////////////////////
 
 
