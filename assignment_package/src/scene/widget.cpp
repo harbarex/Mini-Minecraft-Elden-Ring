@@ -80,7 +80,7 @@ void Widget::loadCoordFromText(const char* text_path) {
 
 void Widget::createVBOdata(){
 
-    int loadWidgetCount = 1;
+    int loadWidgetCount = 2;
 
     std::vector<GLuint> indices;
     std::vector<GLuint> faceIndices = {0, 1, 2, 0, 2, 3};
@@ -118,6 +118,28 @@ void Widget::createVBOdata(){
     pushVec2ToBuffer(buffer_uv, bottomRightUV);
     pushVec2ToBuffer(buffer_uv, topRightUV);
     pushVec2ToBuffer(buffer_uv, topLeftUV);
+
+    // position of selected frame
+    glm::vec2 topLeftFramePos = widgetInfoMap["selectedFrameScreen"][0];
+    glm::vec2 bottomRightFramePos = widgetInfoMap["selectedFrameScreen"][1];
+    glm::vec2 topRightFramePos(widgetInfoMap["selectedFrameScreen"][1][0], widgetInfoMap["selectedFrameScreen"][0][1]);
+    glm::vec2 bottomLeftFramePos(widgetInfoMap["selectedFrameScreen"][0][0], widgetInfoMap["selectedFrameScreen"][1][1]);
+
+    pushVec4ToBuffer(buffer_pos, glm::vec4(bottomLeftFramePos, 0.999999f, 1.f));
+    pushVec4ToBuffer(buffer_pos, glm::vec4(bottomRightFramePos, 0.999999f, 1.f));
+    pushVec4ToBuffer(buffer_pos, glm::vec4(topRightFramePos, 0.999999f, 1.f));
+    pushVec4ToBuffer(buffer_pos, glm::vec4(topLeftFramePos, 0.999999f, 1.f));
+
+    // uv of selected frame
+    glm::vec2 topLeftFrameUV = widgetInfoMap["selectedFrameUV"][0];
+    glm::vec2 bottomRightFrameUV = widgetInfoMap["selectedFrameUV"][1];
+    glm::vec2 topRightFrameUV(widgetInfoMap["selectedFrameUV"][1][0], widgetInfoMap["selectedFrameUV"][0][1]);
+    glm::vec2 bottomLeftFrameUV(widgetInfoMap["selectedFrameUV"][0][0], widgetInfoMap["selectedFrameUV"][1][1]);
+
+    pushVec2ToBuffer(buffer_uv, bottomLeftFrameUV);
+    pushVec2ToBuffer(buffer_uv, bottomRightFrameUV);
+    pushVec2ToBuffer(buffer_uv, topRightFrameUV);
+    pushVec2ToBuffer(buffer_uv, topLeftFrameUV);
 
     m_count = indices.size();
 
