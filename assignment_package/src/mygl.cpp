@@ -35,6 +35,7 @@ MyGL::~MyGL() {
     glDeleteVertexArrays(1, &vao);
 
     m_quad.destroyVBOdata();
+    inventoryOnHand.destroyVBOdata();
     m_frameBuffer.destroy();
     m_worldAxes.destroyVBOdata();
 }
@@ -87,7 +88,7 @@ void MyGL::initializeGL()
     m_progNoOp.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/overlay.frag.glsl");
     m_progInventory.create(":/glsl/post/inventory.vert.glsl", ":/glsl/post/inventory.frag.glsl");
 
-    m_quad.createVBOdata();
+    inventoryOnHand.createVBOdata();
 
     ////////////////////////////////////////////////////////////////////////////////////
     /// loading texture map from png
