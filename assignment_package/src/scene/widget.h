@@ -47,6 +47,10 @@ private:
         {"frameShiftInfo", frameShiftInfo}
     };
 
+    void pushVec4ToBuffer(std::vector<float> &buf, const glm::vec4 &vec);
+    void pushVec2ToBuffer(std::vector<float> &buf, const glm::vec2 &vec);
+
+
 public:
     Widget(OpenGLContext* context);
     void setupWidgetCoord(float uv_x, float uv_y, float screen_x, float screen_y);
