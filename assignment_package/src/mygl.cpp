@@ -96,7 +96,7 @@ void MyGL::initializeGL()
     // main texture map (slot = 0)
     createTexture(textureAll, ":/textures/minecraft_textures_all.png", 0);
     // loading uv coordinate of main texture map from text file
-    loadTextureUVCoord();
+    Block::loadUVCoordFromText(":/textures/uv_coord_texture_all.txt");
 
     // widget texture map
     createTexture(inventoryTexture, ":/textures/minecraft_textures_widgets.png", 2);
@@ -391,47 +391,6 @@ void MyGL::mouseReleaseEvent(QMouseEvent *e) {
 void MyGL::createTexture(Texture& texture, const char* img_path, int slot) {
     texture.create(img_path);
     texture.load(slot);
-}
-
-// This function is used to load uv coordinate of the block from text file
-void MyGL::loadTextureUVCoord() {
-
-    // read text file
-    QFile f(":/textures/uv_coord_texture_all.txt");
-    f.open(QIODevice::ReadOnly);
-    QTextStream s(&f);
-    QString line;
-    bool readCoord = false;
-    int coordCount = 0;
-    std::array<glm::vec2, 6> uvOffsets;
-    BlockType currBlockType;
-
-    while (!s.atEnd()) {
-        line = s.readLine();
-        if (line.size() == 0 || line.startsWith("#")) {
-            // skip empty line and line starts with #
-            continue;
-        }
-
-        if (readCoord) {
-            // store uv coordinate into temp array
-            uvOffsets[coordCount] = glm::vec2(line.split(" ")[0].toDouble(), line.split(" ")[1].toDouble());
-            coordCount += 1;
-        } else if (Block::blockTypeMap.find(line.toStdString()) != Block::blockTypeMap.end()) {
-            // identify which block
-            currBlockType = Block::blockTypeMap[line.toStdString()];
-            readCoord = true;
-        }
-
-        if (coordCount == 6) {
-            // store 6 uv coordinates into BlockCollection
-
-            Block::insertNewUVCoord(currBlockType, uvOffsets);
-            uvOffsets.empty();
-            coordCount = 0;
-            readCoord = false;
-        }
-    }
 }
 
 void MyGL::bindTexture(Texture& texture, ShaderProgram& shaderProgram, int slot) {

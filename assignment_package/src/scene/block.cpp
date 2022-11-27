@@ -172,6 +172,45 @@ void Block::insertNewUVCoord(BlockType blockType, std::array<glm::vec2, 6> uv) {
     BlockCollection[blockType] = Block::createBlockFaces(uv);
 }
 
+void Block::loadUVCoordFromText(const char* img_path) {
+    // read text file
+    QFile f(img_path);
+    f.open(QIODevice::ReadOnly);
+    QTextStream s(&f);
+    QString line;
+    bool readCoord = false;
+    int coordCount = 0;
+    std::array<glm::vec2, 6> uvOffsets;
+    BlockType currBlockType;
+
+    while (!s.atEnd()) {
+        line = s.readLine();
+        if (line.size() == 0 || line.startsWith("#")) {
+            // skip empty line and line starts with #
+            continue;
+        }
+
+        if (readCoord) {
+            // store uv coordinate into temp array
+            uvOffsets[coordCount] = glm::vec2(line.split(" ")[0].toDouble(), line.split(" ")[1].toDouble());
+            coordCount += 1;
+        } else if (blockTypeMap.find(line.toStdString()) != blockTypeMap.end()) {
+            // identify which block
+            currBlockType = blockTypeMap[line.toStdString()];
+            readCoord = true;
+        }
+
+        if (coordCount == 6) {
+            // store 6 uv coordinates into BlockCollection
+
+            insertNewUVCoord(currBlockType, uvOffsets);
+            uvOffsets.empty();
+            coordCount = 0;
+            readCoord = false;
+        }
+    }
+}
+
 
 /**
  * Instantiate various kinds of blocks here.

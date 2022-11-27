@@ -3,6 +3,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <array>
+#include <QApplication>
+#include <QFile>
 
 
 //using namespace std;
@@ -119,6 +121,9 @@ public:
 
     // insert new uv coordinate of texture map into BlockCollection
     static void insertNewUVCoord(BlockType blockType, std::array<glm::vec2, 6> uv);
+
+    // load uv coordinate of all blocktypes from text file
+    static void loadUVCoordFromText(const char* img_path);
 
 };
 
