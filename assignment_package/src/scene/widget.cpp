@@ -88,6 +88,11 @@ void Widget::createVBOdata(){
     std::vector<float> buffer_uv;
     int nVert = 0;
 
+    // selected frame shift info
+    float frameShiftX = 8 * widgetInfoMap["frameShiftInfo"][0][0];
+    float frameShiftY = 0 * widgetInfoMap["frameShiftInfo"][0][1];
+    glm::vec2 frameShift(frameShiftX, frameShiftY);
+
     for (int i = 0; i < loadWidgetCount; ++i) {
         // add indices for each face (4 vertices)
         for (int index : faceIndices) {
@@ -120,10 +125,12 @@ void Widget::createVBOdata(){
     pushVec2ToBuffer(buffer_uv, topLeftUV);
 
     // position of selected frame
-    glm::vec2 topLeftFramePos = widgetInfoMap["selectedFrameScreen"][0];
-    glm::vec2 bottomRightFramePos = widgetInfoMap["selectedFrameScreen"][1];
+    glm::vec2 topLeftFramePos = widgetInfoMap["selectedFrameScreen"][0] + frameShift;
+    glm::vec2 bottomRightFramePos = widgetInfoMap["selectedFrameScreen"][1] + frameShift;
     glm::vec2 topRightFramePos(widgetInfoMap["selectedFrameScreen"][1][0], widgetInfoMap["selectedFrameScreen"][0][1]);
+    topRightFramePos += frameShift;
     glm::vec2 bottomLeftFramePos(widgetInfoMap["selectedFrameScreen"][0][0], widgetInfoMap["selectedFrameScreen"][1][1]);
+    bottomLeftFramePos += frameShift;
 
     pushVec4ToBuffer(buffer_pos, glm::vec4(bottomLeftFramePos, 0.999999f, 1.f));
     pushVec4ToBuffer(buffer_pos, glm::vec4(bottomRightFramePos, 0.999999f, 1.f));

@@ -38,6 +38,6 @@ selectedFrameScreen
 # mapping range from (-1, -1) to (1, 1)
 # second: size of the widget
 frameShiftInfo
-0.111111 0.1111111
+0.09876 0.15833
 9 1
 
