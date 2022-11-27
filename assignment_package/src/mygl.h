@@ -29,6 +29,7 @@ private:
     ShaderProgram m_progUnderwater;
     ShaderProgram m_progLava;
     ShaderProgram m_progNoOp;
+    ShaderProgram m_progInventory;
     Quad m_quad;
 
     FrameBuffer m_frameBuffer;

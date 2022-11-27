@@ -11,7 +11,7 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
-      m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_quad(this),
+      m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventory(this), m_quad(this),
       m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
       m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
       frameCount(0),
@@ -85,6 +85,7 @@ void MyGL::initializeGL()
     m_progUnderwater.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/underwater.frag.glsl");
     m_progLava.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/lava.frag.glsl");
     m_progNoOp.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/overlay.frag.glsl");
+    m_progInventory.create(":/glsl/post/inventory.vert.glsl", ":/glsl/post/inventory.frag.glsl");
 
     m_quad.createVBOdata();
 
@@ -129,6 +130,7 @@ void MyGL::resizeGL(int w, int h) {
     m_progNoOp.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
     m_progUnderwater.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
     m_progLava.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
+    m_progInventory.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
 
     m_frameBuffer.resize(this->width(), this->height(), this->devicePixelRatio());
     m_frameBuffer.destroy();
@@ -200,6 +202,7 @@ void MyGL::paintGL() {
     m_progLambert.setTime(frameCount);
     m_progLava.setTime(frameCount);
     m_progUnderwater.setTime(frameCount);
+    m_progInventory.setTime(frameCount);
 
     renderTerrain(TerrainDrawType::opaque);
 
