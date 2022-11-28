@@ -26,6 +26,7 @@ private:
     void processInputs(InputBundle &inputs);
     void computePhysics(float dT, const Terrain &terrain, InputBundle &inputs);
 
+    int selectedBlockOnHandPtr;
     Inventory inventory;
     Widget &inventoryOnHand;
 

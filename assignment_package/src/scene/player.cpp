@@ -6,7 +6,8 @@ Player::Player(glm::vec3 pos, Terrain &terrain, Widget &inventoryOnHand)
       m_camera(pos + glm::vec3(0, 1.5f, 0)), mcr_terrain(terrain),
       flight_velocity_max(15.f), non_flight_velocity_max(10.f), m_velocity_val(flight_velocity_max),
       m_acceleration_val(40.f), cameraBlockDist(3.f), flightMode(true), destroyBufferTime(0.f),
-      creationBufferTime(0.f), minWaitTime(0.5f), inventoryOnHand(inventoryOnHand), mcr_camera(m_camera)
+      creationBufferTime(0.f), minWaitTime(0.5f), selectedBlockOnHandPtr(0), inventoryOnHand(inventoryOnHand),
+      mcr_camera(m_camera)
 {}
 
 Player::~Player()
@@ -721,25 +722,19 @@ void Player::selectNextBlockOnHand(InputBundle &inputs) {
  */
 void Player::selectBlockOnHand(InputBundle &inputs) {
 
-    int ptr = -1;
     // check if number from 1 to 9 is pressed or not
     for (int i=1; i<10; ++i) {
         if (inputs.numberPressed[i]) {
-            ptr = i-1;
+            selectedBlockOnHandPtr = i-1;
             break;
         }
     }
 
-    // return if no number is pressed
-    if (ptr < 0) {
-        return;
-    }
-
     // setup the new selected pointer in inventory
-    inventory.changeSelectedBlock(ptr);
+    inventory.changeSelectedBlock(selectedBlockOnHandPtr);
 
     // setup the new selected pointer in widget
-    inventoryOnHand.setCurrShift(ptr, 0);
+    inventoryOnHand.addItem(selectedBlockOnHandPtr);
 
     return;
 

@@ -18,26 +18,20 @@ widgetScreen
 0.44444 -0.9305
 
 
-# first: top-left coords
-# second: bottom-right coords
-# origin pos: (0, 22) to (23, 45) in 256*256
-selectedFrameUV
-0 0.914
-0.0898 0.8242
-
-
-# first: top-left coords
-# second: bottom-right coords
+# 1. shift distance of the item in this region
+# mapping range from (-1, -1) to (1, 1)
+# 2. size of the region
+# 3. top-left screen coordinate of the first item in this region
+# 4. bottom right screen coordinate of the first item in this region
+# mapping range from (-1, -1) to (1, 1)
 # origin pos: (600, 1276) to (706, 1390) in 2160*1440
-# mapping range from (-1, -1) to (1, 1)
-selectedFrameScreen
--0.44444 -0.7722
--0.3463 -0.9305
-
-# first: shift dist of selected frame
-# mapping range from (-1, -1) to (1, 1)
-# second: size of the widget
-frameShiftInfo
+# 5. top-left uv coordinate of the first item in this region
+# 6. bottom right uv coordinate of the first item in this region
+# origin pos: (0, 22) to (23, 45) in 256*256
+regionInfo
 0.09876 0.15833
 9 1
-
+-0.44444 -0.7722
+-0.3463 -0.9305
+0 0.914
+0.0898 0.8242
