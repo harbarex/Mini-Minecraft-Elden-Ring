@@ -39,6 +39,12 @@ void Widget::pushVec2ToBuffer(std::vector<float> &buf, const glm::vec2 &vec)
     }
 }
 
+/**
+ * @brief Widget::insertNewInfos
+ *   helper function to store each info in text file into widgetInfoMap
+ * @param infoType : string, key in widgetInfoMap
+ * @param infos : vector of glm::vec2, data associated with the info
+ */
 void Widget::insertNewInfos(std::string infoType, std::vector<glm::vec2> infos) {
     for (int i = 0; i < (int)infos.size(); ++i) {
         widgetInfoMap[infoType].first.push_back(infos[i]);
@@ -52,6 +58,12 @@ void Widget::insertNewInfos(std::string infoType, std::vector<glm::vec2> infos) 
     return;
 }
 
+/**
+ * @brief Widget::loadCoordFromText
+ *   Load coordinate information from given text file
+ *   need to define the variable and the size (how manay rows) in widgetInfoMap
+ * @param text_path : path to text file (also need to add path to qrc file)
+ */
 void Widget::loadCoordFromText(const char* text_path) {
     // read text file
     QFile f(text_path);
@@ -92,6 +104,11 @@ void Widget::loadCoordFromText(const char* text_path) {
     }
 }
 
+/**
+ * @brief Widget::createRegion
+ *   helper function to pass regionInfo data into RecRegion struct (regions vector)
+ * @param regionInfo : vector of glm::vec2, data associated with regionInfo
+ */
 void Widget::createRegion(std::vector<glm::vec2> regionInfo) {
     uPtr<RecRegion> region = mkU<RecRegion>();
     region->shiftDist = regionInfo[0];
@@ -127,6 +144,14 @@ void Widget::addItem(int overallIdx) {
     storeItemIntoDrawVector(currRegion, shiftX, shiftY);
 }
 
+/**
+ * @brief Widget::findRegionInfoFromIdx
+ *  add draw item into widget object, for selected frame
+ *  0-indexed, start from top-left corner of the first region
+ * @param overallIdx : int, the index of item among all regions in current widget
+ * @return currRegion : the region where the item located
+ * @return shiftX, shiftY : the coordinate (0-indexed) of the item in currRegion (unit: element, not pixel)
+ */
 void Widget::findRegionInfoFromIdx(int overallIdx, RecRegion* currRegion, int* shiftX, int* shiftY) {
     int remainingIdx = overallIdx;
     while (remainingIdx >= currRegion->capacity) {
@@ -138,6 +163,12 @@ void Widget::findRegionInfoFromIdx(int overallIdx, RecRegion* currRegion, int* s
     *shiftY = remainingIdx / currRegion->size.x;
 }
 
+/**
+ * @brief Widget::storeItemIntoDrawVector
+ *  helper function to store the item into drawItems for further vbo creation
+ * @param currRegion : region where the item locates, here we use the uv, pos and shift info
+ * @param shiftX, shiftY : the coordinate (0-indexed) of the item in currRegion (unit: element, not pixel)
+ */
 void Widget::storeItemIntoDrawVector(RecRegion* currRegion, int shiftX, int shiftY) {
     std::vector<glm::vec2> drawItem;
     glm::vec2 shift(shiftX * currRegion->shiftDist.x, shiftY * currRegion->shiftDist.y);
@@ -165,6 +196,11 @@ void Widget::storeItemIntoDrawVector(RecRegion* currRegion, int shiftX, int shif
     drawItems.push_back(drawItem);
 }
 
+/**
+ * @brief Widget::createVBOdata
+ *  inherited from Drawable
+ *  store the data into vbo
+ */
 void Widget::createVBOdata(){
 
     int loadWidgetCount = 1 + drawItems.size();

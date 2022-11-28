@@ -172,6 +172,11 @@ void Block::insertNewUVCoord(BlockType blockType, std::array<glm::vec2, 6> uv) {
     BlockCollection[blockType] = Block::createBlockFaces(uv);
 }
 
+/**
+ * @brief Block::loadUVCoordFromText
+ *   Load uv coordinates of 6 faces of all blocktypes from given text file
+ * @param text_path : path to text file (also need to add path to qrc file)
+ */
 void Block::loadUVCoordFromText(const char* text_path) {
     // read text file
     QFile f(text_path);
@@ -211,6 +216,14 @@ void Block::loadUVCoordFromText(const char* text_path) {
     }
 }
 
+/**
+ * @brief Block::loadUVCoordFromText
+ *   Load uv coordinates of 6 faces of all blocktypes from given text file
+ * @param blocktype : which block of the uv coordinates we need
+ * @param dir : the direction of the block face (6 directions)
+ * @return uvCoords : array of 4 uv coordinates given the block type and the direction of the face
+ *          (order: bottom-left, bottom-right, top-right, top-left
+ */
 void Block::getUVCoords(BlockType blockType, std::array<glm::vec2, 4>* uvCoords, Direction dir) {
     std::array<BlockFace, 6> faces = BlockCollection[blockType];
     BlockFace targetFace;

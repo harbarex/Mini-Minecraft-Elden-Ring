@@ -90,12 +90,16 @@ public:
     static std::unordered_map<std::string, BlockType> blockTypeMap;
 
     // a collection of transparent block type
+    // all blocktypes not in this set is opque
     static std::unordered_set<BlockType> transparentBlockTypes;
 
     // a collection of animatable block type
+    // all blocktypes not in this set is non-animatable
     static std::unordered_set<BlockType> animatableBlockTypes;
 
-    // a collection of liqui block type
+    // a collection of liquid block type
+    // player can transpass
+    // all blocktypes not in this set in solid
     static std::unordered_set<BlockType> liquidBlockTypes;
 
     // the rule to determine whether a given block is opaque or not

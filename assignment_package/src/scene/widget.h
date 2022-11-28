@@ -69,6 +69,7 @@ protected:
 
     // information of all region info
     // In default, it should contain 6 information as follows (in order)
+    // However, only regionInfo is required
 //     1. shift distance of the item in this region
 //     2. size of the region
 //     3. top-left screen coordinate of the first item in this region

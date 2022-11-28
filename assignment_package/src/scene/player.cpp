@@ -719,6 +719,7 @@ void Player::selectNextBlockOnHand(InputBundle &inputs) {
 /**
  * @brief Player::selectBlockOnHand
  *  change the selected block based on the input key (1-9)
+ *  Also setup the selected frame in inventoryWidgetOnHand
  * @param inputs : InputBundle, state of key pressed
  */
 void Player::selectBlockOnHand(InputBundle &inputs) {
@@ -756,7 +757,10 @@ void Player::setupWidget(std::vector<Widget*> widgets) {
     inventoryItemOnHand = (BlockInWidget*)widgets[1];
 }
 
-// setup all items in inventory on hand for further rendering
+/**
+ * @brief Player::drawInventoryItemOnHand
+ *   pass all items in inventory on hand to widget object for further rendering
+ */
 void Player::drawInventoryItemOnHand() {
     std::vector<std::pair<BlockType, int>> blocksInInventory;
     inventory.getItemInfo(&blocksInInventory);

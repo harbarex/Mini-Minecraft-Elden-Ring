@@ -8,6 +8,14 @@ BlockInWidget::BlockInWidget(OpenGLContext *context)
     };
 }
 
+/**
+ * @brief BlockInWidget::addItem
+ *  override addItem in Widget
+ *  add block item into widget object
+ * @param overallIdx : int, the index among all regions in the widget
+ * @param uvCoords: array of 4 uv coordinates of current block face, (order: bottom-left, bottom-right, top-right, top-left)
+ * @return
+ */
 void BlockInWidget::addItem(int overallIdx, std::array<glm::vec2, 4>& uvCoords) {
     RecRegion* currRegion = regions.front().get();
     int shiftX, shiftY;
@@ -15,6 +23,14 @@ void BlockInWidget::addItem(int overallIdx, std::array<glm::vec2, 4>& uvCoords) 
     storeItemIntoDrawVector(currRegion, shiftX, shiftY, uvCoords);
 }
 
+/**
+ * @brief BlockInWidget::storeItemIntoDrawVector
+ *  override storeItemIntoDrawVector in Widget
+ *  helper function to store the item into drawItems for further vbo creation
+ * @param currRegion : region where the item locates, here we use the pos and shift info
+ * @param shiftX, shiftY : the coordinate (0-indexed) of the item in currRegion (unit: element, not pixel)
+ * @param uvCoords: array of 4 uv coordinates of current block face, (order: bottom-left, bottom-right, top-right, top-left)
+ */
 void BlockInWidget::storeItemIntoDrawVector(RecRegion* currRegion, int shiftX, int shiftY, std::array<glm::vec2, 4>& uvCoords) {
     std::vector<glm::vec2> drawItem;
     glm::vec2 shift(shiftX * currRegion->shiftDist.x, shiftY * currRegion->shiftDist.y);
@@ -37,6 +53,11 @@ void BlockInWidget::storeItemIntoDrawVector(RecRegion* currRegion, int shiftX, i
     drawItems.push_back(drawItem);
 }
 
+/**
+ * @brief Widget::createVBOdata
+ *  inherited from Drawable
+ *  for custom data that need to pass to GPU
+ */
 void BlockInWidget::createVBOdata() {
 
     std::vector<GLuint> indices;

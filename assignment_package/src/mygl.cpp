@@ -428,7 +428,6 @@ void MyGL::mousePressEvent(QMouseEvent *e) {
 }
 
 void MyGL::mouseReleaseEvent(QMouseEvent *e) {
-    // TODO
 
     switch (e->button()) {
     case (Qt::LeftButton):
@@ -442,16 +441,40 @@ void MyGL::mouseReleaseEvent(QMouseEvent *e) {
     }
 }
 
+/**
+ * @brief MyGL::createTexture
+ *   assign texture image to the texture object
+ *   called from initializeGL
+ * @param texture :texture object that the texture map would assign to
+ * @param img_path : image path of texture map (in qrc)
+ * @param slot: slot that would be allocated to this texture object
+ */
 void MyGL::createTexture(Texture& texture, const char* img_path, int slot) {
     texture.create(img_path);
     texture.load(slot);
 }
 
+/**
+ * @brief MyGL::bindTexture
+ *   helper function to bind the shadeProgram to texture
+ * @param texture : texture object
+ * @param shaderProgram : shaderProgram
+ * @param slot: texture slot
+ */
 void MyGL::bindTexture(Texture& texture, ShaderProgram& shaderProgram, int slot) {
     texture.bind(slot);
     shaderProgram.setTexture(slot);
 }
 
+/**
+ * @brief MyGL::renderWidget
+ *   render the widget
+ *   called from paintGL
+ * @param texture : texture object used in this widget object
+ * @param shaderProgram : shaderProgram of the widget object
+ * @param slot: texture slot
+ * @param widget : pointer to widget object (for inherited class)
+ */
 void MyGL::renderWidget(Texture& texture, ShaderProgram& shaderProgram, int slot, Widget* widget) {
     widget->createVBOdata();
     shaderProgram.setTime(frameCount);
