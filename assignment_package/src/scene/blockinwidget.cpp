@@ -4,12 +4,37 @@ BlockInWidget::BlockInWidget(OpenGLContext *context)
     : Widget(context)
 {
     widgetInfoMap = {
-        {"regionInfo", std::make_pair(regionInfo, 4)}
+        {"regionInfo", std::make_pair(regionInfo, 6)}
     };
 }
 
-void BlockInWidget::addItemFromInventory(int overallShiftIdx, Inventory& inventory) {
+void BlockInWidget::addItem(int overallIdx, std::array<glm::vec2, 4>& uvCoords) {
+    RecRegion* currRegion = regions.front().get();
+    int shiftX, shiftY;
+    findRegionInfoFromIdx(overallIdx, currRegion, &shiftX, &shiftY);
+    storeItemIntoDrawVector(currRegion, shiftX, shiftY, uvCoords);
+}
 
+void BlockInWidget::storeItemIntoDrawVector(RecRegion* currRegion, int shiftX, int shiftY, std::array<glm::vec2, 4>& uvCoords) {
+    std::vector<glm::vec2> drawItem;
+    glm::vec2 shift(shiftX * currRegion->shiftDist.x, shiftY * currRegion->shiftDist.y);
+
+    glm::vec2 topLeftFramePos = currRegion->firstItemTopLeftScreenCoord + shift;
+    glm::vec2 bottomRightFramePos = currRegion->firstItemBottomRightScreenCoord + shift;
+    glm::vec2 topRightFramePos(bottomRightFramePos.x, topLeftFramePos.y);
+    glm::vec2 bottomLeftFramePos(topLeftFramePos.x, bottomRightFramePos.y);
+
+    drawItem.push_back(bottomLeftFramePos);
+    drawItem.push_back(bottomRightFramePos);
+    drawItem.push_back(topRightFramePos);
+    drawItem.push_back(topLeftFramePos);
+
+    drawItem.push_back(uvCoords[0]);
+    drawItem.push_back(uvCoords[1]);
+    drawItem.push_back(uvCoords[2]);
+    drawItem.push_back(uvCoords[3]);
+
+    drawItems.push_back(drawItem);
 }
 
 void BlockInWidget::createVBOdata() {
@@ -52,7 +77,6 @@ void BlockInWidget::createVBOdata() {
     generateUV();
     mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufUV);
     mp_context->glBufferData(GL_ARRAY_BUFFER, buffer_uv.size() * sizeof(float), buffer_uv.data(), GL_STATIC_DRAW);
-
 
     drawItems.clear();
 }

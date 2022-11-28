@@ -19,6 +19,7 @@ void Player::tick(float dT, InputBundle &input) {
     destroyBlock(input, mcr_terrain);
     placeBlock(input, mcr_terrain);
     selectBlockOnHand(input);
+    drawInventoryItemOnHand();
     processInputs(input);
     computePhysics(dT, mcr_terrain, input);
 }
@@ -753,6 +754,21 @@ void Player::selectBlockOnHand(InputBundle &inputs) {
 void Player::setupWidget(std::vector<Widget*> widgets) {
     inventoryWidgetOnHand = widgets[0];
     inventoryItemOnHand = (BlockInWidget*)widgets[1];
+}
+
+// setup all items in inventory on hand for further rendering
+void Player::drawInventoryItemOnHand() {
+    std::vector<std::pair<BlockType, int>> blocksInInventory;
+    inventory.getItemInfo(&blocksInInventory);
+
+    for (int i=0; i<inventory.getBlocksOnHandSize(); ++i) {
+        if (Block::isEmpty(blocksInInventory[i].first)) {
+            continue;
+        }
+        std::array<glm::vec2, 4> uvCoords;
+        Block::getUVCoords(blocksInInventory[i].first, &uvCoords);
+        inventoryItemOnHand->addItem(i, uvCoords);
+    }
 }
 
 bool Player::isLiquid(const Terrain &terrain, glm::ivec3* pos) {

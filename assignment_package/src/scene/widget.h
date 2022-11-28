@@ -92,6 +92,8 @@ protected:
     // create new RecRegion object
     void createRegion(std::vector<glm::vec2> regionInfo);
 
+    void findRegionInfoFromIdx(int overallIdx, RecRegion* currRegion, int* shiftX, int* shiftY);
+
 public:
     Widget(OpenGLContext* context);
 //    void setupWidgetCoord(float uv_x, float uv_y, float screen_x, float screen_y);

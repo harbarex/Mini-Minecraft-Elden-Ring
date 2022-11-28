@@ -125,6 +125,10 @@ public:
     // load uv coordinate of all blocktypes from text file
     static void loadUVCoordFromText(const char* text_path);
 
+    // get the uv coordinates of given blocktype and direction
+    // order (bottom-left, bottom-right, top-right, top-left)
+    static void getUVCoords(BlockType blockType, std::array<glm::vec2, 4>* uvCoords, Direction dir=XPOS);
+
 };
 
 

@@ -211,6 +211,21 @@ void Block::loadUVCoordFromText(const char* text_path) {
     }
 }
 
+void Block::getUVCoords(BlockType blockType, std::array<glm::vec2, 4>* uvCoords, Direction dir) {
+    std::array<BlockFace, 6> faces = BlockCollection[blockType];
+    BlockFace targetFace;
+    for (auto& face : faces) {
+        if (face.dir == dir) {
+            targetFace = face;
+            break;
+        }
+    }
+    for (int i=0; i<4; ++i) {
+        (*uvCoords)[i] = targetFace.vertices[i].uv;
+    }
+    return;
+}
+
 
 /**
  * Instantiate various kinds of blocks here.

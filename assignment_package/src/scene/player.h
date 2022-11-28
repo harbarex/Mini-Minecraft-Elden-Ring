@@ -104,5 +104,6 @@ public:
     void selectBlockOnHand(InputBundle &inputs);
 
     void setupWidget(std::vector<Widget*> widgets);
+    void drawInventoryItemOnHand();
 };
 

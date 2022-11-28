@@ -121,18 +121,21 @@ void Widget::createRegion(std::vector<glm::vec2> regionInfo) {
  * @return
  */
 void Widget::addItem(int overallIdx) {
-    int remainingIdx = overallIdx;
     RecRegion* currRegion = regions.front().get();
+    int shiftX, shiftY;
+    findRegionInfoFromIdx(overallIdx, currRegion, &shiftX, &shiftY);
+    storeItemIntoDrawVector(currRegion, shiftX, shiftY);
+}
 
+void Widget::findRegionInfoFromIdx(int overallIdx, RecRegion* currRegion, int* shiftX, int* shiftY) {
+    int remainingIdx = overallIdx;
     while (remainingIdx >= currRegion->capacity) {
         remainingIdx -= currRegion->capacity;
         currRegion = currRegion->next;
     }
 
-    int shiftX = remainingIdx % currRegion->size.x;
-    int shiftY = remainingIdx / currRegion->size.x;
-
-    storeItemIntoDrawVector(currRegion, shiftX, shiftY);
+    *shiftX = remainingIdx % currRegion->size.x;
+    *shiftY = remainingIdx / currRegion->size.x;
 }
 
 void Widget::storeItemIntoDrawVector(RecRegion* currRegion, int shiftX, int shiftY) {

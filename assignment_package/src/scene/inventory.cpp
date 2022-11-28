@@ -16,7 +16,7 @@ void Inventory::initBlocks() {
 }
 
 void Inventory::getItemInfo(std::vector<std::pair<BlockType, int>>* itemsInfo) {
-    itemsInfo = &blocksInInventory;
+    *itemsInfo = blocksInInventory;
 }
 
 void Inventory::setBlocks(std::vector<BlockType>& blockTypes, int count) {

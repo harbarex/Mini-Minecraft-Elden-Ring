@@ -28,10 +28,6 @@ private:
     // the blocks that the player currently holds (including in box)
     std::vector<std::pair<BlockType, int>> blocksInInventory;
 
-    // getter function of size
-    int getBlocksOnHandSize();
-    int getBlocksInInventorySize();
-
 public:
 
     Inventory();
@@ -64,6 +60,10 @@ public:
     // switch the block position between inventory and hand
     // return true if the action succeeds, and return false if the target is full
     bool switchBlocks(int blockIdxFrom);
+
+    // getter function of size
+    int getBlocksOnHandSize();
+    int getBlocksInInventorySize();
 };
 
 
