@@ -14,41 +14,35 @@
 
 class Widget : public Drawable
 {
-private:
+protected:
     // top-left and bottom-right uv coordinate of widget
     // 0 <= x, y <= 1 (origin at bottom-left)
-    std::array<glm::vec2, 2> widgetUVCoord;
+    std::vector<glm::vec2> widgetUVCoord;
 
     // top-left and bottom-right screen coordinate of widget
     // -1 <= x, y <= 1 (origin at center)
-    std::array<glm::vec2, 2> widgetScreenCoord;
+    std::vector<glm::vec2> widgetScreenCoord;
 
     // top-left and bottom-right uv coordinate of widget (optional)
     // 0 <= x, y <= 1 (origin at bottom-left)
-    std::array<glm::vec2, 2> selectedFrameUVCoord;
+    std::vector<glm::vec2> selectedFrameUVCoord;
 
     // top-left and bottom-right screen coordinate of selected frame (optional)
     // locate at the first frame (top-left)
     // -1 <= x, y <= 1 (origin at center)
-    std::array<glm::vec2, 2> selectedFrameScreenCoord;
+    std::vector<glm::vec2> selectedFrameScreenCoord;
 
     // first vec: shift dist of selected frame (optional)
     // -1 <= x, y <= 1
     // second vec: size of the widget (unit: frame) (col and row) (optional)
     // 0 < x, y and are expected as integer
-    std::array<glm::vec2, 2> frameShiftInfo;
+    std::vector<glm::vec2> frameShiftInfo;
 
     // current shift info of selected frame
     glm::vec2 currShift;
 
     // used for loading coordinates from text file
-    std::unordered_map<std::string, std::array<glm::vec2, 2>> widgetInfoMap = {
-        {"widgetUV", widgetUVCoord},
-        {"widgetScreen", widgetScreenCoord},
-        {"selectedFrameUV", selectedFrameUVCoord},
-        {"selectedFrameScreen", selectedFrameScreenCoord},
-        {"frameShiftInfo", frameShiftInfo}
-    };
+    std::unordered_map<std::string, std::pair<std::vector<glm::vec2>, int>> widgetInfoMap;
 
     void pushVec4ToBuffer(std::vector<float> &buf, const glm::vec4 &vec);
     void pushVec2ToBuffer(std::vector<float> &buf, const glm::vec2 &vec);
@@ -60,7 +54,7 @@ public:
 //    void setupSelectedFrameCoord(float uv_x, float uv_y, float screen_x, float screen_y);
 //    void setupSelectedFrameShiftInfo(float dist_x, float dist_y, int colLimit, int rowLimit);
     void loadCoordFromText(const char* text_path);
-    void insertNewInfos(std::string infoType, std::array<glm::vec2, 2> infos);
+    void insertNewInfos(std::string infoType, std::vector<glm::vec2> infos);
     bool setCurrShift(int x, int y);
 
     virtual void createVBOdata();

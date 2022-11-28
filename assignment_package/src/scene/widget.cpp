@@ -2,7 +2,15 @@
 
 Widget::Widget(OpenGLContext *context)
     : Drawable(context), currShift(0)
-{}
+{
+    widgetInfoMap = {
+        {"widgetUV", std::make_pair(widgetUVCoord, 2)},
+        {"widgetScreen", std::make_pair(widgetScreenCoord, 2)},
+        {"selectedFrameUV", std::make_pair(selectedFrameUVCoord, 2)},
+        {"selectedFrameScreen", std::make_pair(selectedFrameScreenCoord, 2)},
+        {"frameShiftInfo", std::make_pair(frameShiftInfo, 2)}
+    };
+}
 
 /**
  * @brief pushVec4ToBuffer
@@ -33,9 +41,9 @@ void Widget::pushVec2ToBuffer(std::vector<float> &buf, const glm::vec2 &vec)
     }
 }
 
-void Widget::insertNewInfos(std::string infoType, std::array<glm::vec2, 2> infos) {
+void Widget::insertNewInfos(std::string infoType, std::vector<glm::vec2> infos) {
     for (int i = 0; i < (int)infos.size(); ++i) {
-        widgetInfoMap[infoType][i] = infos[i];
+        widgetInfoMap[infoType].first.push_back(infos[i]);
     }
     return;
 }
@@ -48,8 +56,8 @@ void Widget::loadCoordFromText(const char* text_path) {
     QString line;
     bool isReadInfo = false;
     int dataReadCount = 0;
-    int dataReadCountMax = 2;
-    std::array<glm::vec2, 2> infos;
+    int dataReadCountMax;
+    std::vector<glm::vec2> infos;
     std::string currInfoType;
 
     while (!s.atEnd()) {
@@ -61,18 +69,19 @@ void Widget::loadCoordFromText(const char* text_path) {
 
         if (isReadInfo) {
             // store uv coordinate into temp array
-            infos[dataReadCount] = glm::vec2(line.split(" ")[0].toDouble(), line.split(" ")[1].toDouble());
+            infos.push_back(glm::vec2(line.split(" ")[0].toDouble(), line.split(" ")[1].toDouble()));
             dataReadCount += 1;
         } else if (widgetInfoMap.find(line.toStdString()) != widgetInfoMap.end()) {
             // identify which block
             currInfoType = line.toStdString();
+            dataReadCountMax = widgetInfoMap[line.toStdString()].second;
             isReadInfo = true;
         }
 
         if (dataReadCount == dataReadCountMax) {
             // store 2 uv coordinates into Widget object
             insertNewInfos(currInfoType, infos);
-            infos.empty();
+            infos.clear();
             dataReadCount = 0;
             isReadInfo = false;
         }
@@ -89,6 +98,7 @@ void Widget::loadCoordFromText(const char* text_path) {
  */
 bool Widget::setCurrShift(int x, int y) {
     currShift = glm::vec2(x, y);
+    return true;
 }
 
 void Widget::createVBOdata(){
@@ -102,8 +112,8 @@ void Widget::createVBOdata(){
     int nVert = 0;
 
     // selected frame shift info
-    float frameShiftX = currShift.x * widgetInfoMap["frameShiftInfo"][0].x;
-    float frameShiftY = currShift.y * widgetInfoMap["frameShiftInfo"][0].y;
+    float frameShiftX = currShift.x * widgetInfoMap["frameShiftInfo"].first[0].x;
+    float frameShiftY = currShift.y * widgetInfoMap["frameShiftInfo"].first[0].y;
     glm::vec2 frameShift(frameShiftX, frameShiftY);
 
     for (int i = 0; i < loadWidgetCount; ++i) {
@@ -116,10 +126,10 @@ void Widget::createVBOdata(){
     }
 
     // position of widget
-    glm::vec2 topLeftPos = widgetInfoMap["widgetScreen"][0];
-    glm::vec2 bottomRightPos = widgetInfoMap["widgetScreen"][1];
-    glm::vec2 topRightPos(widgetInfoMap["widgetScreen"][1].x, widgetInfoMap["widgetScreen"][0].y);
-    glm::vec2 bottomLeftPos(widgetInfoMap["widgetScreen"][0].x, widgetInfoMap["widgetScreen"][1].y);
+    glm::vec2 topLeftPos = widgetInfoMap["widgetScreen"].first[0];
+    glm::vec2 bottomRightPos = widgetInfoMap["widgetScreen"].first[1];
+    glm::vec2 topRightPos(bottomRightPos.x, topLeftPos.y);
+    glm::vec2 bottomLeftPos(topLeftPos.x, bottomRightPos.y);
 
     pushVec4ToBuffer(buffer_pos, glm::vec4(bottomLeftPos, 0.999999f, 1.f));
     pushVec4ToBuffer(buffer_pos, glm::vec4(bottomRightPos, 0.999999f, 1.f));
@@ -127,10 +137,10 @@ void Widget::createVBOdata(){
     pushVec4ToBuffer(buffer_pos, glm::vec4(topLeftPos, 0.999999f, 1.f));
 
     // uv of widget
-    glm::vec2 topLeftUV = widgetInfoMap["widgetUV"][0];
-    glm::vec2 bottomRightUV = widgetInfoMap["widgetUV"][1];
-    glm::vec2 topRightUV(widgetInfoMap["widgetUV"][1].x, widgetInfoMap["widgetUV"][0].y);
-    glm::vec2 bottomLeftUV(widgetInfoMap["widgetUV"][0].x, widgetInfoMap["widgetUV"][1].y);
+    glm::vec2 topLeftUV = widgetInfoMap["widgetUV"].first[0];
+    glm::vec2 bottomRightUV = widgetInfoMap["widgetUV"].first[1];
+    glm::vec2 topRightUV(bottomRightUV.x, topLeftUV.y);
+    glm::vec2 bottomLeftUV(topLeftUV.x, bottomRightUV.y);
 
     pushVec2ToBuffer(buffer_uv, bottomLeftUV);
     pushVec2ToBuffer(buffer_uv, bottomRightUV);
@@ -138,12 +148,10 @@ void Widget::createVBOdata(){
     pushVec2ToBuffer(buffer_uv, topLeftUV);
 
     // position of selected frame
-    glm::vec2 topLeftFramePos = widgetInfoMap["selectedFrameScreen"][0] + frameShift;
-    glm::vec2 bottomRightFramePos = widgetInfoMap["selectedFrameScreen"][1] + frameShift;
-    glm::vec2 topRightFramePos(widgetInfoMap["selectedFrameScreen"][1].x, widgetInfoMap["selectedFrameScreen"][0].y);
-    topRightFramePos += frameShift;
-    glm::vec2 bottomLeftFramePos(widgetInfoMap["selectedFrameScreen"][0].x, widgetInfoMap["selectedFrameScreen"][1].y);
-    bottomLeftFramePos += frameShift;
+    glm::vec2 topLeftFramePos = widgetInfoMap["selectedFrameScreen"].first[0] + frameShift;
+    glm::vec2 bottomRightFramePos = widgetInfoMap["selectedFrameScreen"].first[1] + frameShift;
+    glm::vec2 topRightFramePos(bottomRightFramePos.x, topLeftFramePos.y);
+    glm::vec2 bottomLeftFramePos(topLeftFramePos.x, bottomRightFramePos.y);
 
     pushVec4ToBuffer(buffer_pos, glm::vec4(bottomLeftFramePos, 0.999999f, 1.f));
     pushVec4ToBuffer(buffer_pos, glm::vec4(bottomRightFramePos, 0.999999f, 1.f));
@@ -151,10 +159,10 @@ void Widget::createVBOdata(){
     pushVec4ToBuffer(buffer_pos, glm::vec4(topLeftFramePos, 0.999999f, 1.f));
 
     // uv of selected frame
-    glm::vec2 topLeftFrameUV = widgetInfoMap["selectedFrameUV"][0];
-    glm::vec2 bottomRightFrameUV = widgetInfoMap["selectedFrameUV"][1];
-    glm::vec2 topRightFrameUV(widgetInfoMap["selectedFrameUV"][1].x, widgetInfoMap["selectedFrameUV"][0].y);
-    glm::vec2 bottomLeftFrameUV(widgetInfoMap["selectedFrameUV"][0].x, widgetInfoMap["selectedFrameUV"][1].y);
+    glm::vec2 topLeftFrameUV = widgetInfoMap["selectedFrameUV"].first[0];
+    glm::vec2 bottomRightFrameUV = widgetInfoMap["selectedFrameUV"].first[1];
+    glm::vec2 topRightFrameUV(bottomRightFrameUV.x, topLeftFrameUV.y);
+    glm::vec2 bottomLeftFrameUV(topLeftFrameUV.x, bottomRightFrameUV.y);
 
     pushVec2ToBuffer(buffer_uv, bottomLeftFrameUV);
     pushVec2ToBuffer(buffer_uv, bottomRightFrameUV);
