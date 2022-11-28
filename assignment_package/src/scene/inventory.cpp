@@ -1,7 +1,7 @@
 #include "inventory.h"
 
 Inventory::Inventory()
-    : selectedBlockPtr(0), max_blocks(64), blocksOnHandSize(9), blocksInInventorySize(blocksOnHandSize+64)
+    : selectedBlockPtr(0), max_blocks(64), blocksOnHandSize(9), blocksInInventorySize(blocksOnHandSize+32)
 {
     initBlocks();
 }
@@ -13,6 +13,10 @@ void Inventory::initBlocks() {
     for (int j = 0; j < blocksInInventorySize; ++j) {
         blocksInInventory.push_back(std::make_pair(EMPTY, 0));
     }
+}
+
+void Inventory::getItemInfo(std::vector<std::pair<BlockType, int>>* itemsInfo) {
+    itemsInfo = &blocksInInventory;
 }
 
 void Inventory::setBlocks(std::vector<BlockType>& blockTypes, int count) {

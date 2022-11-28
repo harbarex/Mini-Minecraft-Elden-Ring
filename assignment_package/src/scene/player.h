@@ -4,6 +4,7 @@
 #include "terrain.h"
 #include "inventory.h"
 #include "widget.h"
+#include "blockinwidget.h"
 #include <iostream>
 #include <set>
 
@@ -28,7 +29,8 @@ private:
 
     int selectedBlockOnHandPtr;
     Inventory inventory;
-    Widget &inventoryOnHand;
+    Widget *inventoryWidgetOnHand;
+    BlockInWidget *inventoryItemOnHand;
 
     bool checkXZCollision(int idx, const Terrain &terrain); // determine if current movement collide in X or Z axis (with idx 0 and 2)
     bool checkYCollision(const Terrain &terrain); // determine if current movement collide in Y axis (specifically for the ground)
@@ -41,7 +43,7 @@ public:
     // for easy access from MyGL
     const Camera& mcr_camera;
 
-    Player(glm::vec3 pos, Terrain &terrain, Widget &inventoryOnHand);
+    Player(glm::vec3 pos, Terrain &terrain);
     virtual ~Player() override;
 
     void setCameraWidthHeight(unsigned int w, unsigned int h);
@@ -100,5 +102,7 @@ public:
     void setBlocksHold();
     void selectNextBlockOnHand(InputBundle &inputs);
     void selectBlockOnHand(InputBundle &inputs);
+
+    void setupWidget(std::vector<Widget*> widgets);
 };
 

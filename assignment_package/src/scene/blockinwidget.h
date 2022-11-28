@@ -6,12 +6,10 @@
 
 class BlockInWidget : public Widget
 {
-protected:
-
 public:
     BlockInWidget(OpenGLContext* context);
     // we draw the item with uv provided by player, usually for block drawing
-    bool addItemFromInventory(int overallShiftIdx, Inventory& inventory);
+    void addItemFromInventory(int overallShiftIdx, Inventory& inventory);
     virtual void createVBOdata();
 };
 

@@ -10,6 +10,7 @@
 #include "scene/player.h"
 #include "scene/block.h"
 #include "scene/widget.h"
+#include "scene/blockinwidget.h"
 
 #include "texture.h"
 
@@ -30,9 +31,11 @@ private:
     ShaderProgram m_progUnderwater;
     ShaderProgram m_progLava;
     ShaderProgram m_progNoOp;
-    ShaderProgram m_progInventory;
+    ShaderProgram m_progInventoryWidgetOnHand;
+    ShaderProgram m_progInventoryItemOnHand;
     Quad m_quad;
-    Widget inventoryOnHand;
+    Widget inventoryWidgetOnHand;
+    BlockInWidget inventoryItemsOnHand;
 
     FrameBuffer m_frameBuffer;
 
@@ -52,7 +55,7 @@ private:
     int prevMouseY;
 
     Texture textureAll;
-    Texture inventoryTexture;
+    Texture inventoryWidgetOnHandTexture;
 
     void moveMouseToCenter(); // Forces the mouse position to the screen's center. You should call this
                               // from within a mouse move event after reading the mouse movement so that
@@ -87,7 +90,7 @@ public:
 
     // Called from paintGL()
     // Render the widget
-    void renderWidget(Texture& texture, ShaderProgram& shaderProgram, int slot, Widget& widget);
+    void renderWidget(Texture& texture, ShaderProgram& shaderProgram, int slot, Widget* widget);
 
 protected:
     // Automatically invoked when the user

@@ -39,6 +39,8 @@ public:
     // initialize the blocks on hand and those in inventory
     void initBlocks();
 
+    void getItemInfo(std::vector<std::pair<BlockType, int>>* itemsInfo);
+
     // Assign blocks to the player
     // mainly used for debug or creative mode
     void setBlocks();

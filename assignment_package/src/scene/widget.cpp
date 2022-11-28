@@ -164,7 +164,7 @@ void Widget::storeItemIntoDrawVector(RecRegion* currRegion, int shiftX, int shif
 
 void Widget::createVBOdata(){
 
-    int loadWidgetCount = 2;
+    int loadWidgetCount = 1 + drawItems.size();
 
     std::vector<GLuint> indices;
     std::vector<GLuint> faceIndices = {0, 1, 2, 0, 2, 3};

@@ -11,12 +11,12 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
-      m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventory(this), m_quad(this), inventoryOnHand(this),
-      m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
-      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain, inventoryOnHand),
-      frameCount(0),
-      prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this), inventoryTexture(this),
-      prevExpandTime(QDateTime::currentMSecsSinceEpoch())
+      m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventoryWidgetOnHand(this), m_progInventoryItemOnHand(this), m_quad(this),
+      inventoryWidgetOnHand(this),
+      inventoryItemsOnHand(this), m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
+      m_terrain(this),
+      m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), frameCount(0), prevFrameTime(QDateTime::currentMSecsSinceEpoch()),
+      textureAll(this), inventoryWidgetOnHandTexture(this), prevExpandTime(QDateTime::currentMSecsSinceEpoch())
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
@@ -28,6 +28,12 @@ MyGL::MyGL(QWidget *parent)
     setCursor(Qt::BlankCursor); // Make the cursor invisible
     prevMouseX = width() / 2;
     prevMouseY = height() / 2;
+
+    // widget setup in player
+    std::vector<Widget*> widgets;
+    widgets.push_back(&inventoryWidgetOnHand);
+    widgets.push_back(&inventoryItemsOnHand);
+    m_player.setupWidget(widgets);
 }
 
 MyGL::~MyGL() {
@@ -35,7 +41,7 @@ MyGL::~MyGL() {
     glDeleteVertexArrays(1, &vao);
 
     m_quad.destroyVBOdata();
-    inventoryOnHand.destroyVBOdata();
+    inventoryWidgetOnHand.destroyVBOdata();
     m_frameBuffer.destroy();
     m_worldAxes.destroyVBOdata();
 }
@@ -86,8 +92,8 @@ void MyGL::initializeGL()
     m_progUnderwater.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/underwater.frag.glsl");
     m_progLava.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/lava.frag.glsl");
     m_progNoOp.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/overlay.frag.glsl");
-    m_progInventory.create(":/glsl/post/inventory.vert.glsl", ":/glsl/post/inventory.frag.glsl");
-
+    m_progInventoryWidgetOnHand.create(":/glsl/post/inventory.vert.glsl", ":/glsl/post/inventory.frag.glsl");
+    m_progInventoryItemOnHand.create(":/glsl/post/inventory.vert.glsl", ":/glsl/post/inventory.frag.glsl");
 
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -99,8 +105,12 @@ void MyGL::initializeGL()
     Block::loadUVCoordFromText(":/textures/uv_coord_texture_all.txt");
 
     // widget texture map
-    createTexture(inventoryTexture, ":/textures/minecraft_textures_widgets.png", 2);
-    inventoryOnHand.loadCoordFromText(":/textures/widget_on_hand_info.txt");
+    createTexture(inventoryWidgetOnHandTexture, ":/textures/minecraft_textures_widgets.png", 2);
+    inventoryWidgetOnHand.loadCoordFromText(":/textures/widget_on_hand_info.txt");
+
+    // block in widget (on hand)
+    inventoryItemsOnHand.loadCoordFromText(":/textures/widget_on_hand_info.txt");
+
     ////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -132,7 +142,7 @@ void MyGL::resizeGL(int w, int h) {
     m_progNoOp.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
     m_progUnderwater.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
     m_progLava.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
-    m_progInventory.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
+    m_progInventoryWidgetOnHand.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
 
     m_frameBuffer.resize(this->width(), this->height(), this->devicePixelRatio());
     m_frameBuffer.destroy();
@@ -244,7 +254,10 @@ void MyGL::paintGL() {
     // draw the widget at last
     glDisable(GL_DEPTH_TEST);
     // On hand
-    renderWidget(inventoryTexture, m_progInventory, 2, inventoryOnHand);
+    // widget and selected frame
+    renderWidget(inventoryWidgetOnHandTexture, m_progInventoryWidgetOnHand, 2, &inventoryWidgetOnHand);
+    // blocks
+    renderWidget(textureAll, m_progInventoryItemOnHand, 0, &inventoryItemsOnHand);
     // In box
     glEnable(GL_DEPTH_TEST);
 
@@ -439,9 +452,9 @@ void MyGL::bindTexture(Texture& texture, ShaderProgram& shaderProgram, int slot)
     shaderProgram.setTexture(slot);
 }
 
-void MyGL::renderWidget(Texture& texture, ShaderProgram& shaderProgram, int slot, Widget& widget) {
-    widget.createVBOdata();
+void MyGL::renderWidget(Texture& texture, ShaderProgram& shaderProgram, int slot, Widget* widget) {
+    widget->createVBOdata();
     shaderProgram.setTime(frameCount);
     bindTexture(texture, shaderProgram, slot);
-    shaderProgram.drawWidget(widget);
+    shaderProgram.drawWidget(*widget);
 }
