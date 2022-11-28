@@ -30,6 +30,9 @@ MyGL::MyGL(QWidget *parent)
     prevMouseY = height() / 2;
 
     m_player.setBlocksHold();
+
+    // TODO: instantiate NPCs
+
 }
 
 MyGL::~MyGL() {
