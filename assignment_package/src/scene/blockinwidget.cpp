@@ -3,9 +3,7 @@
 BlockInWidget::BlockInWidget(OpenGLContext *context)
     : Widget(context)
 {
-    widgetInfoMap = {
-        {"regionInfo", std::make_pair(regionInfo, 6)}
-    };
+    setWidgetInfo();
 }
 
 /**
@@ -51,6 +49,12 @@ void BlockInWidget::storeItemIntoDrawVector(RecRegion* currRegion, int shiftX, i
     drawItem.push_back(uvCoords[3]);
 
     drawItems.push_back(drawItem);
+}
+
+void BlockInWidget::setWidgetInfo() {
+    widgetInfoMap = {
+        {"regionInfo", std::make_pair(regionInfo, 4)}
+    };
 }
 
 /**

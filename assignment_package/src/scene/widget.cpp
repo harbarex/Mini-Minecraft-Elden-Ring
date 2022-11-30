@@ -3,11 +3,7 @@
 Widget::Widget(OpenGLContext *context)
     : Drawable(context)
 {
-    widgetInfoMap = {
-        {"widgetUV", std::make_pair(widgetUVCoord, 2)},
-        {"widgetScreen", std::make_pair(widgetScreenCoord, 2)},
-        {"regionInfo", std::make_pair(regionInfo, 6)}
-    };
+    setWidgetInfo();
 }
 
 /**
@@ -115,11 +111,10 @@ void Widget::createRegion(std::vector<glm::vec2> regionInfo) {
     region->size = regionInfo[1];
     region->firstItemTopLeftScreenCoord = regionInfo[2];
     region->firstItemBottomRightScreenCoord = regionInfo[3];
-    if (regionInfo.size() == 4) {
-        return;
+    if (regionInfo.size() == 6) {
+        region->firstItemTopLeftUVCoord = regionInfo[4];
+        region->firstItemBottomRightUVCoord = regionInfo[5];
     }
-    region->firstItemTopLeftUVCoord = regionInfo[4];
-    region->firstItemBottomRightUVCoord = regionInfo[5];
 
     if (regions.size() > 0) {
         regions.back()->next = region.get();
@@ -194,6 +189,14 @@ void Widget::storeItemIntoDrawVector(RecRegion* currRegion, int shiftX, int shif
     drawItem.push_back(topLeftFrameUV);
 
     drawItems.push_back(drawItem);
+}
+
+void Widget::setWidgetInfo() {
+    widgetInfoMap = {
+        {"widgetUV", std::make_pair(widgetUVCoord, 2)},
+        {"widgetScreen", std::make_pair(widgetScreenCoord, 2)},
+        {"regionInfo", std::make_pair(regionInfo, 6)}
+    };
 }
 
 /**

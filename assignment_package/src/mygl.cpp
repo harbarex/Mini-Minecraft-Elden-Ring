@@ -109,7 +109,7 @@ void MyGL::initializeGL()
     inventoryWidgetOnHand.loadCoordFromText(":/textures/widget_on_hand_info.txt");
 
     // block in widget (on hand)
-    inventoryItemsOnHand.loadCoordFromText(":/textures/widget_on_hand_info.txt");
+    inventoryItemsOnHand.loadCoordFromText(":/textures/widget_item_on_hand_info.txt");
 
     ////////////////////////////////////////////////////////////////////////////////////
 
