@@ -11,6 +11,7 @@ SOURCES += \
     $$PWD/scene/noise.cpp \
     $$PWD/scene/block.cpp \
     $$PWD/scene/quad.cpp \
+    $$PWD/scene/text.cpp \
     $$PWD/scene/widget.cpp \
     $$PWD/shaderprogram.cpp \
     $$PWD/drawable.cpp \
@@ -36,6 +37,7 @@ HEADERS += \
     $$PWD/scene/noise.h \
     $$PWD/scene/block.h \
     $$PWD/scene/quad.h \
+    $$PWD/scene/text.h \
     $$PWD/scene/widget.h \
     $$PWD/shaderprogram.h \
     $$PWD/drawable.h \
