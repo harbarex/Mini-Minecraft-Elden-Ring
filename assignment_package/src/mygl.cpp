@@ -12,8 +12,7 @@ MyGL::MyGL(QWidget *parent)
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
       m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventoryWidgetOnHand(this), m_progInventoryItemOnHand(this), m_quad(this),
-      inventoryWidgetOnHand(this),
-      inventoryItemsOnHand(this), m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
+      m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
       m_terrain(this),
       m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), frameCount(0), prevFrameTime(QDateTime::currentMSecsSinceEpoch()),
       textureAll(this), inventoryWidgetOnHandTexture(this), prevExpandTime(QDateTime::currentMSecsSinceEpoch())
@@ -29,11 +28,23 @@ MyGL::MyGL(QWidget *parent)
     prevMouseX = width() / 2;
     prevMouseY = height() / 2;
 
-    // widget setup in player
-    std::vector<Widget*> widgets;
-    widgets.push_back(&inventoryWidgetOnHand);
-    widgets.push_back(&inventoryItemsOnHand);
-    m_player.setupWidget(widgets);
+    /**
+     * widget setup
+     * 1. inventoryWidgetOnHand
+     * 2. inventoryItemOnHand
+     * 3. inventoryWidgetInBox
+     * 4. inventoryItemInBox
+     */
+    std::vector<Widget*> widgets_raw;
+    uPtr<Widget> widget = mkU<Widget>(this);
+    inventoryWidgetOnHand = widget.get();
+    widgets_raw.push_back(inventoryWidgetOnHand);
+    widgets.push_back(std::move(widget));
+    uPtr<BlockInWidget> blockInWidget = mkU<BlockInWidget>(this);
+    inventoryItemsOnHand = blockInWidget.get();
+    widgets_raw.push_back(inventoryItemsOnHand);
+    widgets.push_back(std::move(blockInWidget));
+    m_player.setupWidget(widgets_raw);
 }
 
 MyGL::~MyGL() {
@@ -41,7 +52,8 @@ MyGL::~MyGL() {
     glDeleteVertexArrays(1, &vao);
 
     m_quad.destroyVBOdata();
-    inventoryWidgetOnHand.destroyVBOdata();
+    inventoryWidgetOnHand->destroyVBOdata();
+    inventoryItemsOnHand->destroyVBOdata();
     m_frameBuffer.destroy();
     m_worldAxes.destroyVBOdata();
 }
@@ -106,10 +118,10 @@ void MyGL::initializeGL()
 
     // widget texture map
     createTexture(inventoryWidgetOnHandTexture, ":/textures/minecraft_textures_widgets.png", 2);
-    inventoryWidgetOnHand.loadCoordFromText(":/textures/widget_on_hand_info.txt");
+    inventoryWidgetOnHand->loadCoordFromText(":/textures/widget_on_hand_info.txt");
 
     // block in widget (on hand)
-    inventoryItemsOnHand.loadCoordFromText(":/textures/widget_item_on_hand_info.txt");
+    inventoryItemsOnHand->loadCoordFromText(":/textures/widget_item_on_hand_info.txt");
 
     ////////////////////////////////////////////////////////////////////////////////////
 
@@ -255,9 +267,9 @@ void MyGL::paintGL() {
     glDisable(GL_DEPTH_TEST);
     // On hand
     // widget and selected frame
-    renderWidget(inventoryWidgetOnHandTexture, m_progInventoryWidgetOnHand, 2, &inventoryWidgetOnHand);
+    renderWidget(inventoryWidgetOnHandTexture, m_progInventoryWidgetOnHand, 2, inventoryWidgetOnHand);
     // blocks
-    renderWidget(textureAll, m_progInventoryItemOnHand, 0, &inventoryItemsOnHand);
+    renderWidget(textureAll, m_progInventoryItemOnHand, 0, inventoryItemsOnHand);
     // In box
     glEnable(GL_DEPTH_TEST);
 

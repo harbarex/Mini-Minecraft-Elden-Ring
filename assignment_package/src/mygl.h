@@ -34,8 +34,9 @@ private:
     ShaderProgram m_progInventoryWidgetOnHand;
     ShaderProgram m_progInventoryItemOnHand;
     Quad m_quad;
-    Widget inventoryWidgetOnHand;
-    BlockInWidget inventoryItemsOnHand;
+    Widget* inventoryWidgetOnHand;
+    BlockInWidget* inventoryItemsOnHand;
+    std::vector<uPtr<Widget>> widgets;
 
     FrameBuffer m_frameBuffer;
 
