@@ -112,6 +112,9 @@ void MyGL::initializeGL()
     createTexture(textureFont, ":/textures/ascii.png", 3);
     textOnScreen->loadUVCoordFromText(":/textures/text_info.txt");
 
+    // test
+    textOnScreen->addText("000000", glm::vec2(0, 0), 0.1);
+
     ////////////////////////////////////////////////////////////////////////////////////
 
 

@@ -41,7 +41,7 @@ public:
 
     // a collection of all the uvs of all types of texts
     // order of uv: bottom-left, bottom-right, top-right, top-left
-    std::unordered_map<std::string, std::array<glm::vec2, 4>> TextCollection;
+    std::unordered_map<char, std::array<glm::vec2, 4>> TextCollection;
 
     // load uv coordinate of all texts from text file
     bool loadUVCoordFromText(const char* text_path);
