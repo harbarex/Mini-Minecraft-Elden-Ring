@@ -22,17 +22,18 @@ void Sheep::initSceneGraph()
 {
     // body as the center
     // 2 by 2 by 3 blocks
-    glm::vec3 bodyScale = glm::vec3(2.f, 2.f, 2.5f);
+    glm::vec3 bodyScale = glm::vec3(1.25f, 1.25f, 1.8f);
     root = mkU<TranslateNode>(nullptr, glm::vec3(0.f));
     root->addChild(mkU<ScaleNode>(&body, bodyScale));
 
     // connect to head
-    glm::vec3 headScale = glm::vec3(1.f, 1.f, 1.f);
-    glm::vec3 headTranslate = glm::vec3(0.f, (bodyScale.y / 2.f) * 0.4 , bodyScale.z / 2.f + (headScale.z / 2.f) * 0.8);
-    Node &bodyToHead = root->addChild(mkU<TranslateNode>(&head, headTranslate));
+    glm::vec3 headScale = glm::vec3(0.7f, 0.7f, 0.7f);
+    glm::vec3 headTranslate = glm::vec3(0.f, (bodyScale.y / 2.f) * 0.4 , bodyScale.z / 2.f + (headScale.z / 2.f) * 0.65);
+    Node &bodyToHead = root->addChild(mkU<TranslateNode>(nullptr, headTranslate));
+    bodyToHead.addChild(mkU<ScaleNode>(&head, headScale));
 
     // limbs
-    glm::vec3 limbScale = glm::vec3(0.5f, 1.25f, 0.5f);
+    glm::vec3 limbScale = glm::vec3(0.4f, 1.25f, 0.4f);
     float ratio = 0.8f;
     // left forth
     glm::vec3 lFTranslate = glm::vec3(bodyScale.x / 2.f - limbScale.x / 2.f,
@@ -44,13 +45,13 @@ void Sheep::initSceneGraph()
     limbRotNodes.push_back(&rotLF);
 
     // right forth
-    glm::vec3 lRTranslate = glm::vec3(-bodyScale.x / 2.f + limbScale.x / 2.f,
+    glm::vec3 rFTranslate = glm::vec3(-bodyScale.x / 2.f + limbScale.x / 2.f,
                                       - bodyScale.y / 2.f -  limbScale.y / 2.f,
                                       bodyScale.z / 2.f - limbScale.z / 2.f) * ratio;
-    Node &bodyToLR = root->addChild(mkU<TranslateNode>(nullptr, lRTranslate));
-    Node &rotLR = bodyToLR.addChild(mkU<RotateNode>(nullptr, glm::vec3(-1.f, 0.f, 0.f), 5.f));
-    rotLR.addChild(mkU<ScaleNode>(&limb, limbScale));
-    limbRotNodes.push_back(&rotLR);
+    Node &bodyToRF = root->addChild(mkU<TranslateNode>(nullptr, rFTranslate));
+    Node &rotRF = bodyToRF.addChild(mkU<RotateNode>(nullptr, glm::vec3(-1.f, 0.f, 0.f), 5.f));
+    rotRF.addChild(mkU<ScaleNode>(&limb, limbScale));
+    limbRotNodes.push_back(&rotRF);
 
     // left back
     glm::vec3 lBTranslate = glm::vec3(bodyScale.x / 2.f - limbScale.x / 2.f,

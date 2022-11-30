@@ -12,6 +12,7 @@ SOURCES += \
     $$PWD/scene/npcs/sheep.cpp \
     $$PWD/scene/node.cpp \
     $$PWD/scene/npcs/steve.cpp \
+    $$PWD/scene/npcs/zombiedragon.cpp \
     $$PWD/scene/quad.cpp \
     $$PWD/shaderprogram.cpp \
     $$PWD/drawable.cpp \
@@ -38,6 +39,7 @@ HEADERS += \
     $$PWD/scene/node.h \
     $$PWD/scene/npcs/sheep.h \
     $$PWD/scene/npcs/steve.h \
+    $$PWD/scene/npcs/zombiedragon.h \
     $$PWD/scene/quad.h \
     $$PWD/shaderprogram.h \
     $$PWD/drawable.h \

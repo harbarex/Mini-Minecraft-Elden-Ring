@@ -12,6 +12,7 @@
 #include "scene/npc.h"
 #include "scene/npcs/sheep.h"
 #include "scene/npcs/steve.h"
+#include "scene/npcs/zombiedragon.h"
 
 #include "texture.h"
 
@@ -33,6 +34,9 @@ private:
     ShaderProgram m_progLava;
     ShaderProgram m_progNoOp;
     Quad m_quad;
+
+    // NPC
+    ShaderProgram m_progNPC;
 
     FrameBuffer m_frameBuffer;
 

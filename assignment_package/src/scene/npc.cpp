@@ -57,10 +57,10 @@ void NPC::traverseSceneGraph(ShaderProgram *shader, const uPtr<Node> &node, glm:
  */
 void NPC::tick(float dT, InputBundle &input)
 {
-    destroyBufferTime += dT;
-    creationBufferTime += dT;
-    processInputs(input);
-    computePhysics(dT, mcr_terrain, input);
+//    destroyBufferTime += dT;
+//    creationBufferTime += dT;
+//    processInputs(input);
+//    computePhysics(dT, mcr_terrain, input);
 
     walkingDistCycle += dT;
     updateLimbRotations();

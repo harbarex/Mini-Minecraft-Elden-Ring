@@ -10,7 +10,7 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
-      m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_quad(this),
+      m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_quad(this), m_progNPC(this),
       m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
       m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), m_npcs(),
       frameCount(0),
@@ -31,14 +31,14 @@ MyGL::MyGL(QWidget *parent)
     m_player.setBlocksHold();
 
     // the initial set of NPCs
-    m_npcs.push_back(mkU<Steve>(this, glm::vec3(50.f, 160.f, 32.f), m_terrain, STEVE));
-    m_npcs.push_back(mkU<Sheep>(this, glm::vec3(60.f, 160.f, 32.f), m_terrain, SHEEP));
+    m_npcs.push_back(mkU<Steve>(this, glm::vec3(55.f, 150.f, 32.f), m_terrain, STEVE));
+    m_npcs.push_back(mkU<Sheep>(this, glm::vec3(60.f, 150.f, 32.f), m_terrain, SHEEP));
+    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(65.f, 150.f, 32.f), m_terrain, ZDRAGON));
 }
 
 MyGL::~MyGL() {
     makeCurrent();
     glDeleteVertexArrays(1, &vao);
-
     m_quad.destroyVBOdata();
     m_frameBuffer.destroy();
     m_worldAxes.destroyVBOdata();
@@ -91,6 +91,8 @@ void MyGL::initializeGL()
     m_progLava.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/lava.frag.glsl");
     m_progNoOp.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/overlay.frag.glsl");
 
+    m_progNPC.create(":/glsl/lambert.vert.glsl", ":/glsl/npc.frag.glsl");
+
     m_quad.createVBOdata();
 
     createTexture();
@@ -108,6 +110,7 @@ void MyGL::initializeGL()
     // your program to render Chunks with vertex colors
     // and UV coordinates
     m_progLambert.setGeometryColor(glm::vec4(0,1,0,1));
+    m_progNPC.setGeometryColor(glm::vec4(0,1,0,1));
 
     // We have to have a VAO bound in OpenGL 3.2 Core. But if we're not
     // using multiple VAOs, we can just bind one once.
@@ -127,6 +130,7 @@ void MyGL::resizeGL(int w, int h) {
 
     m_progLambert.setViewProjMatrix(viewproj);
     m_progFlat.setViewProjMatrix(viewproj);
+    m_progNPC.setViewProjMatrix(viewproj);
 
     m_progNoOp.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
     m_progUnderwater.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
@@ -208,10 +212,12 @@ void MyGL::paintGL() {
 
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
+    m_progNPC.setViewProjMatrix(m_player.mcr_camera.getViewProj());
 
     m_progLambert.setTime(frameCount);
     m_progLava.setTime(frameCount);
     m_progUnderwater.setTime(frameCount);
+    m_progNPC.setTime(frameCount);
 
     renderTerrain(TerrainDrawType::opaque);
 
@@ -226,10 +232,11 @@ void MyGL::paintGL() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     renderTerrain(TerrainDrawType::transparent);
-    glDisable(GL_BLEND);
-
     // render NPCs
     renderNPCs();
+    glDisable(GL_BLEND);
+
+
 
     glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
     glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
@@ -393,7 +400,6 @@ void MyGL::mouseReleaseEvent(QMouseEvent *e) {
 
 void MyGL::createTexture() {
     loadTextureUVCoord();
-    loadNPCTextureUVCoord();
     textureAll.create(":/textures/minecraft_textures_all.png");
     textureAll.load(0);
 }
@@ -405,6 +411,7 @@ void MyGL::createTexture() {
  */
 void MyGL::createNPCTextures()
 {
+    loadNPCTextureUVCoord();
     // Steve
     npcTextures[STEVE] = Texture(this);
     npcTextures[STEVE].create(":/textures/steve.png");
@@ -414,6 +421,11 @@ void MyGL::createNPCTextures()
     npcTextures[SHEEP] = Texture(this);
     npcTextures[SHEEP].create(":/textures/sheep.png");
     npcTextures[SHEEP].load(4);
+
+    // ZombieDragon
+    npcTextures[ZDRAGON] = Texture(this);
+    npcTextures[ZDRAGON].create(":/textures/zdragon.png");
+    npcTextures[ZDRAGON].load(5);
 
     // TODO: others
 }
@@ -483,7 +495,6 @@ void MyGL::loadNPCTextureUVCoord()
             // skip empty line and line starts with #
             continue;
         }
-
         if (readCoord) {
             // store uv coordinate into temp array
             QStringList items = line.split(" ");
@@ -517,7 +528,6 @@ void MyGL::loadNPCTextureUVCoord()
  */
 void MyGL::renderNPCs()
 {
-
     for (const uPtr<NPC> &npc : m_npcs)
     {
         // Retrieve the texture map
@@ -527,7 +537,7 @@ void MyGL::renderNPCs()
         }
         // bind the texture map
         npcTextures[npc->npcTexture].bind(npcTextures[npc->npcTexture].getSlot());
-        m_progLambert.setTexture(npcTextures[npc->npcTexture].getSlot());
-        npc->draw(&m_progLambert);
+        m_progNPC.setTexture(npcTextures[npc->npcTexture].getSlot());
+        npc->draw(&m_progNPC);
     }
 }

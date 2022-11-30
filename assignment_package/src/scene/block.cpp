@@ -247,7 +247,15 @@ std::unordered_map<std::string, BlockType> Block::blockTypeMap = {
     {"STEVELUL", STEVELUL},
     {"STEVERUL", STEVERUL},
     {"STEVELLL", STEVELLL},
-    {"STEVERLL", STEVERLL}}
+    {"STEVERLL", STEVERLL},
+    {"ZDHEAD", ZDHEAD},
+    {"ZDBODY", ZDBODY},
+    {"ZDLBODY", ZDLBODY},
+    {"ZDTAIL", ZDTAIL},
+    {"ZDLCW", ZDLCW},
+    {"ZDLOW", ZDLOW},
+    {"ZDRCW", ZDRCW},
+    {"ZDROW", ZDROW}}
 };
 
 std::unordered_set<BlockType> Block::transparentBlockTypes = {
