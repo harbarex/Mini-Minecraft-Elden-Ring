@@ -13,9 +13,9 @@ MyGL::MyGL(QWidget *parent)
       m_progLambert(this), m_progFlat(this),
       m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventoryWidgetOnHand(this), m_progInventoryItemOnHand(this), m_quad(this),
       m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
-      m_terrain(this),
-      m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), frameCount(0), prevFrameTime(QDateTime::currentMSecsSinceEpoch()),
-      textureAll(this), inventoryWidgetOnHandTexture(this), prevExpandTime(QDateTime::currentMSecsSinceEpoch())
+      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
+      frameCount(0), prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this),
+      inventoryWidgetOnHandTexture(this), textureFont(this), prevExpandTime(QDateTime::currentMSecsSinceEpoch())
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
@@ -29,6 +29,7 @@ MyGL::MyGL(QWidget *parent)
     prevMouseY = height() / 2;
 
     initWidget();
+    initText();
 }
 
 MyGL::~MyGL() {
@@ -100,12 +101,16 @@ void MyGL::initializeGL()
     // loading uv coordinate of main texture map from text file
     Block::loadUVCoordFromText(":/textures/uv_coord_texture_all.txt");
 
-    // widget texture map
+    // widget texture map (slot = 2)
     createTexture(inventoryWidgetOnHandTexture, ":/textures/minecraft_textures_widgets.png", 2);
     inventoryWidgetOnHand->loadCoordFromText(":/textures/widget_on_hand_info.txt");
 
     // block in widget (on hand)
     inventoryItemsOnHand->loadCoordFromText(":/textures/widget_item_on_hand_info.txt");
+
+    // text on the screen (slot = 3)
+    createTexture(textureFont, ":/textures/ascii.png", 3);
+    textOnScreen->loadUVCoordFromText(":/textures/text_info.txt");
 
     ////////////////////////////////////////////////////////////////////////////////////
 
@@ -143,6 +148,8 @@ void MyGL::resizeGL(int w, int h) {
     m_frameBuffer.resize(this->width(), this->height(), this->devicePixelRatio());
     m_frameBuffer.destroy();
     m_frameBuffer.create();
+
+    textOnScreen->resizeDimension(this->width(), this->height());
 
     printGLErrorLog();
 }
@@ -499,4 +506,10 @@ void MyGL::initWidget() {
 
     // pass widget raw pointers to player
     m_player.setupWidget(widgets_raw);
+}
+
+void MyGL::initText() {
+    textOnScreen = mkU<Text>(this, width(), height());
+    m_player.setupText(textOnScreen.get());
+
 }

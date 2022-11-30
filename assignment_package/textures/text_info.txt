@@ -1,0 +1,18 @@
+# The text file is for setup text info
+# (col, row) starting from bottom-left corner, 0-indexed
+# mapping range from (0, 0) to (16, 16)
+# Every data is written in one line, and x and y are separated by the space " "
+# the program would ignore empty line and line that starts with #
+
+# Setup the length of width and height of text in uv texture map
+# mapping range from 0 to 1
+# default (12/256, 16/256)
+textWidthHeight
+0.046875 0.0625
+
+# (0, 13) in grid system 
+0
+0 13
+
+
+

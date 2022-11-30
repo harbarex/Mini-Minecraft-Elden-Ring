@@ -7,5 +7,7 @@
         <file>textures/widget_on_hand_info.txt</file>
         <file>textures/minecraft_textures_widgets_hopper.png</file>
         <file>textures/widget_item_on_hand_info.txt</file>
+        <file>textures/text_info.txt</file>
+        <file>textures/ascii.png</file>
     </qresource>
 </RCC>

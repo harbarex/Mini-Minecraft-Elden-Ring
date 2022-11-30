@@ -757,6 +757,10 @@ void Player::setupWidget(std::vector<Widget*> widgets) {
     inventoryItemOnHand = (BlockInWidget*)widgets[1];
 }
 
+void Player::setupText(Text* text) {
+    textOnScreen = text;
+}
+
 /**
  * @brief Player::drawInventoryItemOnHand
  *   pass all items in inventory on hand to widget object for further rendering

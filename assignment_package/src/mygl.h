@@ -11,6 +11,7 @@
 #include "scene/block.h"
 #include "scene/widget.h"
 #include "scene/blockinwidget.h"
+#include "scene/text.h"
 
 #include "texture.h"
 
@@ -37,6 +38,7 @@ private:
     Widget* inventoryWidgetOnHand;
     BlockInWidget* inventoryItemsOnHand;
     std::vector<uPtr<Widget>> widgets;
+    uPtr<Text> textOnScreen;
 
     FrameBuffer m_frameBuffer;
 
@@ -57,6 +59,7 @@ private:
 
     Texture textureAll;
     Texture inventoryWidgetOnHandTexture;
+    Texture textureFont;
 
     void moveMouseToCenter(); // Forces the mouse position to the screen's center. You should call this
                               // from within a mouse move event after reading the mouse movement so that
@@ -66,6 +69,7 @@ private:
 
     void createTexture(Texture& texture, const char* img_path, int slot);
     void initWidget();
+    void initText();
     void bindTexture(Texture& texture, ShaderProgram& shaderProgram, int slot);
 
     long long prevExpandTime;

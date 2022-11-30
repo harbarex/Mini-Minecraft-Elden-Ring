@@ -5,6 +5,7 @@
 #include "inventory.h"
 #include "widget.h"
 #include "blockinwidget.h"
+#include "text.h"
 #include <iostream>
 #include <set>
 
@@ -31,6 +32,7 @@ private:
     Inventory inventory;
     Widget *inventoryWidgetOnHand;
     BlockInWidget *inventoryItemOnHand;
+    Text* textOnScreen;
 
     bool checkXZCollision(int idx, const Terrain &terrain); // determine if current movement collide in X or Z axis (with idx 0 and 2)
     bool checkYCollision(const Terrain &terrain); // determine if current movement collide in Y axis (specifically for the ground)
@@ -104,6 +106,7 @@ public:
     void selectBlockOnHand(InputBundle &inputs);
 
     void setupWidget(std::vector<Widget*> widgets);
+    void setupText(Text* text);
     void drawInventoryItemOnHand();
 };
 
