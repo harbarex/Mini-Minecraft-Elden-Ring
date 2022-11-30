@@ -10,8 +10,22 @@ extern void pushVec2ToBuffer(std::vector<float> &buf, const glm::vec2 &vec);
  * @param terrain
  */
 NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, NPCTexture npcTexture):
-    Drawable(context), Player(pos, terrain), walkingDistCycle(0), limbRotNodes(), npcHeight(1.f), npcWidth(1.f), npcDepth(1.f), npcTexture(npcTexture)
-{}
+    Drawable(context),
+    Player(pos, terrain),
+    walkingDistCycle(0),
+    limbRotNodes(),
+    lastPos(pos),
+    rootToGround(0.f),
+    rootToFront(0.5f),
+    rootToBack(0.5f),
+    rootToTop(2.f),
+    rootToLeft(0.5f),
+    rootToRight(0.5f),
+    npcTexture(npcTexture)
+{
+    // by default, set FlightMode off
+    flightMode = false;
+}
 
 
 /**
@@ -57,12 +71,10 @@ void NPC::traverseSceneGraph(ShaderProgram *shader, const uPtr<Node> &node, glm:
  */
 void NPC::tick(float dT, InputBundle &input)
 {
-//    destroyBufferTime += dT;
-//    creationBufferTime += dT;
-//    processInputs(input);
-//    computePhysics(dT, mcr_terrain, input);
-
-    walkingDistCycle += dT;
+    processInputs(input);
+    computePhysics(dT, mcr_terrain, input);
+    walkingDistCycle += glm::length(m_position - lastPos);
+    lastPos = m_position;
     updateLimbRotations();
 }
 
@@ -73,8 +85,8 @@ void NPC::tick(float dT, InputBundle &input)
  */
 void NPC::updateLimbRotations()
 {
-    float speed = 5.f;
-    float deg = glm::sin(walkingDistCycle * speed) * 10.f;
+    float speed = 2.f;
+    float deg = glm::sin(walkingDistCycle * speed) * 20.f;
     for (Node *p : limbRotNodes)
     {
         RotateNode *rot = dynamic_cast<RotateNode *>(p);
@@ -86,11 +98,13 @@ void NPC::updateLimbRotations()
 }
 
 
-void NPC::setFlightModeOff()
-{
-    flightMode = false;
-}
-
+/**
+ * @brief NPC::checkXZCollision
+ *  Note: m_position is the center of the NPC's body
+ * @param idx
+ * @param terrain
+ * @return
+ */
 bool NPC::checkXZCollision(int idx, const Terrain &terrain) {
 
     if (idx != 0 && idx != 2) {
@@ -119,9 +133,14 @@ bool NPC::checkXZCollision(int idx, const Terrain &terrain) {
     // 4 corners: 45, 135, 225, 315
     // depends on npc's width / depth
     // [-PI/2, PI / 2]
+    float npcDepth = rootToFront + rootToBack;
+    float npcWidth = rootToLeft + rootToRight;
     float rad = glm::atan(npcDepth / npcWidth);
-    float radius = glm::sqrt((npcDepth * npcDepth) + (npcWidth * npcWidth)) / 1.8f;
+    float radius = glm::sqrt((npcDepth * npcDepth) + (npcWidth * npcWidth)) / 1.5f;
     float radians[4] = {rad, 3.14f - rad, 3.14f + rad, 3.14f * 2.f - rad};
+
+    // move the root center & camera center to geometric center
+    glm::vec3 geoCenter = m_position + 0.5f * glm::vec3(- (rootToLeft - rootToRight), 0.f, -(rootToFront - rootToBack));
 
     for (int i = 0; i < 4; ++i) {
         float currDeg = radians[i] * (180.f / 3.14f);// degs[i] * (); //45.f + i * 90.f;
@@ -129,12 +148,12 @@ bool NPC::checkXZCollision(int idx, const Terrain &terrain) {
         float fowardDir = (currDeg >= 90.f && currDeg <= 270.f) ? -1.f : 1.f; // the orientation of player and velocity is same or opposite
         glm::vec3 forwardDeg = glm::vec3(glm::rotate(glm::mat4(), currRad, glm::vec3(0, 1, 0)) * glm::vec4(currForward, 0.f));
         // each angle has three points: up, middle and down
-        glm::vec3 cameraCorner = m_camera.getCurrentPos() + forwardDeg * radius + glm::vec3(0.f, 0.5f, 0.f);
-        glm::vec3 middleCorner(cameraCorner - glm::vec3(0.f, npcHeight / 2.f, 0.f));
-        glm::vec3 playerCorner(cameraCorner - glm::vec3(0.f, npcHeight, 0.f));
-        cornerArr[0] = cameraCorner;
-        cornerArr[1] = middleCorner;
-        cornerArr[2] = playerCorner;
+        glm::vec3 geoCorner = geoCenter + forwardDeg * radius + glm::vec3(0.f, 0.5f, 0.f);
+        glm::vec3 topCorner = geoCorner + glm::vec3(0.f, rootToTop, 0.f);
+        glm::vec3 bottomCorner = geoCorner - glm::vec3(0.f, rootToGround, 0.f);
+        cornerArr[0] = geoCorner;
+        cornerArr[1] = topCorner;
+        cornerArr[2] = bottomCorner;
 
         for (auto& corner: cornerArr) {
             bool cornerHit = gridMarch(corner, fowardDir*currForward, terrain, &out_dist, &out_blockHit);
@@ -162,8 +181,8 @@ bool NPC::checkYCollision(const Terrain &terrain) {
     // check if the player touches the ground
     float negYTolerance = 0.4f; // (specifically for gravity) max velocity: 10, average dt: 0.016 > displacement: 10 * 0.016 = 0.16
     float posYTolerance = 0.4f;
-    bool playerGroundHit = gridMarch(m_position - npcHeight / 2.f, glm::vec3(0.f, -1.f, 0.f), terrain, &out_dist_neg_y, &out_blockHit_ground);
-    bool playerCeilingHit = gridMarch(m_camera.getCurrentPos(), glm::vec3(0.f, 1.f, 0.f), terrain, &out_dist_pos_y, &out_blockHit_ceiling);
+    bool playerGroundHit = gridMarch(m_position - rootToGround, glm::vec3(0.f, -1.f, 0.f), terrain, &out_dist_neg_y, &out_blockHit_ground);
+    bool playerCeilingHit = gridMarch(m_position + rootToTop, glm::vec3(0.f, 1.f, 0.f), terrain, &out_dist_pos_y, &out_blockHit_ceiling);
     if (playerGroundHit && out_dist_neg_y < negYTolerance && m_velocity[1] <= 0 && !isLiquid(terrain, &out_blockHit_ground)) {
         return false;
     }

@@ -17,6 +17,7 @@ MyGL::MyGL(QWidget *parent)
       prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this), npcTextures(),
       prevExpandTime(QDateTime::currentMSecsSinceEpoch())
 {
+
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
     // Tell the timer to redraw 60 times per second
@@ -176,11 +177,10 @@ void MyGL::tick() {
     m_player.tick(deltaTime, m_inputs);
 
     // TODO: pass delta-time to NPC's tick as well
-    if (frameCount >= 15 * 60)
+    if (frameCount >= 12 * 60)
     {
         for (const uPtr<NPC> &npc : m_npcs)
         {
-            npc->setFlightModeOff();
             npc->tick(deltaTime, m_inputs);
         }
     }

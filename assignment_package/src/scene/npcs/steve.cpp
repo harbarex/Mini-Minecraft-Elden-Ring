@@ -72,11 +72,13 @@ void Steve::initSceneGraph()
     rotRB.addChild(mkU<ScaleNode>(&rLLimb, limbScale));
     limbRotNodes.push_back(&rotRB);
 
-    // Remeber to set the overall height of the npc
-    npcHeight = (bodyScale.y + headScale.y + limbScale.y);
-    npcWidth = bodyScale.x + 2 * limbScale.x;
-    npcDepth = headScale.z;
-
+    // set the distances between the root to 6 sides
+    rootToGround = bodyScale.y / 2.f + limbScale.y;
+    rootToTop = bodyScale.y / 2.f + headScale.y;
+    rootToFront = headScale.z / 2.f;
+    rootToBack = headScale.z / 2.f;
+    rootToLeft = bodyScale.x / 2.f + limbScale.x;
+    rootToRight = bodyScale.x / 2.f + limbScale.x;
 }
 
 /**

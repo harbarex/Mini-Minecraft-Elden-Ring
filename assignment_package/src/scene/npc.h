@@ -19,10 +19,18 @@ protected:
     // keep a collection of rotation nodes (for walking movements)
     std::vector<Node*> limbRotNodes;
 
+    // keep track of last position
+    glm::vec3 lastPos;
+
     // npc's total height
-    float npcHeight;
-    float npcWidth;
-    float npcDepth;
+    float rootToGround;
+    float rootToFront;
+    float rootToBack;
+    float rootToTop;
+    float rootToLeft;
+    float rootToRight;
+
+    // npc's flightmode
 
 public:
 
@@ -42,8 +50,6 @@ public:
     virtual void traverseSceneGraph(ShaderProgram *shader, const uPtr<Node> &node, glm::mat4 transform);
 
     virtual void tick(float dT, InputBundle &input) override;
-
-    virtual void setFlightModeOff();
 
     // re-write collision
     virtual bool checkXZCollision(int idx, const Terrain &terrain) override;

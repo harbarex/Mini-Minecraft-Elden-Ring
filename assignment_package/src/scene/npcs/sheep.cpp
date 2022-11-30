@@ -71,10 +71,13 @@ void Sheep::initSceneGraph()
     rotRB.addChild(mkU<ScaleNode>(&limb, limbScale));
     limbRotNodes.push_back(&rotRB);
 
-    // set its height
-    npcHeight = (bodyScale.y + (limbScale.y - ((bodyScale.y / 2.f + limbScale.y / 2.f) * (1.f - ratio))));
-    npcWidth = bodyScale.x;
-    npcDepth = bodyScale.z;
+    // set the distances between the root to 6 sides
+    rootToGround = bodyScale.y / 2.f + limbScale.y - ((bodyScale.y / 2.f + limbScale.y / 2.f) * (1.f - ratio));
+    rootToTop = bodyScale.y / 2.f;
+    rootToFront = bodyScale.z / 2.f + headScale.z;
+    rootToBack = bodyScale.z / 2.f;
+    rootToLeft = bodyScale.x / 2.f;
+    rootToRight = bodyScale.x / 2.f;
 }
 
 

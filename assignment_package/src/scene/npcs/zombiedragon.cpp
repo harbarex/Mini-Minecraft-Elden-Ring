@@ -18,7 +18,10 @@ ZombieDragon::ZombieDragon(OpenGLContext *context, glm::vec3 pos, Terrain &terra
       lOWing(context, ZDLOW),
       rCWing(context, ZDRCW),
       rOWing(context, ZDROW)
-{}
+{
+    // turn flight mode on
+    flightMode = true;
+}
 
 
 /**
@@ -81,10 +84,13 @@ void ZombieDragon::initSceneGraph()
 
     limbRotNodes.push_back(&rotRWing);
 
-    // set npc height, width, depth
-    npcHeight = bodyScale.y;
-    npcWidth = bodyScale.x + lCWingScale.x + lOWingScale.x + rCWingScale.x + rOWingScale.x;
-    npcDepth = bodyScale.z + headScale.z + lowerBodyScale.z + tailScale.z;
+    // set the distances between the root to 6 sides
+    rootToGround = bodyScale.y / 2.f;
+    rootToTop = bodyScale.y / 2.f;
+    rootToFront = bodyScale.z / 2.f + headScale.z;
+    rootToBack = bodyScale.z / 2.f + lowerBodyScale.z + tailScale.z;
+    rootToLeft = bodyScale.x / 2.f + lCWingScale.x + lOWingScale.x + rCWingScale.x + rOWingScale.x;
+    rootToRight = bodyScale.x / 2.f + lCWingScale.x + lOWingScale.x + rCWingScale.x + rOWingScale.x;
 }
 
 
