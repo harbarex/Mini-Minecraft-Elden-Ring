@@ -1,6 +1,4 @@
-INCLUDEPATH += $$PWD \
-    $$PWD/scene \
-    $$PWD/scene/npcs
+INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
 SOURCES += \
@@ -12,8 +10,9 @@ SOURCES += \
     $$PWD/scene/block.cpp \
     $$PWD/scene/npc.cpp \
     $$PWD/scene/npcs/sheep.cpp \
-    $$PWD/scene/quad.cpp \
     $$PWD/scene/node.cpp \
+    $$PWD/scene/npcs/steve.cpp \
+    $$PWD/scene/quad.cpp \
     $$PWD/shaderprogram.cpp \
     $$PWD/drawable.cpp \
     $$PWD/cameracontrolshelp.cpp \
@@ -36,9 +35,10 @@ HEADERS += \
     $$PWD/scene/noise.h \
     $$PWD/scene/block.h \
     $$PWD/scene/npc.h \
-    $$PWD/scene/npcs/sheep.h \
-    $$PWD/scene/quad.h \
     $$PWD/scene/node.h \
+    $$PWD/scene/npcs/sheep.h \
+    $$PWD/scene/npcs/steve.h \
+    $$PWD/scene/quad.h \
     $$PWD/shaderprogram.h \
     $$PWD/drawable.h \
     $$PWD/cameracontrolshelp.h \

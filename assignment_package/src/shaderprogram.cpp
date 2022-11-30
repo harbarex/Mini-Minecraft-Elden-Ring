@@ -4,6 +4,7 @@
 #include <QTextStream>
 #include <QDebug>
 #include <stdexcept>
+#include <iostream>
 
 
 ShaderProgram::ShaderProgram(OpenGLContext *context)
@@ -210,7 +211,7 @@ void ShaderProgram::drawInterleaved(Drawable &d)
     // meaning that glVertexAttribPointer associates vs_Pos
     // (referred to by attrPos) with that VBO
 
-    int size = 3 * sizeof(glm::vec4) + 2 * sizeof(glm::vec2);
+    int size = 2 * sizeof(glm::vec4) + 2 * sizeof(glm::vec2);
 
     if (attrPos != -1 && d.bindPos()) {
         context->glEnableVertexAttribArray(attrPos);
@@ -222,19 +223,15 @@ void ShaderProgram::drawInterleaved(Drawable &d)
         context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, size, (void*)sizeof(glm::vec4));
     }
 
-    if (attrCol != -1 && d.bindPos()) {
-        context->glEnableVertexAttribArray(attrCol);
-        context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, size, (void*)(2 * sizeof(glm::vec4)));
-    }
 
     if (attrUV  != -1 && d.bindPos())  {
         context->glEnableVertexAttribArray(attrUV);
-        context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, size, (void*)(3 * sizeof(glm::vec4)));
+        context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, size, (void*)(2 * sizeof(glm::vec4)));
     }
 
     if (attrAnimatableFlag != -1 && d.bindPos()) {
         context->glEnableVertexAttribArray(attrAnimatableFlag);
-        context->glVertexAttribPointer(attrAnimatableFlag, 2, GL_FLOAT, false, size, (void*)(3 * sizeof(glm::vec4) + sizeof(glm::vec2)));
+        context->glVertexAttribPointer(attrAnimatableFlag, 2, GL_FLOAT, false, size, (void*)(2 * sizeof(glm::vec4) + sizeof(glm::vec2)));
     }
 
     // Bind the index buffer and then draw shapes from it.
@@ -244,7 +241,6 @@ void ShaderProgram::drawInterleaved(Drawable &d)
 
     if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
     if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
-    if (attrCol != -1) context->glDisableVertexAttribArray(attrCol);
     if (attrUV != -1) context->glDisableVertexAttribArray(attrUV);
     if (attrAnimatableFlag != -1) context->glDisableVertexAttribArray(attrAnimatableFlag);
 

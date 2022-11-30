@@ -13,8 +13,12 @@
 // block types, but in the scope of this project we'll never get anywhere near that many.
 enum BlockType : unsigned char
 {
-    EMPTY, GRASS, DIRT, STONE, WATER, SNOW, LAVA, BEDROCK, ICE, WOOD, LEAF
+    EMPTY, GRASS, DIRT, STONE, WATER, SNOW, LAVA, BEDROCK, ICE, WOOD, LEAF,
+    // for NPCs
+    SHEEPHEAD, SHEEPBODY, SHEEPLIMB,
+    STEVEHEAD, STEVEBODY, STEVELUL, STEVERUL, STEVELLL, STEVERLL
 };
+
 
 // The six cardinal directions in 3D space
 enum Direction : unsigned char
@@ -76,13 +80,19 @@ private:
 
     // create the 6 faces of a block with manually defined uv offsets of each face
     static std::array<BlockFace, 6> createBlockFaces(std::array<glm::vec2, 6> uvOffsets);
+
     // default func to create the 6 faces of a given block (uv offset is set to (0, 0))
     static std::array<BlockFace, 6> createBlockFaces();
+
+    // for NPC blocks
+    static std::array<BlockFace, 6> createBlockFaces(std::array<glm::vec4, 6> uvs);
 
 public:
 
     // a collection of all the pos, nor, col, uvs of all types of blocks
     static std::unordered_map<BlockType, std::array<BlockFace, 6>> BlockCollection;
+
+    // static std::unordered_map<BlockType, std::array<BlockFace, 6>> NPCBlockCollection;
 
     // the relationship between string in uv text file and the corresponding BlockType
     static std::unordered_map<std::string, BlockType> blockTypeMap;
@@ -119,6 +129,9 @@ public:
 
     // insert new uv coordinate of texture map into BlockCollection
     static void insertNewUVCoord(BlockType blockType, std::array<glm::vec2, 6> uv);
+
+    // insert new uv coordinate of texture map for NPCBlockCollection
+    static void insertNewUVCoord(BlockType blockType, std::array<glm::vec4, 6> uv);
 
 };
 

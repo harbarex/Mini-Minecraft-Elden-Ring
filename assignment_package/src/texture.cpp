@@ -4,7 +4,18 @@
 #include <QOpenGLWidget>
 
 Texture::Texture(OpenGLContext *context)
-    : context(context), m_textureHandle(-1), m_textureImage(nullptr)
+    : context(context), m_textureHandle(-1), m_textureImage(nullptr), slot(-1)
+{}
+
+Texture::Texture()
+    : context(), m_textureHandle(-1), m_textureImage(nullptr), slot(-1)
+{}
+
+Texture::Texture(const Texture &texture)
+    : context(texture.context),
+      m_textureHandle(texture.m_textureHandle),
+      m_textureImage(texture.m_textureImage),
+      slot(texture.slot)
 {}
 
 Texture::~Texture()
@@ -25,6 +36,7 @@ void Texture::create(const char *texturePath)
 
 void Texture::load(int texSlot = 0)
 {
+    slot = texSlot;
     context->printGLErrorLog();
 
     context->glActiveTexture(GL_TEXTURE0 + texSlot);
@@ -49,4 +61,14 @@ void Texture::bind(int texSlot = 0)
 {
     context->glActiveTexture(GL_TEXTURE0 + texSlot);
     context->glBindTexture(GL_TEXTURE_2D, m_textureHandle);
+}
+
+/**
+ * @brief Texture::getSlot
+ *  Return the texture slot, which is set when load() is called.
+ * @return
+ */
+int Texture::getSlot() const
+{
+    return slot;
 }

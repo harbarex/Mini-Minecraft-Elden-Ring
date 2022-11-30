@@ -1,6 +1,5 @@
 #include "mygl.h"
 #include <glm_includes.h>
-
 #include <iostream>
 #include <QApplication>
 #include <QKeyEvent>
@@ -13,9 +12,9 @@ MyGL::MyGL(QWidget *parent)
       m_progLambert(this), m_progFlat(this),
       m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_quad(this),
       m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
-      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
+      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), m_npcs(),
       frameCount(0),
-      prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this),
+      prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this), npcTextures(),
       prevExpandTime(QDateTime::currentMSecsSinceEpoch())
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
@@ -31,8 +30,9 @@ MyGL::MyGL(QWidget *parent)
 
     m_player.setBlocksHold();
 
-    // TODO: instantiate NPCs
-
+    // the initial set of NPCs
+    m_npcs.push_back(mkU<Steve>(this, glm::vec3(50.f, 160.f, 32.f), m_terrain, STEVE));
+    m_npcs.push_back(mkU<Sheep>(this, glm::vec3(60.f, 160.f, 32.f), m_terrain, SHEEP));
 }
 
 MyGL::~MyGL() {
@@ -94,6 +94,14 @@ void MyGL::initializeGL()
     m_quad.createVBOdata();
 
     createTexture();
+    createNPCTextures();
+
+    // create NPC's VBO and initialize NPC scene graph
+    for (const uPtr<NPC> &npc : m_npcs)
+    {
+        npc->createVBOdata();
+        npc->initSceneGraph();
+    }
 
     // Set a color with which to draw geometry.
     // This will ultimately not be used when you change
@@ -162,6 +170,16 @@ void MyGL::tick() {
 
     // pass delta-time to Player::tick
     m_player.tick(deltaTime, m_inputs);
+
+    // TODO: pass delta-time to NPC's tick as well
+    if (frameCount >= 15 * 60)
+    {
+        for (const uPtr<NPC> &npc : m_npcs)
+        {
+            npc->setFlightModeOff();
+            npc->tick(deltaTime, m_inputs);
+        }
+    }
 }
 
 void MyGL::sendPlayerDataToGUI() const {
@@ -210,6 +228,8 @@ void MyGL::paintGL() {
     renderTerrain(TerrainDrawType::transparent);
     glDisable(GL_BLEND);
 
+    // render NPCs
+    renderNPCs();
 
     glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
     glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
@@ -373,8 +393,29 @@ void MyGL::mouseReleaseEvent(QMouseEvent *e) {
 
 void MyGL::createTexture() {
     loadTextureUVCoord();
+    loadNPCTextureUVCoord();
     textureAll.create(":/textures/minecraft_textures_all.png");
     textureAll.load(0);
+}
+
+
+/**
+ * @brief MyGL::createNPCTextures
+ *  Register the NPC textures
+ */
+void MyGL::createNPCTextures()
+{
+    // Steve
+    npcTextures[STEVE] = Texture(this);
+    npcTextures[STEVE].create(":/textures/steve.png");
+    npcTextures[STEVE].load(3);
+
+    // Sheep
+    npcTextures[SHEEP] = Texture(this);
+    npcTextures[SHEEP].create(":/textures/sheep.png");
+    npcTextures[SHEEP].load(4);
+
+    // TODO: others
 }
 
 // This function is used to load uv coordinate of the block from text file
@@ -421,4 +462,72 @@ void MyGL::loadTextureUVCoord() {
 void MyGL::bindTexture() {
     textureAll.bind(0);
     m_progLambert.setTexture();
+}
+
+
+void MyGL::loadNPCTextureUVCoord()
+{
+    // read text file
+    QFile f(":/textures/npc_uv_coord.txt");
+    f.open(QIODevice::ReadOnly);
+    QTextStream s(&f);
+    QString line;
+    bool readCoord = false;
+    int coordCount = 0;
+    std::array<glm::vec4, 6> uvs;
+    BlockType currBlockType;
+
+    while (!s.atEnd()) {
+        line = s.readLine();
+        if (line.size() == 0 || line.startsWith("#")) {
+            // skip empty line and line starts with #
+            continue;
+        }
+
+        if (readCoord) {
+            // store uv coordinate into temp array
+            QStringList items = line.split(" ");
+            uvs[coordCount] = glm::vec4(items[0].toDouble(), items[1].toDouble(), items[2].toDouble(), items[3].toDouble());
+            coordCount += 1;
+        } else if (Block::blockTypeMap.find(line.toStdString()) != Block::blockTypeMap.end()) {
+            // identify which block
+            currBlockType = Block::blockTypeMap[line.toStdString()];
+            readCoord = true;
+        }
+
+        if (coordCount == 6) {
+            // store 6 uv coordinates into BlockCollection
+            Block::insertNewUVCoord(currBlockType, uvs);
+            uvs.empty();
+            coordCount = 0;
+            readCoord = false;
+        }
+    }
+}
+
+/**
+ * @brief MyGL::renderNPCs
+ *  The main logics to draw all the NPCs in paintGL().
+ *  This helper is called in MyGL::paintGL().
+ *  Basically, loop through the m_npcs.
+ *  For each npc, traverse the scene graph,
+ *  set the model matrix based on the node's transformation,
+ *  draw the corresponding block.
+ *  Note: the scene graph / the blocks of every NPC must be created.
+ */
+void MyGL::renderNPCs()
+{
+
+    for (const uPtr<NPC> &npc : m_npcs)
+    {
+        // Retrieve the texture map
+        if (npcTextures.find(npc->npcTexture) == npcTextures.end())
+        {
+            continue;
+        }
+        // bind the texture map
+        npcTextures[npc->npcTexture].bind(npcTextures[npc->npcTexture].getSlot());
+        m_progLambert.setTexture(npcTextures[npc->npcTexture].getSlot());
+        npc->draw(&m_progLambert);
+    }
 }

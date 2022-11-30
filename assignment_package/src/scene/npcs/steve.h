@@ -1,22 +1,25 @@
 #pragma once
 #include "scene/npc.h"
 
-class Sheep : public NPC
+class Steve : public NPC
 {
 private:
 
     // Sheep NPC Blocks
     NPCBlock head;
     NPCBlock body;
-    NPCBlock limb;
+    NPCBlock lULimb;
+    NPCBlock rULimb;
+    NPCBlock lLLimb;
+    NPCBlock rLLimb;
 
 public:
     // constructors
-    Sheep(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, NPCTexture npcTexture);
+    Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, NPCTexture npcTexture);
 
     // for Drawable
     virtual void createVBOdata() override;
     virtual void initSceneGraph() override;
 
-    virtual ~Sheep();
+    virtual ~Steve();
 };

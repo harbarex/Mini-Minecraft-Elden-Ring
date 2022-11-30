@@ -9,6 +9,9 @@
 #include "scene/terrain.h"
 #include "scene/player.h"
 #include "scene/block.h"
+#include "scene/npc.h"
+#include "scene/npcs/sheep.h"
+#include "scene/npcs/steve.h"
 
 #include "texture.h"
 
@@ -40,6 +43,8 @@ private:
     Player m_player; // The entity controlled by the user. Contains a camera to display what it sees as well.
     InputBundle m_inputs; // A collection of variables to be updated in keyPressEvent, mouseMoveEvent, mousePressEvent, etc.
 
+    std::vector<uPtr<NPC>> m_npcs; // A collection of npcs
+
     QTimer m_timer; // Timer linked to tick(). Fires approximately 60 times per second.
 
     int frameCount; // the number of processing frame, treated as time in shader
@@ -50,6 +55,8 @@ private:
 
     Texture textureAll;
 
+    std::unordered_map<NPCTexture, Texture> npcTextures;
+
     void moveMouseToCenter(); // Forces the mouse position to the screen's center. You should call this
                               // from within a mouse move event after reading the mouse movement so that
                               // your mouse stays within the screen bounds and is always read.
@@ -57,8 +64,14 @@ private:
     void sendPlayerDataToGUI() const;
 
     void createTexture();
+    void createNPCTextures();
+
     void loadTextureUVCoord();
+    void loadNPCTextureUVCoord();
+
     void bindTexture();
+
+    void renderNPCs();
 
     long long prevExpandTime;
 

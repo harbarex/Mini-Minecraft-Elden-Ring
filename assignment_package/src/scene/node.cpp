@@ -15,24 +15,18 @@
  * @param name
  * @param block
  */
-Node::Node(glm::vec3 color, QString name, Block *block)
-    : color(color), name(name), block(block)
+Node::Node(NPCBlock *block)
+    : block(block)
 {
     // init
     children = std::vector<uPtr<Node>>();
-
-    // set name, shown in GUI
-    setText(0, name);
-
 }
 
 /**
  * @brief Node::Node
  */
 Node::Node()
-    : Node(glm::vec3(0, 0, 0),
-           "dummy",
-           nullptr)
+    : Node(nullptr)
 {}
 
 /**
@@ -40,7 +34,7 @@ Node::Node()
  * @param node
  */
 Node::Node(const Node &node)
-    : Node(node.getColor(), node.getName(), node.block)
+    : Node(node.block)
 {
 
     // TODO: deep copy of children
@@ -75,8 +69,6 @@ Node::Node(const Node &node)
 Node& Node::operator=(const Node &node)
 {
 
-    color = node.getColor();
-    name = node.getName();
     block = node.block;
 
     // copy children
@@ -104,32 +96,7 @@ Node& Node::operator=(const Node &node)
     return *this;
 }
 
-/**
- * @brief Node::getName
- * @return QString
- */
-QString Node::getName() const
-{
-    return name;
-}
 
-/**
- * @brief Node::setColor
- * @param newColor
- */
-void Node::setColor(glm::vec3 newColor)
-{
-    color = newColor;
-}
-
-/**
- * @brief Node::getColor
- * @return glm::vec3
- */
-glm::vec3 Node::getColor() const
-{
-    return color;
-}
 
 /**
  * @brief Node::addChild
@@ -144,12 +111,8 @@ Node& Node::addChild(uPtr<Node> node)
     // move the unique ptr to its parent
     this->children.push_back(std::move(node));
 
-    // invoke QTreeWidgetItem
-    QTreeWidgetItem::addChild(&ref);
-
     // return the reference of the node
     return ref;
-
 }
 
 /**
@@ -174,26 +137,18 @@ Node::~Node()
  * @param color
  * @param name
  * @param block
- * @param translateX
- * @param translateY
  */
-TranslateNode::TranslateNode(glm::vec3 color,
-                             QString name,
-                             Block *block,
-                             float translateX,
-                             float translateY)
-    : Node(color, name, block), tx(translateX), ty(translateY)
+TranslateNode::TranslateNode(NPCBlock *block,
+                             glm::vec3 translate)
+    : Node(block), translate(translate)
 {}
 
 /**
  * @brief TranslateNode::TranslateNode
  */
 TranslateNode::TranslateNode()
-    : Node(glm::vec3(0.0, 0.0, 0.0),
-                     "translate",
-                     nullptr),
-      tx(0.0),
-      ty(0.0)
+    : Node(nullptr),
+      translate(glm::vec3(0.))
 {}
 
 /**
@@ -201,9 +156,8 @@ TranslateNode::TranslateNode()
  * @param node
  */
 TranslateNode::TranslateNode(const TranslateNode &node)
-    : Node(node), tx(node.getTx()), ty(node.getTy())
-{
-}
+    : Node(node), translate(node.getTranslate())
+{}
 
 /**
  * @brief TranslateNode::operator =
@@ -214,59 +168,40 @@ TranslateNode& TranslateNode::operator=(const TranslateNode &node)
 {
 
     Node::operator=(node);
-    tx = node.getTx();
-    ty = node.getTy();
+    translate = node.translate;
 
     return *this;
 }
 
 /**
- * @brief TranslateNode::setTx
- * @param translateX
+ * @brief TranslateNode::setTranslate
+ * @param translate
  */
-void TranslateNode::setTx(float translateX)
+void TranslateNode::setTranslate(glm::vec3 t)
 {
-    tx = translateX;
+    translate = t;
 }
 
-/**
- * @brief TranslateNode::setTy
- * @param translateY
- */
-void TranslateNode::setTy(float translateY)
-{
-    ty = translateY;
-}
 
 /**
- * @brief TranslateNode::getTx
+ * @brief TranslateNode::getTranslate
  * @return
  */
-float TranslateNode::getTx() const
+glm::vec3 TranslateNode::getTranslate() const
 {
-    return tx;
-}
-
-/**
- * @brief TranslateNode::getTy
- * @return
- */
-float TranslateNode::getTy() const
-{
-    return ty;
+    return translate;
 }
 
 /**
  * @brief TranslateNode::computeTransform
  * @param transform
- * @return mat3
+ * @return mat4
  */
-glm::mat3 TranslateNode::computeTransform(glm::mat3 transform)
+glm::mat4 TranslateNode::computeTransform(glm::mat4 transform)
 {
     // apply translation on the input transform
     // transform * translation
-    return glm::translate(transform, glm::vec2(tx, ty));
-
+    return glm::translate(transform, translate);
 }
 
 TranslateNode::~TranslateNode()
@@ -284,20 +219,18 @@ TranslateNode::~TranslateNode()
  * @param block
  * @param degree
  */
-RotateNode::RotateNode(glm::vec3 color,
-                       QString name,
-                       Block *block,
+RotateNode::RotateNode(NPCBlock *block,
+                       glm::vec3 rotAxis,
                        float degree)
-    : Node(color, name, block), deg(degree)
+    : Node(block), rotAxis(rotAxis), deg(degree)
 {}
 
 /**
  * @brief RotateNode::RotateNode
  */
 RotateNode::RotateNode()
-    : Node(glm::vec3(0.0, 0.0, 0.0),
-           "rotate",
-           nullptr),
+    : Node(nullptr),
+      rotAxis(0.f, 0.f, 1.f),
       deg(0.0)
 {}
 
@@ -306,7 +239,7 @@ RotateNode::RotateNode()
  * @param node
  */
 RotateNode::RotateNode(const RotateNode &node)
-    : Node(node), deg(node.getDeg())
+    : Node(node), rotAxis(node.rotAxis), deg(node.getDeg())
 {
 }
 
@@ -318,7 +251,8 @@ RotateNode::RotateNode(const RotateNode &node)
 RotateNode& RotateNode::operator=(const RotateNode &node)
 {
     Node::operator=(node);
-    deg = node.getDeg();
+    rotAxis = node.rotAxis;
+    deg = node.deg;
     return *this;
 }
 
@@ -340,19 +274,30 @@ float RotateNode::getDeg() const
     return deg;
 }
 
+
+void RotateNode::setAxis(glm::vec3 axis)
+{
+    rotAxis = axis;
+}
+
+glm::vec3 RotateNode::getAxis() const
+{
+    return rotAxis;
+}
+
 /**
  * @brief RotateNode::computeTransform
  * @param transform
  * @return mat3
  */
-glm::mat3 RotateNode::computeTransform(glm::mat3 transform)
+glm::mat4 RotateNode::computeTransform(glm::mat4 transform)
 {
     // convert to radian
     float radian = deg * (PI / 180.f);
 
     // apply on transform => transform * rotateMatrix
-    return glm::rotate(transform, radian);
-
+    // return glm::rotate(transform, radian);
+    return glm::rotate(transform, radian, rotAxis);
 }
 
 /**
@@ -373,23 +318,17 @@ RotateNode::~RotateNode()
  * @param scaleX
  * @param scaleY
  */
-ScaleNode::ScaleNode(glm::vec3 color,
-                     QString name,
-                     Block *block,
-                     float scaleX,
-                     float scaleY)
-    : Node(color, name, block), sx(scaleX), sy(scaleY)
+ScaleNode::ScaleNode(NPCBlock *block,
+                     glm::vec3 scale)
+    : Node(block), scale(scale)
 {}
 
 /**
  * @brief ScaleNode::ScaleNode
  */
 ScaleNode::ScaleNode()
-    : Node(glm::vec3(0.0, 0.0, 0.0),
-           "scale",
-           nullptr),
-      sx(0.0),
-      sy(0.0)
+    : Node(nullptr),
+      scale(glm::vec3(1.))
 {}
 
 /**
@@ -398,8 +337,7 @@ ScaleNode::ScaleNode()
  */
 ScaleNode::ScaleNode(const ScaleNode &node)
     : Node(node),
-      sx(node.getSx()),
-      sy(node.getSy())
+      scale(node.scale)
 {}
 
 /**
@@ -410,55 +348,19 @@ ScaleNode::ScaleNode(const ScaleNode &node)
 ScaleNode& ScaleNode::operator=(const ScaleNode &node)
 {
     Node::operator=(node);
-    sx = node.getSx();
-    sy = node.getSy();
+    scale = node.scale;
     return *this;
 }
 
-/**
- * @brief ScaleNode::setSx
- * @param scaleX
- */
-void ScaleNode::setSx(float scaleX)
-{
-    sx = scaleX;
-}
-
-/**
- * @brief ScaleNode::setSy
- * @param scaleY
- */
-void ScaleNode::setSy(float scaleY)
-{
-    sy = scaleY;
-}
-
-/**
- * @brief getSx
- * @return
- */
-float ScaleNode::getSx() const
-{
-    return sx;
-}
-
-/**
- * @brief ScaleNode::getSy
- * @return
- */
-float ScaleNode::getSy() const
-{
-    return sy;
-}
 
 /**
  * @brief ScaleNode::computeTransform
  * @param transform
  * @return mat3
  */
-glm::mat3 ScaleNode::computeTransform(glm::mat3 transform)
+glm::mat4 ScaleNode::computeTransform(glm::mat4 transform)
 {
-    return glm::scale(transform, glm::vec2(sx, sy));
+    return glm::scale(transform, scale);
 }
 
 /**

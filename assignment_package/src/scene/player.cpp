@@ -1,5 +1,6 @@
 #include "player.h"
 #include <QString>
+#include <iostream>
 
 Player::Player(glm::vec3 pos, Terrain &terrain)
     : Entity(pos), m_velocity(0,0,0), m_acceleration(0,0,0),
@@ -85,7 +86,6 @@ void Player::computePhysics(float dT, const Terrain &terrain, InputBundle &input
     float dampingFactor = 0.9f;
     float liquidFactor = 1.f;
     glm::vec3 displacement(0.f);
-
     switch (currVelocityCond(dT, inputs)){
     case (VelocityCond::max):
         m_velocity = glm::normalize(m_velocity + m_acceleration * dT) * m_velocity_val;

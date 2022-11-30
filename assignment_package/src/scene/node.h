@@ -1,31 +1,23 @@
 #pragma once
 #include "smartpointerhelp.h"
-#include "block.h"
-#include <QTreeWidgetItem>
+#include "scene/npc.h"
 #include <glm/gtx/matrix_transform_2d.hpp>
 
+class NPCBlock;
 
-class Node : public QTreeWidgetItem
+class Node
 {
 protected:
 
-    // color for the Polygon2D
-    glm::vec3 color;
-
     // children
     std::vector<uPtr<Node>> children;
-
-    // name of the node (for GUI)
-    QString name;
-
-    Block *block;
 
 public:
 
     // constructors
     Node();
 
-    Node(glm::vec3 color, QString name, Block *block);
+    Node(NPCBlock *block);
 
     Node(const Node &node);
 
@@ -36,21 +28,15 @@ public:
     /**
      * Setters & Getters
      **/
-    // for name
-    QString getName() const;
-
-    // for color
-    void setColor(glm::vec3 newColor);
-    glm::vec3 getColor() const;
-
-
     // add child (also returns the reference of added child)
     virtual Node& addChild(uPtr<Node> node);
 
     const std::vector<uPtr<Node>>& getChildren();
 
-    // compute & return transformation matrix (3 x 3)
-    virtual glm::mat3 computeTransform(glm::mat3 transform) = 0;
+    // compute & return transformation matrix (4 x 4)
+    virtual glm::mat4 computeTransform(glm::mat4 transform) = 0;
+
+    NPCBlock *block;
 
     // virtual destructor
     virtual ~Node();
@@ -63,22 +49,14 @@ class TranslateNode : public Node
 
 private:
 
-    // translation in the X direction
-    float tx;
-
-    // translation in the Y direction
-    float ty;
+    glm::vec3 translate;
 
 public:
 
     // constructors
     TranslateNode();
 
-    TranslateNode(glm::vec3 color,
-                  QString name,
-                  Block *block,
-                  float translateX,
-                  float translateY);
+    TranslateNode(NPCBlock *block, glm::vec3 translate);
 
     TranslateNode(const TranslateNode &node);
 
@@ -88,16 +66,11 @@ public:
     /**
      * Setters & Getters
      **/
-    void setTx(float translateX);
-
-    void setTy(float translateY);
-
-    float getTx() const;
-
-    float getTy() const;
+    void setTranslate(glm::vec3 translate);
+    glm::vec3 getTranslate() const;
 
     // compute & return transformation matrix (3 x 3)
-    glm::mat3 computeTransform(glm::mat3 transform) override;
+    glm::mat4 computeTransform(glm::mat4 transform) override;
 
     // virtual destructor
     virtual ~TranslateNode();
@@ -108,6 +81,8 @@ class RotateNode : public Node
 
 private:
 
+    glm::vec3 rotAxis;
+
     // magnitude of rotation in degree
     float deg;
 
@@ -116,7 +91,7 @@ public:
     // constructors
     RotateNode();
 
-    RotateNode(glm::vec3 color, QString name, Block *block, float degree);
+    RotateNode(NPCBlock *block, glm::vec3 rotAxis, float degree);
 
     RotateNode(const RotateNode &node);
 
@@ -130,8 +105,12 @@ public:
 
     float getDeg() const;
 
+    void setAxis(glm::vec3 axis);
+
+    glm::vec3 getAxis() const;
+
     // compute & return transformation matrix (3 x 3)
-    glm::mat3 computeTransform(glm::mat3 transform) override;
+    glm::mat4 computeTransform(glm::mat4 transform) override;
 
     // virtual destructor
     virtual ~RotateNode();
@@ -142,22 +121,15 @@ class ScaleNode : public Node
 
 private:
 
-    // scale in the X direction
-    float sx;
-
-    // scale in the Y direction
-    float sy;
+    glm::vec3 scale;
 
 public:
 
     // constructors
     ScaleNode();
 
-    ScaleNode(glm::vec3 color,
-              QString name,
-              Block *block,
-              float scaleX,
-              float scaleY);
+    ScaleNode(NPCBlock *block,
+              glm::vec3 scale);
 
     ScaleNode(const ScaleNode &node);
 
@@ -167,16 +139,8 @@ public:
     /**
      * Setters & Getters
      **/
-    void setSx(float scaleX);
-
-    void setSy(float scaleY);
-
-    float getSx() const;
-
-    float getSy() const;
-
     // compute & return transformation matrix (3 x 3)
-    glm::mat3 computeTransform(glm::mat3 transform) override;
+    glm::mat4 computeTransform(glm::mat4 transform) override;
 
     // virtual destructor
     virtual ~ScaleNode();

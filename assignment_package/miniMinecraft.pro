@@ -52,3 +52,6 @@ address_sanitizer {
 HEADERS +=
 
 SOURCES +=
+
+DISTFILES += \
+    textures/npc_uv_coord.txt
