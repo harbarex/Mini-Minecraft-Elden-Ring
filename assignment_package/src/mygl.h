@@ -91,8 +91,8 @@ public:
     void renderTerrain(TerrainDrawType drawType);
 
     // Called from paintGL()
-    // Render the widget
-    void renderWidget(Texture& texture, ShaderProgram& shaderProgram, int slot, Widget* widget);
+    // Render the shader program with simple texture map
+    void renderTexture(Texture& texture, ShaderProgram& shaderProgram, int slot, Drawable* d);
 
 protected:
     // Automatically invoked when the user

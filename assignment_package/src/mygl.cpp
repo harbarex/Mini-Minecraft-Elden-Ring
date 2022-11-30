@@ -88,8 +88,8 @@ void MyGL::initializeGL()
     m_progUnderwater.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/underwater.frag.glsl");
     m_progLava.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/lava.frag.glsl");
     m_progNoOp.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/overlay.frag.glsl");
-    m_progInventoryWidgetOnHand.create(":/glsl/post/inventory.vert.glsl", ":/glsl/post/inventory.frag.glsl");
-    m_progInventoryItemOnHand.create(":/glsl/post/inventory.vert.glsl", ":/glsl/post/inventory.frag.glsl");
+    m_progInventoryWidgetOnHand.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
+    m_progInventoryItemOnHand.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
 
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -251,9 +251,9 @@ void MyGL::paintGL() {
     glDisable(GL_DEPTH_TEST);
     // On hand
     // widget and selected frame
-    renderWidget(inventoryWidgetOnHandTexture, m_progInventoryWidgetOnHand, 2, inventoryWidgetOnHand);
+    renderTexture(inventoryWidgetOnHandTexture, m_progInventoryWidgetOnHand, 2, inventoryWidgetOnHand);
     // blocks
-    renderWidget(textureAll, m_progInventoryItemOnHand, 0, inventoryItemsOnHand);
+    renderTexture(textureAll, m_progInventoryItemOnHand, 0, inventoryItemsOnHand);
     // In box
     glEnable(GL_DEPTH_TEST);
 
@@ -463,19 +463,18 @@ void MyGL::bindTexture(Texture& texture, ShaderProgram& shaderProgram, int slot)
 }
 
 /**
- * @brief MyGL::renderWidget
- *   render the widget
+ * @brief MyGL::renderTexture
+ *   render the object only requires the texture map
  *   called from paintGL
- * @param texture : texture object used in this widget object
- * @param shaderProgram : shaderProgram of the widget object
+ * @param texture : texture object used in this drawable object
+ * @param shaderProgram : shaderProgram of the drawable object
  * @param slot: texture slot
- * @param widget : pointer to widget object (for inherited class)
+ * @param drawable : pointer to drawable object (for inherited class)
  */
-void MyGL::renderWidget(Texture& texture, ShaderProgram& shaderProgram, int slot, Widget* widget) {
-    widget->createVBOdata();
-    shaderProgram.setTime(frameCount);
+void MyGL::renderTexture(Texture& texture, ShaderProgram& shaderProgram, int slot, Drawable* d) {
+    d->createVBOdata();
     bindTexture(texture, shaderProgram, slot);
-    shaderProgram.drawWidget(*widget);
+    shaderProgram.drawTexture(*d);
 }
 
 void MyGL::initWidget() {
