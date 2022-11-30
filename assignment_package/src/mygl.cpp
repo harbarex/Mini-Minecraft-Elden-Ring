@@ -28,23 +28,7 @@ MyGL::MyGL(QWidget *parent)
     prevMouseX = width() / 2;
     prevMouseY = height() / 2;
 
-    /**
-     * widget setup
-     * 1. inventoryWidgetOnHand
-     * 2. inventoryItemOnHand
-     * 3. inventoryWidgetInBox
-     * 4. inventoryItemInBox
-     */
-    std::vector<Widget*> widgets_raw;
-    uPtr<Widget> widget = mkU<Widget>(this);
-    inventoryWidgetOnHand = widget.get();
-    widgets_raw.push_back(inventoryWidgetOnHand);
-    widgets.push_back(std::move(widget));
-    uPtr<BlockInWidget> blockInWidget = mkU<BlockInWidget>(this);
-    inventoryItemsOnHand = blockInWidget.get();
-    widgets_raw.push_back(inventoryItemsOnHand);
-    widgets.push_back(std::move(blockInWidget));
-    m_player.setupWidget(widgets_raw);
+    initWidget();
 }
 
 MyGL::~MyGL() {
@@ -492,4 +476,28 @@ void MyGL::renderWidget(Texture& texture, ShaderProgram& shaderProgram, int slot
     shaderProgram.setTime(frameCount);
     bindTexture(texture, shaderProgram, slot);
     shaderProgram.drawWidget(*widget);
+}
+
+void MyGL::initWidget() {
+    /**
+     * widget setup
+     * 1. inventoryWidgetOnHand
+     * 2. inventoryItemOnHand
+     * 3. inventoryWidgetInBox
+     * 4. inventoryItemInBox
+     */
+    std::vector<Widget*> widgets_raw;
+
+    uPtr<Widget> widget = mkU<Widget>(this);
+    inventoryWidgetOnHand = widget.get();
+    widgets_raw.push_back(inventoryWidgetOnHand);
+    widgets.push_back(std::move(widget));
+
+    uPtr<BlockInWidget> blockInWidget = mkU<BlockInWidget>(this);
+    inventoryItemsOnHand = blockInWidget.get();
+    widgets_raw.push_back(inventoryItemsOnHand);
+    widgets.push_back(std::move(blockInWidget));
+
+    // pass widget raw pointers to player
+    m_player.setupWidget(widgets_raw);
 }
