@@ -110,9 +110,7 @@ void MyGL::initializeGL()
     inventoryItemsOnHand->loadCoordFromText(":/textures/widget_item_on_hand_info.txt");
 
     // text on the screen (slot = 3)
-//    createTexture(textureFont, ":/textures/minecraft_ascii.png", 3);
     createTexture(textureFont, ":/textures/ascii.png", 3);
-//    createTexture(textureFont, ":/textures/minecraft_normals_all.png", 3);
     textOnScreen->loadUVCoordFromText(":/textures/text_info.txt");
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -265,7 +263,9 @@ void MyGL::paintGL() {
     // blocks
     renderTexture(textureAll, m_progInventoryItemOnHand, 0, inventoryItemsOnHand);
     // In box
+    glEnable(GL_BLEND);
     renderTexture(textureFont, m_progText, 3, textOnScreen.get());
+    glDisable(GL_BLEND);
 
     glEnable(GL_DEPTH_TEST);
 

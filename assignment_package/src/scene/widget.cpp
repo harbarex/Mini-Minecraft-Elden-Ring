@@ -145,7 +145,7 @@ void Widget::getWidgetItemNumberInfo(int overallIdx, glm::vec2* top_left_pos, fl
 
     // hard-code top-left number position
     glm::vec2 pos;
-    pos.x = 0.6f * currRegion->firstItemTopLeftScreenCoord.x + 0.4f * currRegion->firstItemBottomRightScreenCoord.x;
+    pos.x = 0.75f * currRegion->firstItemTopLeftScreenCoord.x + 0.25f * currRegion->firstItemBottomRightScreenCoord.x;
     pos.y = 0.5f * currRegion->firstItemTopLeftScreenCoord.y + 0.5f * currRegion->firstItemBottomRightScreenCoord.y;
     *top_left_pos = pos + glm::vec2(shiftX * currRegion->shiftDist.x, shiftY * currRegion->shiftDist.y);
     // hard-code number height
