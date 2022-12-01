@@ -241,15 +241,10 @@ void Widget::createVBOdata(){
     pushVec2ToBuffer(buffer_uv, topLeftUV);
 
     for (auto& drawItem : drawItems) {
-        pushVec4ToBuffer(buffer_pos, glm::vec4(drawItem[0], 0.999999f, 1.f));
-        pushVec4ToBuffer(buffer_pos, glm::vec4(drawItem[1], 0.999999f, 1.f));
-        pushVec4ToBuffer(buffer_pos, glm::vec4(drawItem[2], 0.999999f, 1.f));
-        pushVec4ToBuffer(buffer_pos, glm::vec4(drawItem[3], 0.999999f, 1.f));
-
-        pushVec2ToBuffer(buffer_uv, drawItem[4]);
-        pushVec2ToBuffer(buffer_uv, drawItem[5]);
-        pushVec2ToBuffer(buffer_uv, drawItem[6]);
-        pushVec2ToBuffer(buffer_uv, drawItem[7]);
+        for (int i=0; i<4; ++i) {
+           pushVec4ToBuffer(buffer_pos, glm::vec4(drawItem[i], 0.999999f, 1.f));
+           pushVec2ToBuffer(buffer_uv, drawItem[i+4]);
+        }
     }
 
     m_count = indices.size();

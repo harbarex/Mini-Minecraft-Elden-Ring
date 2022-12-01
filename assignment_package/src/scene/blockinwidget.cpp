@@ -45,10 +45,9 @@ void BlockInWidget::storeItemIntoDrawVector(RecRegion* currRegion, int shiftX, i
     drawItem.push_back(topRightFramePos);
     drawItem.push_back(topLeftFramePos);
 
-    drawItem.push_back(uvCoords[0]);
-    drawItem.push_back(uvCoords[1]);
-    drawItem.push_back(uvCoords[2]);
-    drawItem.push_back(uvCoords[3]);
+    for (int i=0; i<4; ++i) {
+        drawItem.push_back(uvCoords[i]);
+    }
 
     drawItems.push_back(drawItem);
 }
@@ -73,15 +72,10 @@ void BlockInWidget::createVBOdata() {
     int nVert = 0;
 
     for (auto& drawItem : drawItems) {
-        pushVec4ToBuffer(buffer_pos, glm::vec4(drawItem[0], 0.999999f, 1.f));
-        pushVec4ToBuffer(buffer_pos, glm::vec4(drawItem[1], 0.999999f, 1.f));
-        pushVec4ToBuffer(buffer_pos, glm::vec4(drawItem[2], 0.999999f, 1.f));
-        pushVec4ToBuffer(buffer_pos, glm::vec4(drawItem[3], 0.999999f, 1.f));
-
-        pushVec2ToBuffer(buffer_uv, drawItem[4]);
-        pushVec2ToBuffer(buffer_uv, drawItem[5]);
-        pushVec2ToBuffer(buffer_uv, drawItem[6]);
-        pushVec2ToBuffer(buffer_uv, drawItem[7]);
+        for (int i=0; i<4; ++i) {
+           pushVec4ToBuffer(buffer_pos, glm::vec4(drawItem[i], 0.999999f, 1.f));
+           pushVec2ToBuffer(buffer_uv, drawItem[i+4]);
+        }
 
         // add indices for each face (4 vertices)
         for (int index : faceIndices) {
