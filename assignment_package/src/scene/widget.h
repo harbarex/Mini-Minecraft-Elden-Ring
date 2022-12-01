@@ -87,9 +87,6 @@ protected:
     // used for loading coordinates from text file
     std::unordered_map<std::string, std::pair<std::vector<glm::vec2>, int>> widgetInfoMap;
 
-    void pushVec4ToBuffer(std::vector<float> &buf, const glm::vec4 &vec);
-    void pushVec2ToBuffer(std::vector<float> &buf, const glm::vec2 &vec);
-
     // create new RecRegion object
     void createRegion(std::vector<glm::vec2> regionInfo);
 
