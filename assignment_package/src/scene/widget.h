@@ -111,6 +111,10 @@ public:
     // for selected frame
     void storeItemIntoDrawVector(RecRegion* currRegion, int shiftX, int shiftY);
 
+    // get the number information based on the region where current index (item) located
+    // hard-code
+    void getWidgetItemNumberInfo(int overallIdx, glm::vec2* top_left_pos, float* height);
+
     virtual void createVBOdata();
 };
 

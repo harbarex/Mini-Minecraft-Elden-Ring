@@ -775,9 +775,15 @@ void Player::drawInventoryItemOnHand() {
         }
         std::array<glm::vec2, 4> uvCoords;
         Block::getUVCoords(blocksInInventory[i].first, &uvCoords);
+        // draw the items in widget
         inventoryItemOnHand->addItem(i, uvCoords);
+        // draw the count of items in widget
+        // the coordinate is hard-coded in widget.cpp (relative to the block position)
+        glm::vec2 top_left_pos;
+        float height;
+        inventoryItemOnHand->getWidgetItemNumberInfo(i, &top_left_pos, &height);
+        textOnScreen->addText(std::to_string(blocksInInventory[i].second), top_left_pos, height);
     }
-    textOnScreen->addText("012345678987654321", glm::vec2(-0.5f, -0.5f), 0.1f);
 }
 
 bool Player::isLiquid(const Terrain &terrain, glm::ivec3* pos) {

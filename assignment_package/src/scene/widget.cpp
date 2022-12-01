@@ -132,6 +132,28 @@ void Widget::findRegionInfoFromIdx(int overallIdx, RecRegion* currRegion, int* s
 }
 
 /**
+ * @brief Widget::getWidgetItemNumberInfo
+ *  get the number information based on the region where current index (item) located
+ * @param overallIdx : int, the index of item among all regions in current widget
+ * @return top_left_pos : the top-left position where the number of first item located (-1 < pos.x, pos.y < 1)
+ * @return height : the height of the text (0 < height < 2)
+ */
+void Widget::getWidgetItemNumberInfo(int overallIdx, glm::vec2* top_left_pos, float* height) {
+    RecRegion* currRegion = regions.front().get();
+    int shiftX, shiftY;
+    findRegionInfoFromIdx(overallIdx, currRegion, &shiftX, &shiftY);
+
+    // hard-code top-left number position
+    glm::vec2 pos;
+    pos.x = 0.6f * currRegion->firstItemTopLeftScreenCoord.x + 0.4f * currRegion->firstItemBottomRightScreenCoord.x;
+    pos.y = 0.5f * currRegion->firstItemTopLeftScreenCoord.y + 0.5f * currRegion->firstItemBottomRightScreenCoord.y;
+    *top_left_pos = pos + glm::vec2(shiftX * currRegion->shiftDist.x, shiftY * currRegion->shiftDist.y);
+    // hard-code number height
+    *height = 0.5 * 0.85 * (currRegion->firstItemTopLeftScreenCoord.y - currRegion->firstItemBottomRightScreenCoord.y);
+}
+
+
+/**
  * @brief Widget::storeItemIntoDrawVector
  *  helper function to store the item into drawItems for further vbo creation
  * @param currRegion : region where the item locates, here we use the uv, pos and shift info
