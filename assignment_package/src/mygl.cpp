@@ -262,7 +262,10 @@ void MyGL::paintGL() {
     renderTexture(inventoryWidgetOnHandTexture, m_progInventoryWidgetOnHand, 2, inventoryWidgetOnHand);
     // blocks
     renderTexture(textureAll, m_progInventoryItemOnHand, 0, inventoryItemsOnHand);
-    // In box
+    // In container
+    // TODO: draw the container widget and items in container if the player opens it
+
+
     glEnable(GL_BLEND);
     renderTexture(textureFont, m_progText, 3, textOnScreen.get());
     glDisable(GL_BLEND);
@@ -423,18 +426,17 @@ void MyGL::mouseMoveEvent(QMouseEvent *e) {
 
     if (mouseCursorMode) {
         return;
-    } else {
-        m_player.rotateCameraView(m_inputs);
-        moveMouseToCenter();
     }
+    m_player.rotateCameraView(m_inputs);
+    moveMouseToCenter();
 }
 
 void MyGL::mousePressEvent(QMouseEvent *e) {
-    // TODO
 
     switch (e->button()) {
     case (Qt::LeftButton):
         m_inputs.leftMouseButtonPressed = true;
+        // TODO: grab the block item if the player opens the container
         break;
     case (Qt::RightButton):
         m_inputs.rightMouseButtonPressed = true;
@@ -449,6 +451,8 @@ void MyGL::mouseReleaseEvent(QMouseEvent *e) {
     switch (e->button()) {
     case (Qt::LeftButton):
         m_inputs.leftMouseButtonPressed = false;
+        // TODO: release the selected block item to a new place (or switch the items)
+        // if the player opens the container
         break;
     case (Qt::RightButton):
         m_inputs.rightMouseButtonPressed = false;
