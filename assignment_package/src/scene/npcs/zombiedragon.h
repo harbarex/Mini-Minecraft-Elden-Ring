@@ -28,9 +28,6 @@ public:
     // override tick
     virtual void tick(float dT) override;
 
-    // hoverMode
-    void hover();
-
     virtual ~ZombieDragon();
 };
 

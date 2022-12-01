@@ -13,10 +13,10 @@ NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player *player
     Drawable(context),
     Entity(pos),
     mcr_terrain(terrain),
-    m_velocity(0,0,0),
-    m_acceleration(0,0,0),
+    m_velocity(2.f, 10.f, 2.f),
     walkingDistCycle(0),
     limbRotNodes(),
+    limbRotationSpeed(4.f),
     prev_m_position(pos),
     rootToGround(0.f),
     rootToFront(0.5f),
@@ -87,10 +87,13 @@ void NPC::tick(float dT, InputBundle &input)
  */
 void NPC::tick(float dT)
 {
-    // move
+    // TODO: explore the options / movement options
+    // TODO: determine final facing direction & move
+    // TODO: might be able to jump to skip over the obstacles
+    tryMove(dT);
+    // update walking / flying movement
     walkingDistCycle += glm::length(m_position - prev_m_position);
     updateLimbRotations();
-    prev_m_position = m_position;
 }
 
 
@@ -99,8 +102,7 @@ void NPC::tick(float dT)
  */
 void NPC::updateLimbRotations()
 {
-    float speed = 2.f;
-    float deg = glm::sin(walkingDistCycle * speed) * 20.f;
+    float deg = glm::sin(walkingDistCycle * limbRotationSpeed) * 25.f;
     for (Node *p : limbRotNodes)
     {
         RotateNode *rot = dynamic_cast<RotateNode *>(p);
@@ -111,90 +113,215 @@ void NPC::updateLimbRotations()
     }
 }
 
-void NPC::computePhysics(float dT)
+
+/**
+ * @brief NPC::faceToward
+ *  Rotate itself toward the target (slowly)
+ *  Only x & z are considered for NPCs.
+ * @param dT
+ * @param target
+ */
+void NPC::faceToward(float dT, glm::vec3 target)
 {
-    glm::vec3 displacement(0.f);
-    m_velocity = glm::vec3(0.f, -1.f, 0.f);
+    // get normalized facing direction
+    glm::vec3 facingDir = target - m_position;
+    facingDir[1] = 0.f;
+    facingDir = glm::normalize(facingDir);
 
-    if (!checkXZCollision(0, mcr_terrain)) {
-        m_velocity[0] = 0.f;
-    }
-    if (!checkXZCollision(2, mcr_terrain)) {
-        m_velocity[2] = 0.f;
-    }
-    if (!checkYCollision(mcr_terrain)) {
-        m_velocity[1] = 0.f;
+    // current forward
+    float deg = (glm::acos(glm::dot(facingDir, m_forward)) * 180.f / 3.14f);
+
+    // turn left or turn right
+    float dotp = glm::dot(facingDir, m_right);
+
+    if (dotp >= 0.f)
+    {
+        deg = -deg;
     }
 
-    displacement = m_velocity * dT;
-    moveAlongVector(displacement);
+    if (!glm::isnan(deg))
+    {
+        rotateOnUpGlobal(dT * deg);
+    }
 }
+
+
+/**
+ * @brief faceTowardTangent
+ *  Only consider x & z
+ * @param dT
+ * @param center
+ */
+void NPC::faceTowardTangent(float dT, glm::vec3 center)
+{
+    glm::vec3 towardCenter = center - m_position;
+    towardCenter[1] = 0.f;
+    towardCenter = glm::normalize(towardCenter);
+    glm::vec3 tangentDir = glm::cross(m_up, towardCenter);
+
+    float deg = glm::acos(glm::dot(tangentDir, m_forward)) * 180.f / 3.14f;
+
+    float dotp = glm::dot(tangentDir, m_right);
+    if (dotp >= 0.f)
+    {
+        deg = -deg;
+    }
+
+    if (!glm::isnan(deg))
+    {
+        rotateOnUpGlobal(dT * deg);
+    }
+
+}
+
+/**
+ * @brief NPC::tryMove
+ *  Basically, follow the current forward direction,
+ *  check the collision (X, Y, Z) before applying the displacement
+ *  to the position.
+ * @param dT
+ */
+void NPC::tryMove(float dT)
+{
+    // m_forward: current forward direction
+    glm::vec3 currVelocity = m_velocity;
+
+    // assume m_forward's y is always 0.f
+    glm::vec3 disp = (dT * currVelocity * m_forward);
+
+    // gravity pull
+    disp[1] -= (dT * currVelocity[1]);
+
+    if (checkYCollision(mcr_terrain))
+    {
+        // collide against the ground
+        disp[1] = 0.f;
+    }
+
+    if (checkXZCollision(0, mcr_terrain))
+    {
+        disp[0] = 0.f;
+    }
+
+    if (checkXZCollision(2, mcr_terrain))
+    {
+        disp[2] = 0.f;
+    }
+
+    // set the previous m_position
+    prev_m_position = m_position;
+
+    // this changes m_position
+    moveAlongVector(disp);
+}
+
 
 /**
  * @brief NPC::checkXZCollision
  *  Note: m_position is the center of the NPC's body
+ *  true: collide with any blocks along x or z direction
  * @param idx
  * @param terrain
  * @return
  */
 bool NPC::checkXZCollision(int idx, const Terrain &terrain) {
 
-    if (idx != 0 && idx != 2) {
-        return true;
+    glm::vec3 axisDir = glm::vec3(0.f);
+
+    // only handle x & z
+    axisDir[idx] = m_forward[idx] > 0.f ? 1.f : -1.f;
+
+    if (m_forward[idx] == 0.f)
+    {
+        // current facing direction won't be intersected with axis [idx]
+        return false;
     }
 
-    glm::ivec3 out_blockHit(0);
+    float tolerance = 0.16f;
+
+    // idx must be either 0 (x) or 2 (z)
+    glm::ivec3 out_blockHit = glm::ivec3(0);
     float out_dist = 0.f;
 
-    float horizontalDistTolerance = 0.13f; // 0.5 * 0.707 = 0.35 -> 0.5 - 0.35 = 0.15
-    std::array<glm::vec3, 3> cornerArr;
+    // get top, root, middle (between root & bottom), bottom center
+    glm::vec3 topCenter = m_position;
+    topCenter[1] += rootToTop;
+    glm::vec3 bottomCenter = m_position;
+    bottomCenter[1] -= rootToGround;
+    glm::vec3 midCenter = m_position;
+    midCenter[1] = (topCenter[1] + bottomCenter[1]) / 2.f;
+    std::vector<glm::vec3> centers = {m_position, topCenter, midCenter, bottomCenter};
 
-    // 4 corners: 45, 135, 225, 315
-    for (int i = 0; i < 4; ++i) {
-        float currDeg = 45.f + i * 90.f;
-        float currRad = glm::radians(currDeg);
-        float fowardDir = (currDeg >= 90.f && currDeg <= 270.f) ? -1.f : 1.f; // the orientation of player and velocity is same or opposite
-        glm::vec3 forwardDeg = glm::vec3(glm::rotate(glm::mat4(), currRad, glm::vec3(0,1,0)) * glm::vec4(m_forward, 0.f));
-        // each angle has three points: up, middle and down
-        glm::vec3 cameraCorner = m_position + forwardDeg * 1.2f;
-        glm::vec3 middleCorner = cameraCorner - glm::vec3(0.f, rootToGround / 2.f, 0.f);
-        glm::vec3 playerCorner = cameraCorner - glm::vec3(0.f, rootToGround, 0.f);
-        cornerArr[0] = cameraCorner;
-        cornerArr[1] = middleCorner;
-        cornerArr[2] = playerCorner;
+    // get radius
+    std::vector<glm::vec3> cornerDirs = {
+        m_forward * rootToFront + m_right * rootToRight,
+        m_forward * rootToFront - m_right * rootToLeft,
+        -m_forward * rootToBack - m_right * rootToLeft,
+        -m_forward * rootToBack + m_right * rootToRight
+    };
 
-        for (auto& corner: cornerArr) {
-            bool cornerHit = gridMarch(corner, fowardDir* m_forward, terrain, &out_dist, &out_blockHit);
-            if (cornerHit && out_dist < horizontalDistTolerance && m_velocity[idx] * forwardDeg[idx] >= 0) {
-                return false;
+    for (glm::vec3 &center: centers)
+    {
+        for (glm::vec3 &cornerDir : cornerDirs)
+        {
+            glm::vec3 rayOrigin = center + cornerDir;
+            bool blockHit = gridMarch(rayOrigin, axisDir, terrain, &out_dist, &out_blockHit);
+            if (blockHit && (out_dist < tolerance))
+            {
+                return true;
             }
         }
     }
-
-    return true;
-
+    return false;
 }
 
 
-bool NPC::checkYCollision(const Terrain &terrain) {
+/**
+ * @brief NPC::checkYCollision
+ *  true: collide with any blocks along y direction
+ * @param terrain
+ * @return
+ */
+bool NPC::checkYCollision(const Terrain &terrain)
+{
+    // only check against the ground
+    glm::ivec3 out_blockHit = glm::ivec3(0);
+    float out_dist = 0.f;
 
-    glm::ivec3 out_blockHit_ground(0);
-    glm::ivec3 out_blockHit_ceiling(0);
-    float out_dist_neg_y = 0.f;
-    float out_dist_pos_y = 0.f;
+    float tolerance = 0.2f;
 
-    // check if the player touches the ground
-    float negYTolerance = 0.4f; // (specifically for gravity) max velocity: 10, average dt: 0.016 > displacement: 10 * 0.016 = 0.16
-    float posYTolerance = 0.4f;
-    bool playerGroundHit = gridMarch(m_position - rootToGround, glm::vec3(0.f, -1.f, 0.f), terrain, &out_dist_neg_y, &out_blockHit_ground);
-    bool playerCeilingHit = gridMarch(m_position + rootToTop, glm::vec3(0.f, 1.f, 0.f), terrain, &out_dist_pos_y, &out_blockHit_ceiling);
-    if (playerGroundHit && out_dist_neg_y < negYTolerance && m_velocity[1] <= 0) {
-        return false;
+    // get 4 corners of the bottom
+    glm::vec3 bottomCenter = m_position;
+    bottomCenter[1] -= rootToGround;
+
+    // get radius
+    std::vector<glm::vec3> cornerDirs = {
+        m_forward * rootToFront + m_right * rootToRight,
+        m_forward * rootToFront - m_right * rootToLeft,
+        -m_forward * rootToBack - m_right * rootToLeft,
+        -m_forward * rootToBack + m_right * rootToRight
+    };
+
+    glm::vec3 rayDir = glm::vec3(0.f, -1.f, 0.f);
+
+    // check bottom itself
+    bool blockHit = gridMarch(bottomCenter, rayDir, terrain, &out_dist, &out_blockHit);
+    if (blockHit && (out_dist < tolerance))
+    {
+        return true;
     }
-    if (playerCeilingHit && out_dist_pos_y < posYTolerance && m_velocity[1] >= 0) {
-        return false;
+
+    for (glm::vec3 &cornerDir : cornerDirs)
+    {
+        glm::vec3 rayOrigin = bottomCenter + cornerDir;
+        bool blockHit = gridMarch(rayOrigin, rayDir, terrain, &out_dist, &out_blockHit);
+        if (blockHit && (out_dist < tolerance))
+        {
+            return true;
+        }
     }
-    return true;
+
+    return false;
 }
 
 /**
@@ -207,6 +334,7 @@ bool NPC::checkYCollision(const Terrain &terrain) {
  * @return
  */
 bool NPC::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, float *out_dist, glm::ivec3 *out_blockHit) {
+
     float maxLen = glm::length(rayDirection); // Farthest we search
     glm::ivec3 currCell = glm::ivec3(glm::floor(rayOrigin));
     rayDirection = glm::normalize(rayDirection); // Now all t values represent world dist.
@@ -236,6 +364,7 @@ bool NPC::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &
         if(interfaceAxis == -1) {
             throw std::out_of_range("interfaceAxis was -1 after the for loop in gridMarch!");
         }
+
         curr_t += min_t; // min_t is declared in slide 7 algorithm
         rayOrigin += rayDirection * min_t;
         glm::ivec3 offset(0);
@@ -254,6 +383,7 @@ bool NPC::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &
     *out_dist = glm::min(maxLen, curr_t);
     return false;
 }
+
 
 /**
  * @brief NPC::~NPC

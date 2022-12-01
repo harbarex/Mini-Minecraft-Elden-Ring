@@ -19,7 +19,8 @@ ZombieDragon::ZombieDragon(OpenGLContext *context, glm::vec3 pos, Terrain &terra
       rCWing(context, ZDRCW),
       rOWing(context, ZDROW)
 {
-    // set up initial facing direction
+    // update m_velocity
+    m_velocity = glm::vec3(5.f, 0.f, 5.f);
 }
 
 ZombieDragon::ZombieDragon(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, NPCTexture npcTexture)
@@ -105,39 +106,15 @@ void ZombieDragon::initSceneGraph()
 void ZombieDragon::tick(float dT)
 {
     // change the facing direction
-    // facing the direction perpendicular to player - itself
-    glm::vec3 playerCenter = player->mcr_position;
-    playerCenter[1] = 0.f;
-    glm::vec3 currPos = mcr_position;
-    currPos[1] = 0.f;
-
-    // change facing at first
-    glm::vec3 dirToCenter = glm::normalize(currPos - playerCenter);
-    glm::vec3 facingDir = glm::cross(m_up, dirToCenter);
-
-    // from m_forward to facingDir
-    float deg = dT * (glm::acos(glm::dot(facingDir, m_forward)) * 180.f / 3.14f);
-    if (!glm::isnan(deg))
-    {
-        rotateOnUpGlobal(deg);
-    }
+    faceTowardTangent(dT, player->mcr_position);
 
     // move along the forward
-    float speed = 3.f;
-    glm::vec3 disp = dT * speed * m_forward;
+    glm::vec3 disp = dT * m_velocity * m_forward;
     prev_m_position = mcr_position;
     moveAlongVector(disp);
 
     walkingDistCycle += glm::length(mcr_position - prev_m_position);
     updateLimbRotations();
-}
-
-/**
- * @brief ZombieDragon::hover
- */
-void ZombieDragon::hover()
-{
-
 }
 
 /**

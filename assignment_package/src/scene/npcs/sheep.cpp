@@ -12,7 +12,10 @@ Sheep::Sheep(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player *pl
       head(context, SHEEPHEAD),
       body(context, SHEEPBODY),
       limb(context, SHEEPLIMB)
-{}
+{
+    // change speed
+    m_velocity = glm::vec3(2.f, 10.f, 2.f);
+}
 
 
 Sheep::Sheep(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, NPCTexture npcTexture)
@@ -79,7 +82,7 @@ void Sheep::initSceneGraph()
     // set the distances between the root to 6 sides
     rootToGround = bodyScale.y / 2.f + limbScale.y - ((bodyScale.y / 2.f + limbScale.y / 2.f) * (1.f - ratio));
     rootToTop = bodyScale.y / 2.f + (headScale.y / 2.f - ((bodyScale.y / 2.f) * 0.1));
-    rootToFront = bodyScale.z / 2.f + headScale.z;
+    rootToFront = bodyScale.z / 2.f + (headScale.z / 2.f - 0.1 * (bodyScale.z / 2.f));
     rootToBack = bodyScale.z / 2.f;
     rootToLeft = bodyScale.x / 2.f;
     rootToRight = bodyScale.x / 2.f;
@@ -87,6 +90,11 @@ void Sheep::initSceneGraph()
 
 void Sheep::tick(float dT)
 {
+    // turn to the player's direction
+    faceToward(dT, player->mcr_position);
+
+    // tick
+    NPC::tick(dT);
 }
 
 /**

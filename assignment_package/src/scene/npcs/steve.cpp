@@ -14,7 +14,10 @@ Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player *pl
       rULimb(context, STEVERUL),
       lLLimb(context, STEVELLL),
       rLLimb(context, STEVERLL)
-{}
+{
+    // change speed
+    m_velocity = glm::vec3(3.f, 10.f, 3.f);
+}
 
 Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, NPCTexture npcTexture)
     : Steve(context, pos, terrain, nullptr, npcTexture)
@@ -84,6 +87,17 @@ void Steve::initSceneGraph()
     rootToLeft = bodyScale.x / 2.f + limbScale.x;
     rootToRight = bodyScale.x / 2.f + limbScale.x;
 }
+
+
+void Steve::tick(float dT)
+{
+    // turn to the player's direction
+    faceToward(dT, player->mcr_position);
+
+    // tick
+    NPC::tick(dT);
+}
+
 
 /**
  * @brief Steve::createVBOdata

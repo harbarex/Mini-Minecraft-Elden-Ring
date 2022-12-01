@@ -22,5 +22,7 @@ public:
     virtual void createVBOdata() override;
     virtual void initSceneGraph() override;
 
+    void tick(float dT);
+
     virtual ~Steve();
 };

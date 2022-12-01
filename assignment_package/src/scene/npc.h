@@ -17,13 +17,14 @@ protected:
     Terrain &mcr_terrain;
 
     // NPC's physics params
-    glm::vec3 m_velocity, m_acceleration;
+    glm::vec3 m_velocity;
 
     // a variable to accumulate traveled distance (do % 360)
     float walkingDistCycle;
 
     // keep a collection of rotation nodes (for walking movements)
     std::vector<Node*> limbRotNodes;
+    float limbRotationSpeed;
 
     // keep track of last position
     glm::vec3 prev_m_position;
@@ -58,11 +59,18 @@ public:
 
     virtual void traverseSceneGraph(ShaderProgram *shader, const uPtr<Node> &node, glm::mat4 transform);
 
+    // override tick
     virtual void tick(float dT, InputBundle &input) override;
     virtual void tick(float dT);
 
-    // physics
-    void computePhysics(float dT);
+    // helpers for NPC's movement
+    // face toward the target
+    virtual void faceToward(float dT, glm::vec3 target);
+    // face the direction perpendicular to the direction (target - NPC)
+    virtual void faceTowardTangent(float dT, glm::vec3 center);
+
+    // move
+    void tryMove(float dT);
 
     // re-write collision
     virtual bool checkXZCollision(int idx, const Terrain &terrain);

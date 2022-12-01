@@ -34,7 +34,7 @@ MyGL::MyGL(QWidget *parent)
     // the initial set of NPCs
     m_npcs.push_back(mkU<Steve>(this, glm::vec3(55.f, 150.f, 32.f), m_terrain, &m_player, STEVE));
     m_npcs.push_back(mkU<Sheep>(this, glm::vec3(60.f, 150.f, 32.f), m_terrain, &m_player, SHEEP));
-    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(65.f, 150.f, 32.f), m_terrain, &m_player, ZDRAGON));
+    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(65.f, 170.f, 32.f), m_terrain, &m_player, ZDRAGON));
 }
 
 MyGL::~MyGL() {
