@@ -66,7 +66,7 @@ std::array<BlockFace, 6> Block::createBlockFaces(std::array<glm::vec4, 6> uvs)
                   VertexData(glm::vec4(1, 1, 0, 1), glm::vec2(uvs[0][2], uvs[0][3])),
                   VertexData(glm::vec4(1, 1, 1, 1), glm::vec2(uvs[0][0], uvs[0][3]))),
         BlockFace(XNEG, glm::vec4(-1,  0,  0, 0),
-                  VertexData(glm::vec4(0, 0, 0, 1), glm::vec2(uvs[1][2], uvs[1][1])),
+                  VertexData(glm::vec4(0, 0, 0, 1), glm::vec2(uvs[1][0], uvs[1][1])),
                   VertexData(glm::vec4(0, 0, 1, 1), glm::vec2(uvs[1][2], uvs[1][1])),
                   VertexData(glm::vec4(0, 1, 1, 1), glm::vec2(uvs[1][2], uvs[1][3])),
                   VertexData(glm::vec4(0, 1, 0, 1), glm::vec2(uvs[1][0], uvs[1][3]))),

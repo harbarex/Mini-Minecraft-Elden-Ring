@@ -8,8 +8,8 @@
  * @param terrain
  * @param npcTexture
  */
-ZombieDragon::ZombieDragon(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, NPCTexture npcTexture)
-    : NPC(context, pos, terrain, npcTexture),
+ZombieDragon::ZombieDragon(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player *player, NPCTexture npcTexture)
+    : NPC(context, pos, terrain, player, npcTexture),
       head(context, ZDHEAD),
       body(context, ZDBODY),
       lowerBody(context, ZDLBODY),
@@ -19,10 +19,12 @@ ZombieDragon::ZombieDragon(OpenGLContext *context, glm::vec3 pos, Terrain &terra
       rCWing(context, ZDRCW),
       rOWing(context, ZDROW)
 {
-    // turn flight mode on
-    flightMode = true;
+    // set up initial facing direction
 }
 
+ZombieDragon::ZombieDragon(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, NPCTexture npcTexture)
+    : ZombieDragon(context, pos, terrain, nullptr, npcTexture)
+{}
 
 /**
  * @brief ZombieDragon::initSceneGraph
@@ -93,6 +95,50 @@ void ZombieDragon::initSceneGraph()
     rootToRight = bodyScale.x / 2.f + lCWingScale.x + lOWingScale.x + rCWingScale.x + rOWingScale.x;
 }
 
+
+/**
+ * @brief ZombieDragon::tick
+ *  If player's in flight mode, follow the player.
+ *  If player's not in flight mode, change to hovering mode
+ * @param dT
+ */
+void ZombieDragon::tick(float dT)
+{
+    // change the facing direction
+    // facing the direction perpendicular to player - itself
+    glm::vec3 playerCenter = player->mcr_position;
+    playerCenter[1] = 0.f;
+    glm::vec3 currPos = mcr_position;
+    currPos[1] = 0.f;
+
+    // change facing at first
+    glm::vec3 dirToCenter = glm::normalize(currPos - playerCenter);
+    glm::vec3 facingDir = glm::cross(m_up, dirToCenter);
+
+    // from m_forward to facingDir
+    float deg = dT * (glm::acos(glm::dot(facingDir, m_forward)) * 180.f / 3.14f);
+    if (!glm::isnan(deg))
+    {
+        rotateOnUpGlobal(deg);
+    }
+
+    // move along the forward
+    float speed = 3.f;
+    glm::vec3 disp = dT * speed * m_forward;
+    prev_m_position = mcr_position;
+    moveAlongVector(disp);
+
+    walkingDistCycle += glm::length(mcr_position - prev_m_position);
+    updateLimbRotations();
+}
+
+/**
+ * @brief ZombieDragon::hover
+ */
+void ZombieDragon::hover()
+{
+
+}
 
 /**
  * @brief ZombieDragon::createVBOdata

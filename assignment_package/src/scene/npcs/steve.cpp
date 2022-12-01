@@ -6,14 +6,18 @@
  * @param pos
  * @param terrain
  */
-Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, NPCTexture npcTexture)
-    : NPC(context, pos, terrain, npcTexture),
+Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player *player, NPCTexture npcTexture)
+    : NPC(context, pos, terrain, player, npcTexture),
       head(context, STEVEHEAD),
       body(context, STEVEBODY),
       lULimb(context, STEVELUL),
       rULimb(context, STEVERUL),
       lLLimb(context, STEVELLL),
       rLLimb(context, STEVERLL)
+{}
+
+Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, NPCTexture npcTexture)
+    : Steve(context, pos, terrain, nullptr, npcTexture)
 {}
 
 

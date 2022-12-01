@@ -761,3 +761,23 @@ bool Player::isLiquid(const Terrain &terrain, glm::ivec3* pos) {
 }
 
 
+glm::vec3 Player::getCurrUp() const
+{
+    return m_up;
+}
+
+glm::vec3 Player::getCurrForward() const
+{
+    return m_forward;
+}
+
+glm::vec3 Player::getCurrRight() const
+{
+    return m_right;
+}
+
+
+bool Player::isFlightMode() const
+{
+    return flightMode;
+}

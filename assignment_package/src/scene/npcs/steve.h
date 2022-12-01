@@ -15,6 +15,7 @@ private:
 
 public:
     // constructors
+    Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player *player, NPCTexture npcTexture);
     Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, NPCTexture npcTexture);
 
     // for Drawable

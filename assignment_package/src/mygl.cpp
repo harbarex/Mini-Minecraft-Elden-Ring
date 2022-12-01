@@ -32,9 +32,9 @@ MyGL::MyGL(QWidget *parent)
     m_player.setBlocksHold();
 
     // the initial set of NPCs
-    m_npcs.push_back(mkU<Steve>(this, glm::vec3(55.f, 150.f, 32.f), m_terrain, STEVE));
-    m_npcs.push_back(mkU<Sheep>(this, glm::vec3(60.f, 150.f, 32.f), m_terrain, SHEEP));
-    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(65.f, 150.f, 32.f), m_terrain, ZDRAGON));
+    m_npcs.push_back(mkU<Steve>(this, glm::vec3(55.f, 150.f, 32.f), m_terrain, &m_player, STEVE));
+    m_npcs.push_back(mkU<Sheep>(this, glm::vec3(60.f, 150.f, 32.f), m_terrain, &m_player, SHEEP));
+    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(65.f, 150.f, 32.f), m_terrain, &m_player, ZDRAGON));
 }
 
 MyGL::~MyGL() {
@@ -177,13 +177,14 @@ void MyGL::tick() {
     m_player.tick(deltaTime, m_inputs);
 
     // TODO: pass delta-time to NPC's tick as well
-    if (frameCount >= 12 * 60)
+    if (frameCount > 15.f * 60.f)
     {
         for (const uPtr<NPC> &npc : m_npcs)
         {
-            npc->tick(deltaTime, m_inputs);
+            npc->tick(deltaTime);
         }
     }
+
 }
 
 void MyGL::sendPlayerDataToGUI() const {

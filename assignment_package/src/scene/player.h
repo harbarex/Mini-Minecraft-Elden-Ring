@@ -8,7 +8,7 @@
 enum class VelocityCond {stop, max, move};
 
 class Player : public Entity {
-protected:
+private:
     glm::vec3 m_velocity, m_acceleration;
     Camera m_camera;
     Terrain &mcr_terrain;
@@ -24,8 +24,8 @@ protected:
     void processInputs(InputBundle &inputs);
     void computePhysics(float dT, const Terrain &terrain, InputBundle &inputs);
 
-    virtual bool checkXZCollision(int idx, const Terrain &terrain); // determine if current movement collide in X or Z axis (with idx 0 and 2)
-    virtual bool checkYCollision(const Terrain &terrain); // determine if current movement collide in Y axis (specifically for the ground)
+    bool checkXZCollision(int idx, const Terrain &terrain); // determine if current movement collide in X or Z axis (with idx 0 and 2)
+    bool checkYCollision(const Terrain &terrain); // determine if current movement collide in Y axis (specifically for the ground)
     void implementJumping(const Terrain &terrain, InputBundle &inputs);
     void destroyBlock(InputBundle &inputs, Terrain &terrain); // destroy the block within 3 unit from camera pos when left mouse button is pressed
     void placeNewBlock(InputBundle &inputs, Terrain &terrain);
@@ -97,5 +97,11 @@ public:
 
     void setBlocksHold();
     void selectNextBlock(InputBundle &inputs);
+
+    // helper method to determine the current facing of the player
+    glm::vec3 getCurrUp() const;
+    glm::vec3 getCurrForward() const;
+    glm::vec3 getCurrRight() const;
+    bool isFlightMode() const;
 };
 
