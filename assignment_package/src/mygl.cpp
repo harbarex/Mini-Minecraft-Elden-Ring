@@ -14,8 +14,8 @@ MyGL::MyGL(QWidget *parent)
       m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventoryWidgetOnHand(this), m_progInventoryItemOnHand(this), m_progText(this),
       m_quad(this),
       m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()), m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
-      frameCount(0), prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this),
-      inventoryWidgetOnHandTexture(this), textureFont(this), prevExpandTime(QDateTime::currentMSecsSinceEpoch())
+      frameCount(0), prevFrameTime(QDateTime::currentMSecsSinceEpoch()), mouseCursorMode(false),
+      textureAll(this), inventoryWidgetOnHandTexture(this), textureFont(this), prevExpandTime(QDateTime::currentMSecsSinceEpoch())
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
@@ -353,6 +353,8 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
         m_inputs.numberPressed[8] = true;
     } else if (e->key() == Qt::Key_9) {
         m_inputs.numberPressed[9] = true;
+    } else if (e->key() == Qt::Key_I) {
+        m_inputs.iPressed = true;
     }
 }
 
@@ -396,6 +398,10 @@ void MyGL::keyReleaseEvent(QKeyEvent *e)
         m_inputs.numberPressed[8] = false;
     } else if (e->key() == Qt::Key_9) {
         m_inputs.numberPressed[9] = false;
+    } else if (e->key() == Qt::Key_I) {
+        m_inputs.iPressed = false;
+        m_player.toggleContainerMode();
+        toggleMouseCursorMode();
     }
 }
 
@@ -415,9 +421,12 @@ void MyGL::mouseMoveEvent(QMouseEvent *e) {
 
 //    #endif
 
-    m_player.rotateCameraView(m_inputs);
-
-    moveMouseToCenter();
+    if (mouseCursorMode) {
+        return;
+    } else {
+        m_player.rotateCameraView(m_inputs);
+        moveMouseToCenter();
+    }
 }
 
 void MyGL::mousePressEvent(QMouseEvent *e) {
@@ -494,8 +503,8 @@ void MyGL::initWidget() {
      * widget setup
      * 1. inventoryWidgetOnHand
      * 2. inventoryItemOnHand
-     * 3. inventoryWidgetInBox
-     * 4. inventoryItemInBox
+     * 3. inventoryWidgetInContainer
+     * 4. inventoryItemInContainer
      */
     std::vector<Widget*> widgets_raw;
 
@@ -517,4 +526,14 @@ void MyGL::initText() {
     textOnScreen = mkU<Text>(this, width(), height());
     m_player.setupText(textOnScreen.get());
 
+}
+
+void MyGL::toggleMouseCursorMode() {
+    if (mouseCursorMode) {
+        mouseCursorMode = false;
+        setCursor(Qt::BlankCursor);
+    } else {
+        mouseCursorMode = true;
+        setCursor(Qt::CrossCursor);
+    }
 }

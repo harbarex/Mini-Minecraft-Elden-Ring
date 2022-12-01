@@ -5,9 +5,9 @@ Player::Player(glm::vec3 pos, Terrain &terrain)
     : Entity(pos), m_velocity(0,0,0), m_acceleration(0,0,0),
       m_camera(pos + glm::vec3(0, 1.5f, 0)), mcr_terrain(terrain),
       flight_velocity_max(15.f), non_flight_velocity_max(10.f), m_velocity_val(flight_velocity_max),
-      m_acceleration_val(40.f), cameraBlockDist(3.f), flightMode(true), destroyBufferTime(0.f),
-      creationBufferTime(0.f), minWaitTime(0.5f), selectedBlockOnHandPtr(0),
-      mcr_camera(m_camera)
+      m_acceleration_val(40.f), cameraBlockDist(3.f), flightMode(true), containerMode(false),
+      destroyBufferTime(0.f), creationBufferTime(0.f), minWaitTime(0.5f),
+      selectedBlockOnHandPtr(0), mcr_camera(m_camera)
 {}
 
 Player::~Player()
@@ -789,5 +789,23 @@ void Player::drawInventoryItemOnHand() {
 bool Player::isLiquid(const Terrain &terrain, glm::ivec3* pos) {
     BlockType blockType = terrain.getBlockAt((*pos).x, (*pos).y, (*pos).z);
     return Block::isLiquid(blockType);
+}
+
+bool Player::setContainerMode(bool state) {
+    containerMode = state;
+    return containerMode;
+}
+
+bool Player::toggleContainerMode() {
+    if (containerMode) {
+        containerMode = false;
+    } else {
+        containerMode = true;
+    }
+    return containerMode;
+}
+
+bool Player::isOpenContainer() {
+    return containerMode;
 }
 

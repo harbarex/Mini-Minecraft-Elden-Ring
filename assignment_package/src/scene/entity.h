@@ -10,6 +10,7 @@ struct InputBundle {
     bool leftMouseButtonPressed, rightMouseButtonPressed;
     bool debugButtonPressed;
     bool nPressed;
+    bool iPressed;
     float mouseX, mouseY;
 
     // Checking Terrain
@@ -24,8 +25,8 @@ struct InputBundle {
         : wPressed(false), aPressed(false), sPressed(false),
           dPressed(false), qPressed(false), ePressed(false), spacePressed(false),
           leftMouseButtonPressed(false), rightMouseButtonPressed(false), debugButtonPressed(false),
-          nPressed(false), mouseX(0.f), mouseY(0.f), underWater(false), underLava(false), onGround(false),
-          numberPressed {false, false, false, false, false, false, false, false, false, false}
+          nPressed(false), iPressed(false), mouseX(0.f), mouseY(0.f), underWater(false), underLava(false),
+          onGround(false), numberPressed {false, false, false, false, false, false, false, false, false, false}
     {}
 };
 

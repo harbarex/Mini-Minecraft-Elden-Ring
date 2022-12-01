@@ -20,7 +20,8 @@ private:
     float flight_velocity_max, non_flight_velocity_max;
     float m_velocity_val, m_acceleration_val; // length of the vector
     float cameraBlockDist; // max distance from the camera while using ray tracing
-    bool flightMode; // determine the current mode
+    bool flightMode; // determine the current moving mode
+    bool containerMode; // determine if the player opens the container or not
     double destroyBufferTime; // compute the passing time (s) starting from last destroy
     double creationBufferTime; // compute the passing time (s) starting from last block creation
     double minWaitTime; // the minimum waiting time (s) to destroy the next block
@@ -108,5 +109,9 @@ public:
     void setupWidget(std::vector<Widget*> widgets);
     void setupText(Text* text);
     void drawInventoryItemOnHand();
+
+    bool isOpenContainer();
+    bool setContainerMode(bool state);
+    bool toggleContainerMode();
 };
 

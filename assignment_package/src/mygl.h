@@ -58,6 +58,8 @@ private:
     int prevMouseX;
     int prevMouseY;
 
+    bool mouseCursorMode; // Mouse cursor can move or not
+
     Texture textureAll;
     Texture inventoryWidgetOnHandTexture;
     Texture textureFont;
@@ -72,6 +74,8 @@ private:
     void initWidget();
     void initText();
     void bindTexture(Texture& texture, ShaderProgram& shaderProgram, int slot);
+
+    void toggleMouseCursorMode();
 
     long long prevExpandTime;
 
