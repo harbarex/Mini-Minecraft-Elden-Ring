@@ -13,7 +13,7 @@ void Text::insertNewInfo(std::string currText, glm::vec2 currCoord) {
     }
 
     // order of uv: bottom-left, bottom-right, top-right, top-left
-    glm::vec2 bottom_left_pos(currCoord[0] * width_height_len[0], currCoord[1] * width_height_len[1]);
+    glm::vec2 bottom_left_pos(currCoord);
     TextCollection[currText[0]][0] = bottom_left_pos;
     TextCollection[currText[0]][1] = bottom_left_pos + glm::vec2(width_height_len[0], 0.f);
     TextCollection[currText[0]][2] = bottom_left_pos + width_height_len;
