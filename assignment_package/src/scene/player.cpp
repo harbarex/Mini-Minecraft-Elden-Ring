@@ -777,6 +777,7 @@ void Player::drawInventoryItemOnHand() {
         Block::getUVCoords(blocksInInventory[i].first, &uvCoords);
         inventoryItemOnHand->addItem(i, uvCoords);
     }
+    textOnScreen->addText("0000000000", glm::vec2(-0.5f, -0.5f), 0.5f);
 }
 
 bool Player::isLiquid(const Terrain &terrain, glm::ivec3* pos) {

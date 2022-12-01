@@ -11,9 +11,9 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
-      m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventoryWidgetOnHand(this), m_progInventoryItemOnHand(this), m_quad(this),
-      m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
-      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
+      m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventoryWidgetOnHand(this), m_progInventoryItemOnHand(this), m_progText(this),
+      m_quad(this),
+      m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()), m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
       frameCount(0), prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this),
       inventoryWidgetOnHandTexture(this), textureFont(this), prevExpandTime(QDateTime::currentMSecsSinceEpoch())
 {
@@ -39,6 +39,7 @@ MyGL::~MyGL() {
     m_quad.destroyVBOdata();
     inventoryWidgetOnHand->destroyVBOdata();
     inventoryItemsOnHand->destroyVBOdata();
+    textOnScreen->destroyVBOdata();
     m_frameBuffer.destroy();
     m_worldAxes.destroyVBOdata();
 }
@@ -91,7 +92,7 @@ void MyGL::initializeGL()
     m_progNoOp.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/overlay.frag.glsl");
     m_progInventoryWidgetOnHand.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
     m_progInventoryItemOnHand.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
-
+    m_progText.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
 
     ////////////////////////////////////////////////////////////////////////////////////
     /// loading texture map from png
@@ -109,11 +110,10 @@ void MyGL::initializeGL()
     inventoryItemsOnHand->loadCoordFromText(":/textures/widget_item_on_hand_info.txt");
 
     // text on the screen (slot = 3)
+//    createTexture(textureFont, ":/textures/minecraft_ascii.png", 3);
     createTexture(textureFont, ":/textures/ascii.png", 3);
+//    createTexture(textureFont, ":/textures/minecraft_normals_all.png", 3);
     textOnScreen->loadUVCoordFromText(":/textures/text_info.txt");
-
-    // test
-    textOnScreen->addText("000000", glm::vec2(0, 0), 0.1);
 
     ////////////////////////////////////////////////////////////////////////////////////
 
@@ -265,6 +265,8 @@ void MyGL::paintGL() {
     // blocks
     renderTexture(textureAll, m_progInventoryItemOnHand, 0, inventoryItemsOnHand);
     // In box
+    renderTexture(textureFont, m_progText, 3, textOnScreen.get());
+
     glEnable(GL_DEPTH_TEST);
 
 

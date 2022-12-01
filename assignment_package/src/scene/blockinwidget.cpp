@@ -6,6 +6,8 @@ BlockInWidget::BlockInWidget(OpenGLContext *context)
     setWidgetInfo();
 }
 
+BlockInWidget::~BlockInWidget() {}
+
 /**
  * @brief BlockInWidget::addItem
  *  override addItem in Widget

@@ -97,6 +97,7 @@ protected:
 
 public:
     Widget(OpenGLContext* context);
+    ~Widget();
 //    void setupWidgetCoord(float uv_x, float uv_y, float screen_x, float screen_y);
 //    void setupSelectedFrameCoord(float uv_x, float uv_y, float screen_x, float screen_y);
 //    void setupSelectedFrameShiftInfo(float dist_x, float dist_y, int colLimit, int rowLimit);

@@ -38,6 +38,7 @@ protected:
 
 public:
     Text(OpenGLContext* context, float width, float height);
+    ~Text();
 
     // a collection of all the uvs of all types of texts
     // order of uv: bottom-left, bottom-right, top-right, top-left

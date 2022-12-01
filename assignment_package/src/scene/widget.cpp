@@ -6,6 +6,7 @@ Widget::Widget(OpenGLContext *context)
     setWidgetInfo();
 }
 
+Widget::~Widget() {}
 
 /**
  * @brief Widget::insertNewInfos

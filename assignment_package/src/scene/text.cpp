@@ -4,6 +4,8 @@ Text::Text(OpenGLContext *context, float width, float height)
     : Drawable(context), width_height_len(glm::vec2(12.f/256.f, 16.f/256.f)), width_height_screen_ratio(width/height)
 {}
 
+Text::~Text() {};
+
 void Text::insertNewInfo(std::string currText, glm::vec2 currCoord) {
     if (currText == "textWidthHeight") {
         width_height_len = currCoord;
@@ -100,20 +102,57 @@ bool Text::addText(std::string text, glm::vec2 pos, float height) {
         shiftX += 1;
     }
 
-    for (auto& text : texts) {
-        std::cout << "======" << std::endl;
-        for (auto& textData : text) {
-            std::cout << textData.pos[0] << " " <<textData.pos[1] << std::endl;
-            std::cout << textData.uv[0] << " " <<textData.uv[1] << std::endl;
-            std::cout << "------" << std::endl;
-        }
+//    for (auto& text : texts) {
+//        std::cout << "======" << std::endl;
+//        for (auto& textData : text) {
+//            std::cout << textData.pos[0] << " " <<textData.pos[1] << std::endl;
+//            std::cout << textData.uv[0] << " " <<textData.uv[1] << std::endl;
+//            std::cout << "------" << std::endl;
+//        }
 
-        std::cout << "======" << std::endl;
-    }
+//        std::cout << "======" << std::endl;
+//    }
 
     return true;
 }
 
 void Text::createVBOdata() {
+
+    std::vector<GLuint> indices;
+    std::vector<GLuint> faceIndices = {0, 1, 2, 0, 2, 3};
+    std::vector<float> buffer_pos;
+    std::vector<float> buffer_uv;
+    int nVert = 0;
+
+    for (auto& text : texts) {
+
+        for (int i=0; i<4; ++i) {
+            pushVec4ToBuffer(buffer_pos, text[i].pos);
+            pushVec2ToBuffer(buffer_uv, text[i].uv);
+        }
+
+        // add indices for each face (4 vertices)
+        for (int index : faceIndices) {
+            indices.push_back(nVert + index);
+        }
+        // move the offset for indices
+        nVert += 4;
+    }
+
+    m_count = indices.size();
+
+    generateIdx();
+    bindIdx();
+    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_count * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+
+    generatePos();
+    bindPos();
+    mp_context->glBufferData(GL_ARRAY_BUFFER, buffer_pos.size() * sizeof(float), buffer_pos.data(), GL_STATIC_DRAW);
+
+    generateUV();
+    mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufUV);
+    mp_context->glBufferData(GL_ARRAY_BUFFER, buffer_uv.size() * sizeof(float), buffer_uv.data(), GL_STATIC_DRAW);
+
+    texts.clear();
     return;
 }
