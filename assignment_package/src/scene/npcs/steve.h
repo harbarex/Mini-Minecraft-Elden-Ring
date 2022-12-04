@@ -21,6 +21,7 @@ private:
     uint nToDoActions;
 
     void tryMoveToward(float dT, glm::vec3 target);
+    void tryJumpToward(float dT, glm::vec3 target);
 
 public:
     // constructors

@@ -101,7 +101,7 @@ void Steve::tick(float dT)
     glm::vec3 currBottom = m_position;
     currBottom[1] -= rootToGround;
 
-    if ((!actions.empty()) && (glm::length(actions.front().dest - currBottom) <= 0.5f))
+    if ((!actions.empty()) && (glm::length(actions.front().dest - currBottom) <= 0.3f))
     {
         std::cout << "done with 1 action" << std::endl;
         nToDoActions -= 1;
@@ -112,6 +112,7 @@ void Steve::tick(float dT)
     if (onGround)
     {
         // check if need to find a path
+        m_velocity = glm::vec3(3.f, 0.f, 3.f);
         if (actions.empty())
         {
             // update the path
@@ -127,7 +128,20 @@ void Steve::tick(float dT)
         if (!actions.empty())
         {
             faceToward(actions.front().dest);
-            tryMoveToward(dT, actions.front().dest);
+
+            switch (actions.front().action)
+            {
+                case WALK:
+                    std::cout << "Try walk" << std::endl;
+                    tryMoveToward(dT, actions.front().dest);
+                    break;
+                case JUMP:
+                    std::cout << "Try jump" << std::endl;
+                    tryJumpToward(dT, actions.front().dest);
+                    break;
+                default:
+                    break;
+            }
             std::cout << "From " << glm::to_string(currBottom) << " to " << glm::to_string(actions.front().dest) << std::endl;;
         }
 
@@ -143,6 +157,13 @@ void Steve::tick(float dT)
             std::cout << "Timeout - change plan << "<< std::endl;
             std::cout << "Update actions : " << actions.size() << std::endl;
         }
+    }
+
+    else if ((!onGround) && (!actions.empty()) && (actions.front().action == JUMP))
+    {
+        faceToward(actions.front().dest);
+        // continue the jump
+        tryJumpToward(dT, actions.front().dest);
     }
 
     else
@@ -194,6 +215,71 @@ void Steve::tryMoveToward(float dT, glm::vec3 target)
         disp[1] = 0.f;
         // remove the gravity effect
         m_velocity[1] = 0.f;
+        m_acceleration[1] = 0.f;
+        onGround = true;
+    }
+
+    if (checkXZCollision(0))
+    {
+        disp[0] = 0.f;
+    }
+
+    if (checkXZCollision(2))
+    {
+        disp[2] = 0.f;
+    }
+
+    // set the previous m_position
+    prev_m_position = m_position;
+
+    // this changes m_position
+    moveAlongVector(disp);
+}
+
+
+void Steve::tryJumpToward(float dT, glm::vec3 target)
+{
+    // experiment with jump
+    if (onGround)
+    {
+        m_acceleration[1] = 100.f;
+
+        // define horizontal changes
+        glm::vec3 totalDisp = target - m_position;
+        totalDisp[1] = 0.f;
+        // 1s
+        m_velocity[0] = totalDisp[0];
+        m_velocity[2] = totalDisp[2];
+        onGround = false;
+    }
+
+    // apply current acceleration & gravity
+    m_velocity[1] += dT * (m_gravity[1] + m_acceleration[1]);
+
+    // prevent NPCs from penetraing the terrain
+    m_velocity[1] = glm::max(maxFallingSpeed, m_velocity[1]);
+
+    // acceleration fade out
+    if (m_acceleration[1] > 0.f)
+    {
+        m_acceleration[1] += m_gravity[1];
+        m_acceleration[1] = glm::max(0.f, m_acceleration[1]);
+    }
+
+    // m_forward: current forward direction
+    glm::vec3 currVelocity = dT * m_velocity;
+
+    // horizontal displacement
+    glm::vec3 disp = currVelocity;
+    // vertical displacement
+    disp[1] += (dT * currVelocity[1]);
+
+    if (checkYCollision() && (m_acceleration[1] + m_gravity[1] <= 0.f))
+    {
+        // collide against the ground
+        disp[1] = 0.f;
+        // remove the gravity effect
+        m_velocity = glm::vec3(3.f, 0.f, 3.f);
         m_acceleration[1] = 0.f;
         onGround = true;
     }

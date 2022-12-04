@@ -182,8 +182,6 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
                         continue;
                     }
 
-                    std::cout << "Check: " << x << " " << y << " " << z << std::endl;
-
                     if (visited.find(id) != visited.end())
                     {
                         continue;
@@ -193,7 +191,6 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
 
                     // explore this action
                     glm::vec3 nextDest = currPath.dest + glm::vec3(dx, dy, dz);
-                    std::cout << "next dest:" << glm::to_string(nextDest) << std::endl;
                     // TODO: check valid block
                     glm::vec3 nextDestTop = glm::vec3(nextDest.x, nextDest.y + 1.f, nextDest.z);
 
@@ -210,9 +207,16 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
                     int nextNSteps= currPath.nStepsSoFar + 1;
                     int nextCost = estimate(nextDest, targetPos);
                     std::vector<NPCAction> nextActions = currPath.actions;
-                    nextActions.push_back(NPCAction(nextDest, WALK));
+                    if (dy == 1)
+                    {
+                        nextActions.push_back(NPCAction(nextDest, JUMP));
+                    }
+                    else
+                    {
+                        nextActions.push_back(NPCAction(nextDest, WALK));
+                    }
+
                     pathsToExplore.push(Path(nextActions, nextNSteps, nextCost, x, y, z));
-                    std::cout << "added" << std::endl;
                 }
             }
         }
