@@ -101,7 +101,7 @@ void Steve::tick(float dT)
     glm::vec3 currBottom = m_position;
     currBottom[1] -= rootToGround;
 
-    if ((!actions.empty()) && (glm::length(actions.front().dest - currBottom) <= 0.3f))
+    if ((!actions.empty()) && (glm::length(actions.front().dest - currBottom) <= 0.5f))
     {
         std::cout << "done with 1 action" << std::endl;
         nToDoActions -= 1;
@@ -112,7 +112,8 @@ void Steve::tick(float dT)
     if (onGround)
     {
         // check if need to find a path
-        m_velocity = glm::vec3(3.f, 0.f, 3.f);
+        m_velocity[0] = 3.f;
+        m_velocity[2] = 3.f;
         if (actions.empty())
         {
             // update the path
