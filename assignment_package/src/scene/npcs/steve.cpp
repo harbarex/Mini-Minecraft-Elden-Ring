@@ -15,7 +15,7 @@ Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &pl
       lLLimb(context, STEVELLL),
       rLLimb(context, STEVERLL),
       actions(),
-      timeout(3.f),
+      timeout(0.f),
       nToDoActions(0)
 {
     // change speed
@@ -149,8 +149,9 @@ void Steve::tick(float dT)
         // replan if needed
         timeout += dT;
 
-        if (timeout >= 3.f && (actions.size() == nToDoActions))
+        if (timeout >= 2.f && (actions.size() == nToDoActions))
         {
+            tryMove(dT);
             actions = pathFinder.searchPathToward(m_position,
                                                   player->mcr_position);
             nToDoActions = actions.size();
@@ -165,6 +166,18 @@ void Steve::tick(float dT)
         faceToward(actions.front().dest);
         // continue the jump
         tryJumpToward(dT, actions.front().dest);
+
+        timeout += dT;
+
+        if (timeout >= 2.f && (actions.size() == nToDoActions))
+        {
+            actions = pathFinder.searchPathToward(m_position,
+                                                  player->mcr_position);
+            nToDoActions = actions.size();
+            timeout = 0.f;
+            std::cout << "Jump Timeout - change plan << "<< std::endl;
+            std::cout << "Update actions : " << actions.size() << std::endl;
+        }
     }
 
     else

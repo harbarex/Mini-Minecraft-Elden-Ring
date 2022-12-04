@@ -13,7 +13,7 @@ NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player
     Drawable(context),
     Entity(pos),
     mcr_terrain(&terrain),
-    pathFinder(10, terrain),
+    pathFinder(15, terrain),
     m_acceleration(0.f, 0.f, 0.f),
     m_velocity(2.f, 0.f, 2.f),
     m_gravity(0.f, -12.f, 0.f),

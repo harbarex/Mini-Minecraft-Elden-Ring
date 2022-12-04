@@ -122,10 +122,10 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
 
     // heap (costSoFar, pos)
     std::priority_queue<Path, std::vector<Path>, CompareStep> pathsToExplore;
-    Path initialPath = Path({NPCAction(startPos, REST)}, 0.f, 0.f, 0, 0, 0);
+    Path initialPath = Path({NPCAction(startPos, REST)}, 0.f, getDistance(startPos, targetPos), 0, 0, 0);
     pathsToExplore.push(initialPath);
 
-    float minDist = getHorizontalDistance(startPos, targetPos);
+    float minDist = getDistance(startPos, targetPos);
     Path minPath = initialPath;
 
     // assume only walk & each walk takes 1 block
@@ -137,7 +137,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
         // get the top
         Path currPath = pathsToExplore.top();
 
-        float currDist = getHorizontalDistance(currPath.dest, targetPos);
+        float currDist = getDistance(currPath.dest, targetPos);
 
         // update the minPath if it's closer
         if (currDist < minDist)
@@ -161,7 +161,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
         // search x & z
         for (int dx : {-1, 0, 1})
         {
-            for (int dy : {-1, 0})
+            for (int dy : {-1, 0, 1})
             {
                 for (int dz : {-1, 0, 1})
                 {
@@ -204,8 +204,9 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
                         continue;
                     }
 
-                    int nextNSteps= currPath.nStepsSoFar + 1;
-                    int nextCost = estimate(nextDest, targetPos);
+                    int nextNSteps = currPath.nStepsSoFar + 1;
+                    float nextCost = getDistance(nextDest, targetPos) + (float) nextNSteps;
+
                     std::vector<NPCAction> nextActions = currPath.actions;
                     if (dy == 1)
                     {
