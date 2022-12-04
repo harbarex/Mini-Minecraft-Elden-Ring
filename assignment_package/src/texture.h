@@ -13,7 +13,7 @@
  */
 enum NPCTexture : unsigned char
 {
-   SHEEP, STEVE, ZDRAGON
+   SHEEP, STEVE, ZDRAGON, LAMA
 };
 
 class Texture

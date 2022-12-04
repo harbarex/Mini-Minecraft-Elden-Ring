@@ -3,7 +3,9 @@
 #include "player.h"
 #include "drawable.h"
 #include "scene/node.h"
+#include "scene/pathfinder.h"
 #include "texture.h"
+
 
 class Node;
 
@@ -14,10 +16,21 @@ protected:
     // scene graph
     uPtr<Node> root;
 
-    Terrain &mcr_terrain;
+    Terrain *mcr_terrain;
+
+    // path finder
+    PathFinder pathFinder;
 
     // NPC's physics params
+    glm::vec3 m_acceleration;
     glm::vec3 m_velocity;
+    glm::vec3 m_gravity;
+
+    // used to prevent NPCs from penetraing the terrrain
+    float maxFallingSpeed;
+
+    bool onGround;
+    float jumpCycle;
 
     // a variable to accumulate traveled distance (do % 360)
     float walkingDistCycle;
@@ -25,6 +38,8 @@ protected:
     // keep a collection of rotation nodes (for walking movements)
     std::vector<Node*> limbRotNodes;
     float limbRotationSpeed;
+    float maxLimbDeg;
+
 
     // keep track of last position
     glm::vec3 prev_m_position;
@@ -44,8 +59,7 @@ protected:
 public:
 
     // constructos
-    NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player *player, NPCTexture npcTexture);
-    NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, NPCTexture npcTexture);
+    NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture);
 
     // NPC's Texture ID
     NPCTexture npcTexture;
@@ -65,16 +79,18 @@ public:
 
     // helpers for NPC's movement
     // face toward the target
-    virtual void faceToward(float dT, glm::vec3 target);
+    virtual void faceToward(glm::vec3 target);
+    virtual void faceSlowlyToward(float dT, glm::vec3 target);
     // face the direction perpendicular to the direction (target - NPC)
-    virtual void faceTowardTangent(float dT, glm::vec3 center);
+    virtual void faceSlowlyTowardTangent(float dT, glm::vec3 center);
+
 
     // move
     void tryMove(float dT);
 
     // re-write collision
-    virtual bool checkXZCollision(int idx, const Terrain &terrain);
-    virtual bool checkYCollision(const Terrain &terrain);
+    virtual bool checkXZCollision(int idx);
+    virtual bool checkYCollision();
     bool gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, float *out_dist, glm::ivec3 *out_blockHit);
 
     // apply limb rotations

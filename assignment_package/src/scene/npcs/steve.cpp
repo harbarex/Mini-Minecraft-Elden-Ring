@@ -6,22 +6,21 @@
  * @param pos
  * @param terrain
  */
-Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player *player, NPCTexture npcTexture)
+Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture)
     : NPC(context, pos, terrain, player, npcTexture),
       head(context, STEVEHEAD),
       body(context, STEVEBODY),
       lULimb(context, STEVELUL),
       rULimb(context, STEVERUL),
       lLLimb(context, STEVELLL),
-      rLLimb(context, STEVERLL)
+      rLLimb(context, STEVERLL),
+      actions(),
+      timeout(3.f),
+      nToDoActions(0)
 {
     // change speed
-    m_velocity = glm::vec3(3.f, 10.f, 3.f);
+    m_velocity = glm::vec3(3.f, 0.f, 3.f);
 }
-
-Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, NPCTexture npcTexture)
-    : Steve(context, pos, terrain, nullptr, npcTexture)
-{}
 
 
 /**
@@ -43,40 +42,47 @@ void Steve::initSceneGraph()
     // limbs
     glm::vec3 limbScale = glm::vec3(0.4f, 1.15f, 0.3f);
 
+    // translate rotation center (half y of the limb)
+    glm::vec3 rcTranslate = glm::vec3(0.f, -(limbScale.y / 2.f), 0.f);
     // left upper
+
     glm::vec3 lFTranslate = glm::vec3(bodyScale.x / 2.f + limbScale.x / 2.f,
-                                      bodyScale.y / 2.f -  limbScale.y / 2.f,
+                                      bodyScale.y / 2.f,
                                       0.f);
-    Node &bodyToLF = root->addChild(mkU<TranslateNode>(nullptr, lFTranslate));
+    Node &bodyToLF = root->addChild(mkU<TranslateNode>(nullptr,  lFTranslate));
     Node &rotLF = bodyToLF.addChild(mkU<RotateNode>(nullptr, glm::vec3(1.f, 0.f, 0.f), 5.f));
-    rotLF.addChild(mkU<ScaleNode>(&lULimb, limbScale));
+    Node &transLF = rotLF.addChild(mkU<TranslateNode>(nullptr, rcTranslate));
+    transLF.addChild(mkU<ScaleNode>(&lULimb, limbScale));
     limbRotNodes.push_back(&rotLF);
 
     // right upper
-    glm::vec3 lRTranslate = glm::vec3(-bodyScale.x / 2.f - limbScale.x / 2.f,
-                                      bodyScale.y / 2.f -  limbScale.y / 2.f,
+    glm::vec3 rFTranslate = glm::vec3(-bodyScale.x / 2.f - limbScale.x / 2.f,
+                                      bodyScale.y / 2.f,
                                       0.f);
-    Node &bodyToLR = root->addChild(mkU<TranslateNode>(nullptr, lRTranslate));
-    Node &rotLR = bodyToLR.addChild(mkU<RotateNode>(nullptr, glm::vec3(-1.f, 0.f, 0.f), 5.f));
-    rotLR.addChild(mkU<ScaleNode>(&rULimb, limbScale));
-    limbRotNodes.push_back(&rotLR);
+    Node &bodyToRF = root->addChild(mkU<TranslateNode>(nullptr, rFTranslate));
+    Node &rotRF = bodyToRF.addChild(mkU<RotateNode>(nullptr, glm::vec3(-1.f, 0.f, 0.f), 5.f));
+    Node &transRF = rotRF.addChild((mkU<TranslateNode>(nullptr, rcTranslate)));
+    transRF.addChild(mkU<ScaleNode>(&rULimb, limbScale));
+    limbRotNodes.push_back(&rotRF);
 
     // left lower
     glm::vec3 lBTranslate = glm::vec3(bodyScale.x / 2.f - limbScale.x / 2.f,
-                                      - bodyScale.y / 2.f - limbScale.y / 2.f,
+                                      - bodyScale.y / 2.f,
                                       0.f);
     Node &bodyToLB = root->addChild(mkU<TranslateNode>(nullptr, lBTranslate));
     Node &rotLB = bodyToLB.addChild(mkU<RotateNode>(nullptr, glm::vec3(-1.f, 0.f, 0.f), 5.f));
-    rotLB.addChild(mkU<ScaleNode>(&lLLimb, limbScale));
+    Node &transLB = rotLB.addChild(mkU<TranslateNode>(nullptr, rcTranslate));
+    transLB.addChild(mkU<ScaleNode>(&lLLimb, limbScale));
     limbRotNodes.push_back(&rotLB);
 
     // right lower
     glm::vec3 rBTranslate = glm::vec3(-bodyScale.x / 2.f + limbScale.x / 2.f,
-                                      -bodyScale.y / 2.f -  limbScale.y / 2.f,
+                                      -bodyScale.y / 2.f,
                                       0.f);
     Node &bodyToRB = root->addChild(mkU<TranslateNode>(nullptr, rBTranslate));
     Node &rotRB = bodyToRB.addChild(mkU<RotateNode>(nullptr, glm::vec3(1.f, 0.f, 0.f), 5.f));
-    rotRB.addChild(mkU<ScaleNode>(&rLLimb, limbScale));
+    Node &transRB = rotRB.addChild(mkU<TranslateNode>(nullptr, rcTranslate));
+    transRB.addChild(mkU<ScaleNode>(&rLLimb, limbScale));
     limbRotNodes.push_back(&rotRB);
 
     // set the distances between the root to 6 sides
@@ -91,13 +97,123 @@ void Steve::initSceneGraph()
 
 void Steve::tick(float dT)
 {
-    // turn to the player's direction
-    faceToward(dT, player->mcr_position);
+    // check if previous action is finished
+    glm::vec3 currBottom = m_position;
+    currBottom[1] -= rootToGround;
 
-    // tick
-    NPC::tick(dT);
+    if ((!actions.empty()) && (glm::length(actions.front().dest - currBottom) <= 0.5f))
+    {
+        std::cout << "done with 1 action" << std::endl;
+        nToDoActions -= 1;
+        timeout = 0.f;
+        actions.pop();
+    }
+
+    if (onGround)
+    {
+        // check if need to find a path
+        if (actions.empty())
+        {
+            // update the path
+            // TODO: set a target later
+            actions = pathFinder.searchPathToward(m_position,
+                                                  player->mcr_position);
+            nToDoActions = actions.size();
+            timeout = 0.f;
+            std::cout << "Update actions : " << actions.size() << std::endl;
+        }
+
+        // perform the next action
+        if (!actions.empty())
+        {
+            faceToward(actions.front().dest);
+            tryMoveToward(dT, actions.front().dest);
+            std::cout << "From " << glm::to_string(currBottom) << " to " << glm::to_string(actions.front().dest) << std::endl;;
+        }
+
+        // replan if needed
+        timeout += dT;
+
+        if (timeout >= 3.f && (actions.size() == nToDoActions))
+        {
+            actions = pathFinder.searchPathToward(m_position,
+                                                  player->mcr_position);
+            nToDoActions = actions.size();
+            timeout = 0.f;
+            std::cout << "Timeout - change plan << "<< std::endl;
+            std::cout << "Update actions : " << actions.size() << std::endl;
+        }
+    }
+
+    else
+
+    {
+        tryMove(dT);
+    }
+
+    walkingDistCycle += glm::length(m_position - prev_m_position);
+    prev_m_position = m_position;
+    updateLimbRotations();
 }
 
+
+//void Steve::tick(float dT)
+//{
+//    // turn to the player's direction
+//    faceToward(player->mcr_position);
+
+//    // tick
+//    NPC::tick(dT);
+//}
+
+/**
+ * @brief Steve::tryMoveToward
+ * @param dT
+ * @param target
+ */
+void Steve::tryMoveToward(float dT, glm::vec3 target)
+{
+
+    // apply current acceleration & gravity
+    m_velocity[1] += dT * (m_gravity[1] + m_acceleration[1]);
+
+    // prevent NPCs from penetraing the terrain
+    m_velocity[1] = glm::max(maxFallingSpeed, m_velocity[1]);
+
+    // m_forward: current forward direction
+    glm::vec3 currVelocity = m_velocity;
+
+    // horizontal displacement
+    glm::vec3 disp = (dT * currVelocity * m_forward);
+    // vertical displacement
+    disp[1] += (dT * currVelocity[1]);
+
+    if (checkYCollision())
+    {
+        // collide against the ground
+        disp[1] = 0.f;
+        // remove the gravity effect
+        m_velocity[1] = 0.f;
+        m_acceleration[1] = 0.f;
+        onGround = true;
+    }
+
+    if (checkXZCollision(0))
+    {
+        disp[0] = 0.f;
+    }
+
+    if (checkXZCollision(2))
+    {
+        disp[2] = 0.f;
+    }
+
+    // set the previous m_position
+    prev_m_position = m_position;
+
+    // this changes m_position
+    moveAlongVector(disp);
+}
 
 /**
  * @brief Steve::createVBOdata

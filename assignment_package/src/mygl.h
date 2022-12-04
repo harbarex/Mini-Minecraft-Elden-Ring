@@ -10,9 +10,6 @@
 #include "scene/player.h"
 #include "scene/block.h"
 #include "scene/npc.h"
-#include "scene/npcs/sheep.h"
-#include "scene/npcs/steve.h"
-#include "scene/npcs/zombiedragon.h"
 
 #include "texture.h"
 

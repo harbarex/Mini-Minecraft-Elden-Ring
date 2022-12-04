@@ -18,8 +18,7 @@ class ZombieDragon : public NPC
 public:
 
     // constructors
-    ZombieDragon(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player *player, NPCTexture npcTexture);
-    ZombieDragon(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, NPCTexture npcTexture);
+    ZombieDragon(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture);
 
     // for Drawable
     virtual void createVBOdata() override;

@@ -1,4 +1,8 @@
 #include "mygl.h"
+#include "scene/npcs/sheep.h"
+#include "scene/npcs/steve.h"
+#include "scene/npcs/zombiedragon.h"
+#include "scene/npcs/lama.h"
 #include <glm_includes.h>
 #include <iostream>
 #include <QApplication>
@@ -32,9 +36,10 @@ MyGL::MyGL(QWidget *parent)
     m_player.setBlocksHold();
 
     // the initial set of NPCs
-    m_npcs.push_back(mkU<Steve>(this, glm::vec3(55.f, 150.f, 32.f), m_terrain, &m_player, STEVE));
-    m_npcs.push_back(mkU<Sheep>(this, glm::vec3(60.f, 150.f, 32.f), m_terrain, &m_player, SHEEP));
-    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(65.f, 170.f, 32.f), m_terrain, &m_player, ZDRAGON));
+    m_npcs.push_back(mkU<Steve>(this, glm::vec3(55.f, 150.f, 32.f), m_terrain, m_player, STEVE));
+    m_npcs.push_back(mkU<Sheep>(this, glm::vec3(60.f, 150.f, 32.f), m_terrain, m_player, SHEEP));
+    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(65.f, 170.f, 32.f), m_terrain, m_player, ZDRAGON));
+    m_npcs.push_back(mkU<Lama>(this, glm::vec3(70.f, 150.f, 32.f), m_terrain, m_player, LAMA));
 }
 
 MyGL::~MyGL() {
@@ -427,6 +432,11 @@ void MyGL::createNPCTextures()
     npcTextures[ZDRAGON] = Texture(this);
     npcTextures[ZDRAGON].create(":/textures/zdragon.png");
     npcTextures[ZDRAGON].load(5);
+
+    // Lama
+    npcTextures[LAMA] = Texture(this);
+    npcTextures[LAMA].create(":/textures/graylama.png");
+    npcTextures[LAMA].load(6);
 
     // TODO: others
 }

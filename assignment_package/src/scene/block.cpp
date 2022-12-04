@@ -255,7 +255,12 @@ std::unordered_map<std::string, BlockType> Block::blockTypeMap = {
     {"ZDLCW", ZDLCW},
     {"ZDLOW", ZDLOW},
     {"ZDRCW", ZDRCW},
-    {"ZDROW", ZDROW}}
+    {"ZDROW", ZDROW},
+    {"LAMAHEAD", LAMAHEAD},
+    {"LAMANOSE", LAMANOSE},
+    {"LAMAEAR", LAMAEAR},
+    {"LAMABODY", LAMABODY},
+    {"LAMALIMB", LAMALIMB}}
 };
 
 std::unordered_set<BlockType> Block::transparentBlockTypes = {

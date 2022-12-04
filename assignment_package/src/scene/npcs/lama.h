@@ -1,18 +1,20 @@
 #pragma once
 #include "scene/npc.h"
 
-class Sheep : public NPC
+class Lama : public NPC
 {
 private:
 
-    // Sheep NPC Blocks
+    // Lama Blocks
     NPCBlock head;
+    NPCBlock nose;
+    NPCBlock ear;
     NPCBlock body;
     NPCBlock limb;
 
 public:
     // constructors
-    Sheep(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture);
+    Lama(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture);
 
     // for Drawable
     virtual void createVBOdata() override;
@@ -21,7 +23,6 @@ public:
     // override tick
     virtual void tick(float dT) override;
 
-
-
-    virtual ~Sheep();
+    virtual ~Lama();
 };
+
