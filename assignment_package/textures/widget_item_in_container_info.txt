@@ -9,7 +9,19 @@
 # 4. bottom right screen coordinate of the first item in this region
 # mapping range from (-1, -1) to (1, 1)
 regionInfo
-0.098 0.15833
+0.0945 0.148
+9 3
+-0.4036 -0.028
+-0.3506 -0.0928
+
+# 1. shift distance of the item in this region
+# mapping range from (-1, -1) to (1, 1)
+# 2. size of the region
+# 3. top-left screen coordinate of the first item in this region
+# 4. bottom right screen coordinate of the first item in this region
+# mapping range from (-1, -1) to (1, 1)
+regionInfo
+0.0945 0.148
 9 1
--0.4250 -0.8000
--0.3600 -0.9070
+-0.4036 -0.4385
+-0.3506 -0.62611

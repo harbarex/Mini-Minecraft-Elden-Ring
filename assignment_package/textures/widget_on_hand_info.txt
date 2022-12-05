@@ -13,7 +13,7 @@
 # 6. bottom right uv coordinate of the first item in this region
 # origin pos: (0, 22) to (23, 45) in 256*256
 regionInfo
-0.09876 0.15833
+0.098 0.15833
 9 1
 -0.44444 -0.7722
 -0.3463 -0.9305

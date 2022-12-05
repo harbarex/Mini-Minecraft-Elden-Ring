@@ -19,7 +19,7 @@ void Player::tick(float dT, InputBundle &input) {
     destroyBlock(input, mcr_terrain);
     placeBlock(input, mcr_terrain);
     selectBlockOnHand(input);
-    drawInventoryItemOnHand();
+    drawInventoryItem();
     processInputs(input);
     computePhysics(dT, mcr_terrain, input);
 }
@@ -763,6 +763,13 @@ void Player::setupText(Text* text) {
     textOnScreen = text;
 }
 
+void Player::drawInventoryItem() {
+    drawInventoryItemOnHand();
+    if (isOpenContainer()) {
+        drawInventoryItemInContainer();
+    }
+}
+
 /**
  * @brief Player::drawInventoryItemOnHand
  *   pass all items in inventory on hand to widget object for further rendering
@@ -784,6 +791,34 @@ void Player::drawInventoryItemOnHand() {
         glm::vec2 top_left_pos;
         float height;
         inventoryItemOnHand->getWidgetItemNumberInfo(i, &top_left_pos, &height);
+        textOnScreen->addText(std::to_string(blocksInInventory[i].second), top_left_pos, height);
+    }
+}
+
+/**
+ * @brief Player::drawInventoryItemInContainer
+ *   pass all items in inventory in container to widget object for further rendering
+ */
+void Player::drawInventoryItemInContainer() {
+    std::vector<std::pair<BlockType, int>> blocksInInventory;
+    inventory.getItemInfo(&blocksInInventory);
+
+    for (int i=inventory.getBlocksOnHandSize(); i<inventory.getBlocksInInventorySize(); ++i) {
+        if (Block::isEmpty(blocksInInventory[i].first)) {
+            continue;
+        }
+        int index;
+        if (i < inventory.getBlocksOnHandSize()) {
+            index = i + (inventory.getBlocksInInventorySize() - inventory.getBlocksOnHandSize());
+        } else {
+            index = i - inventory.getBlocksOnHandSize();
+        }
+        std::array<glm::vec2, 4> uvCoords;
+        Block::getUVCoords(blocksInInventory[i].first, &uvCoords);
+        inventoryItemInContainer->addItem(index, uvCoords);
+        glm::vec2 top_left_pos;
+        float height;
+        inventoryItemInContainer->getWidgetItemNumberInfo(index, &top_left_pos, &height);
         textOnScreen->addText(std::to_string(blocksInInventory[i].second), top_left_pos, height);
     }
 }

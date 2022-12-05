@@ -13,7 +13,7 @@
 # 6. bottom right uv coordinate of the first item in this region
 # origin pos: (166, 166) to (188, 189) in 256*256
 regionInfo
-0.10618 0.18633
+0.0945 0.148
 9 3
 -0.4231 0
 -0.3366 -0.1163
@@ -33,7 +33,7 @@ regionInfo
 # 6. bottom right uv coordinate of the first item in this region
 # origin pos: (166, 166) to (188, 189) in 256*256
 regionInfo
-0.10618 0.18633
+0.0945 0.148
 9 1
 -0.4231 -0.4105
 -0.3366 -0.53331

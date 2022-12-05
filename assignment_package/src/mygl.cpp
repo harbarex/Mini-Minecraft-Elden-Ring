@@ -117,6 +117,7 @@ void MyGL::initializeGL()
     inventoryWidgetInContainer->loadCoordFromText(":/textures/widget_in_container_info.txt");
 
     // item in widget in container
+    inventoryItemsInContainer->loadCoordFromText(":/textures/widget_item_in_container_info.txt");
 
     // text on the screen (slot = 3)
     createTexture(textureFont, ":/textures/ascii.png", 3);

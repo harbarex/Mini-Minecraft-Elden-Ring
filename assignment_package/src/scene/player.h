@@ -110,7 +110,10 @@ public:
 
     void setupWidget(std::vector<Widget*> widgets);
     void setupText(Text* text);
+
+    void drawInventoryItem();
     void drawInventoryItemOnHand();
+    void drawInventoryItemInContainer();
 
     bool isOpenContainer();
     bool setContainerMode(bool state);
