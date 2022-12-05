@@ -82,6 +82,7 @@ void Widget::createRegion(std::vector<glm::vec2> regionInfo) {
     uPtr<RecRegion> region = mkU<RecRegion>();
     region->shiftDist = regionInfo[0];
     region->size = regionInfo[1];
+    region->capacity = region->size.x * region->size.y;
     region->firstItemTopLeftScreenCoord = regionInfo[2];
     region->firstItemBottomRightScreenCoord = regionInfo[3];
     if (regionInfo.size() == 6) {
@@ -120,7 +121,7 @@ void Widget::addItem(int overallIdx) {
  * @return currRegion : the region where the item located
  * @return shiftX, shiftY : the coordinate (0-indexed) of the item in currRegion (unit: element, not pixel)
  */
-void Widget::findRegionInfoFromIdx(int overallIdx, RecRegion* currRegion, int* shiftX, int* shiftY) {
+void Widget::findRegionInfoFromIdx(int overallIdx, RecRegion*& currRegion, int* shiftX, int* shiftY) {
     int remainingIdx = overallIdx;
     while (remainingIdx >= currRegion->capacity) {
         remainingIdx -= currRegion->capacity;

@@ -11,8 +11,8 @@
 regionInfo
 0.0945 0.148
 9 3
--0.4036 -0.028
--0.3506 -0.0928
+-0.4136 -0.015
+-0.3406 -0.115
 
 # 1. shift distance of the item in this region
 # mapping range from (-1, -1) to (1, 1)
@@ -23,5 +23,5 @@ regionInfo
 regionInfo
 0.0945 0.148
 9 1
--0.4036 -0.4085
--0.3506 -0.59611
+-0.4136 -0.4285
+-0.3406 -0.53611

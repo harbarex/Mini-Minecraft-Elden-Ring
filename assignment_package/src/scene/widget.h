@@ -38,10 +38,8 @@ struct RecRegion
     // without uv (for storing items)
     RecRegion(glm::vec2 topLeftScreen, glm::vec2 bottomRightScreen, glm::vec2 shiftDist, glm::vec2 size)
         : firstItemTopLeftScreenCoord(topLeftScreen), firstItemBottomRightScreenCoord(bottomRightScreen),
-          shiftDist(shiftDist), size(size), prev(nullptr), next(nullptr)
-    {
-        capacity = size.x * size.y;
-    }
+          shiftDist(shiftDist), size(size), capacity(size.x * size.y), prev(nullptr), next(nullptr)
+    {}
 
     // with uv (for selected frame)
     RecRegion(glm::vec2 topLeftUV, glm::vec2 bottomRightUV, glm::vec2 topLeftScreen, glm::vec2 bottomRightScreen, glm::vec2 shiftDist, glm::vec2 size)
@@ -90,7 +88,7 @@ protected:
     // create new RecRegion object
     void createRegion(std::vector<glm::vec2> regionInfo);
 
-    void findRegionInfoFromIdx(int overallIdx, RecRegion* currRegion, int* shiftX, int* shiftY);
+    void findRegionInfoFromIdx(int overallIdx, RecRegion*& currRegion, int* shiftX, int* shiftY);
 
     // called from constructor
     void setWidgetInfo();
