@@ -12,10 +12,11 @@ MyGL::MyGL(QWidget *parent)
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
       m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventoryWidgetOnHand(this), m_progInventoryItemOnHand(this), m_progInventoryWidgetInContainer(this),
-      m_progText(this), m_quad(this),
-      m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()), m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
-      frameCount(0), prevFrameTime(QDateTime::currentMSecsSinceEpoch()), mouseCursorMode(false),
-      textureAll(this), inventoryWidgetOnHandTexture(this), inventoryWidgetInContainerTexture(this), textureFont(this), prevExpandTime(QDateTime::currentMSecsSinceEpoch())
+      m_progInventoryItemInContainer(this), m_progText(this),
+      m_quad(this), m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()), m_terrain(this),
+      m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), frameCount(0), prevFrameTime(QDateTime::currentMSecsSinceEpoch()),
+      mouseCursorMode(false), textureAll(this), inventoryWidgetOnHandTexture(this), inventoryWidgetInContainerTexture(this), textureFont(this),
+      prevExpandTime(QDateTime::currentMSecsSinceEpoch())
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
@@ -93,6 +94,7 @@ void MyGL::initializeGL()
     m_progInventoryWidgetOnHand.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
     m_progInventoryItemOnHand.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
     m_progInventoryWidgetInContainer.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
+    m_progInventoryItemInContainer.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
     m_progText.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -113,6 +115,8 @@ void MyGL::initializeGL()
     // container widget texture map (slot = 4)
     createTexture(inventoryWidgetInContainerTexture, ":/textures/inventory.png", 4);
     inventoryWidgetInContainer->loadCoordFromText(":/textures/widget_in_container_info.txt");
+
+    // item in widget in container
 
     // text on the screen (slot = 3)
     createTexture(textureFont, ":/textures/ascii.png", 3);
@@ -271,6 +275,7 @@ void MyGL::paintGL() {
     // TODO: draw the container widget and items in container if the player opens it
     if (m_player.isOpenContainer()) {
         renderTexture(inventoryWidgetInContainerTexture, m_progInventoryWidgetInContainer, 4, inventoryWidgetInContainer);
+        renderTexture(textureAll, m_progInventoryItemInContainer, 0, inventoryItemsInContainer);
     }
 
     glEnable(GL_BLEND);
@@ -533,6 +538,11 @@ void MyGL::initWidget() {
     inventoryWidgetInContainer = widget2.get();
     widgets_raw.push_back(inventoryWidgetInContainer);
     widgets.push_back(std::move(widget2));
+
+    uPtr<BlockInWidget> blockInWidget2 = mkU<BlockInWidget>(this);
+    inventoryItemsInContainer = blockInWidget2.get();
+    widgets_raw.push_back(inventoryItemsInContainer);
+    widgets.push_back(std::move(blockInWidget2));
 
     // pass widget raw pointers to player
     m_player.setupWidget(widgets_raw);

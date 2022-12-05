@@ -675,7 +675,7 @@ void Player::destroyBlock(InputBundle &inputs, Terrain &terrain) {
  */
 void Player::placeBlock(InputBundle &inputs, Terrain &terrain) {
 
-    if (!inputs.rightMouseButtonPressed) {
+    if (!inputs.rightMouseButtonPressed || isOpenContainer()) {
         return;
     }
 
@@ -756,6 +756,7 @@ void Player::setupWidget(std::vector<Widget*> widgets) {
     inventoryWidgetOnHand = widgets[0];
     inventoryItemOnHand = (BlockInWidget*)widgets[1];
     inventoryWidgetInContainer = widgets[2];
+    inventoryItemInContainer = (BlockInWidget*)widgets[3];
 }
 
 void Player::setupText(Text* text) {

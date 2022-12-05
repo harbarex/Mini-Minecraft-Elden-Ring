@@ -35,11 +35,13 @@ private:
     ShaderProgram m_progInventoryWidgetOnHand;
     ShaderProgram m_progInventoryItemOnHand;
     ShaderProgram m_progInventoryWidgetInContainer;
+    ShaderProgram m_progInventoryItemInContainer;
     ShaderProgram m_progText;
     Quad m_quad;
     Widget* inventoryWidgetOnHand;
     Widget* inventoryWidgetInContainer;
     BlockInWidget* inventoryItemsOnHand;
+    BlockInWidget* inventoryItemsInContainer;
     std::vector<uPtr<Widget>> widgets;
     uPtr<Text> textOnScreen;
 

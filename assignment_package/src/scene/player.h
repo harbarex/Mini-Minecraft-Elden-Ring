@@ -34,6 +34,7 @@ private:
     Widget *inventoryWidgetOnHand;
     Widget *inventoryWidgetInContainer;
     BlockInWidget *inventoryItemOnHand;
+    BlockInWidget *inventoryItemInContainer;
     Text* textOnScreen;
 
     bool checkXZCollision(int idx, const Terrain &terrain); // determine if current movement collide in X or Z axis (with idx 0 and 2)
