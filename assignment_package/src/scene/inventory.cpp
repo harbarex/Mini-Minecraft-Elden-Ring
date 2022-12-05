@@ -1,7 +1,7 @@
 #include "inventory.h"
 
 Inventory::Inventory()
-    : selectedBlockPtr(0), max_blocks(1), blocksOnHandSize(9), blocksInInventorySize(blocksOnHandSize+32)
+    : selectedBlockPtr(0), max_blocks(1), blocksOnHandSize(9), blocksInInventorySize(blocksOnHandSize+27)
 {
     initBlocks();
 }

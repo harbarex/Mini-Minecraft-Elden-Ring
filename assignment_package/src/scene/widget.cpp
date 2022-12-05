@@ -147,7 +147,7 @@ void Widget::getWidgetItemNumberInfo(int overallIdx, glm::vec2* top_left_pos, fl
     glm::vec2 pos;
     pos.x = 0.75f * currRegion->firstItemTopLeftScreenCoord.x + 0.25f * currRegion->firstItemBottomRightScreenCoord.x;
     pos.y = 0.5f * currRegion->firstItemTopLeftScreenCoord.y + 0.5f * currRegion->firstItemBottomRightScreenCoord.y;
-    *top_left_pos = pos + glm::vec2(shiftX * currRegion->shiftDist.x, shiftY * currRegion->shiftDist.y);
+    *top_left_pos = pos + glm::vec2(shiftX * currRegion->shiftDist.x, -shiftY * currRegion->shiftDist.y);
     // hard-code number height
     *height = 0.5 * 0.85 * (currRegion->firstItemTopLeftScreenCoord.y - currRegion->firstItemBottomRightScreenCoord.y);
 }

@@ -803,15 +803,13 @@ void Player::drawInventoryItemInContainer() {
     std::vector<std::pair<BlockType, int>> blocksInInventory;
     inventory.getItemInfo(&blocksInInventory);
 
-    for (int i=inventory.getBlocksOnHandSize(); i<inventory.getBlocksInInventorySize(); ++i) {
+    for (int i=0; i<inventory.getBlocksInInventorySize(); ++i) {
         if (Block::isEmpty(blocksInInventory[i].first)) {
             continue;
         }
-        int index;
+        int index = i - inventory.getBlocksOnHandSize();;
         if (i < inventory.getBlocksOnHandSize()) {
-            index = i + (inventory.getBlocksInInventorySize() - inventory.getBlocksOnHandSize());
-        } else {
-            index = i - inventory.getBlocksOnHandSize();
+            index += inventory.getBlocksInInventorySize();
         }
         std::array<glm::vec2, 4> uvCoords;
         Block::getUVCoords(blocksInInventory[i].first, &uvCoords);

@@ -33,7 +33,7 @@ void BlockInWidget::addItem(int overallIdx, std::array<glm::vec2, 4>& uvCoords) 
  */
 void BlockInWidget::storeItemIntoDrawVector(RecRegion* currRegion, int shiftX, int shiftY, std::array<glm::vec2, 4>& uvCoords) {
     std::vector<glm::vec2> drawItem;
-    glm::vec2 shift(shiftX * currRegion->shiftDist.x, shiftY * currRegion->shiftDist.y);
+    glm::vec2 shift(shiftX * currRegion->shiftDist.x, -shiftY * currRegion->shiftDist.y);
 
     glm::vec2 topLeftFramePos = currRegion->firstItemTopLeftScreenCoord + shift;
     glm::vec2 bottomRightFramePos = currRegion->firstItemBottomRightScreenCoord + shift;
