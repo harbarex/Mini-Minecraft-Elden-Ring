@@ -13,16 +13,6 @@ private:
     NPCBlock lLLimb;
     NPCBlock rLLimb;
 
-    // experiment with path
-    std::queue<NPCAction> actions;
-
-    // replan
-    float timeout;
-    uint nToDoActions;
-
-    void tryMoveToward(float dT, glm::vec3 target);
-    void tryJumpToward(float dT, glm::vec3 target);
-
 public:
     // constructors
     Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture);
@@ -31,7 +21,7 @@ public:
     virtual void createVBOdata() override;
     virtual void initSceneGraph() override;
 
-    void tick(float dT);
+    // void tick(float dT);
 
     virtual ~Steve();
 };

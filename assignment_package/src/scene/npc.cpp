@@ -13,18 +13,24 @@ NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player
     Drawable(context),
     Entity(pos),
     mcr_terrain(&terrain),
-    pathFinder(15, terrain),
+    pathFinder(20, terrain),
+    actions(),
+    actionTimer(0.f),
+    actionTimeout(1.f),
+    nToDoActions(0),
     m_acceleration(0.f, 0.f, 0.f),
-    m_velocity(2.f, 0.f, 2.f),
+    m_velocity(4.f, 0.f, 4.f),
     m_gravity(0.f, -12.f, 0.f),
+    m_default_velocity(4.f, 0.f, 4.f),
+    prev_m_position(pos),
     maxFallingSpeed(-12.f),
     onGround(false),
-    jumpCycle(0.f),
     walkingDistCycle(0),
     limbRotNodes(),
-    limbRotationSpeed(4.f),
-    maxLimbDeg(25.f),
-    prev_m_position(pos),
+    limbRotationSpeedOnGround(4.f),
+    limbRotationSpeedOffGround(2.f),
+    maxLimbDegOnGround(25.f),
+    maxLimbDegOffGround(45.f),
     rootToGround(0.f),
     rootToFront(0.5f),
     rootToBack(0.5f),
@@ -89,20 +95,92 @@ void NPC::tick(float dT, InputBundle &input)
  */
 void NPC::tick(float dT)
 {
-    // TODO: explore the options / movement options
-    // TODO: determine final facing direction & move
-    // TODO: might be able to jump to skip over the obstacles
-    tryMove(dT);
-    // update walking / flying movement
+    // check if previous action is finished
+    glm::vec3 currBottom = getBottomCenter();
+
+    if ((!actions.empty()) && (glm::length(actions.front().dest - currBottom) <= 0.5f))
+    {
+        std::cout << "done with 1 action" << std::endl;
+        actions.pop();
+        actionTimer = 0.f;
+        nToDoActions -= 1;
+    }
+
     if (onGround)
     {
-        maxLimbDeg = 25.f;
-        limbRotationSpeed = 4.f;
-    } else {
-        maxLimbDeg = 75.f;
-        limbRotationSpeed = 2.f;
+        // check if need to find a path
+        m_velocity = m_default_velocity;
+        if (actions.empty())
+        {
+            // update the path
+            actions = pathFinder.searchPathToward(m_position,
+                                                  player->mcr_position);
+            nToDoActions = actions.size();
+            actionTimer = 0.f;
+            std::cout << "Update actions : " << actions.size() << std::endl;
+        }
+
+        // perform the next action
+        if (!actions.empty())
+        {
+            faceToward(actions.front().dest);
+            switch (actions.front().action)
+            {
+                case WALK:
+                    tryMoveToward(dT, actions.front().dest);
+                    break;
+                case JUMP:
+                    tryJumpToward(dT, actions.front().dest);
+                    break;
+                case REST:
+                    //
+                    break;
+                default:
+                    break;
+            }
+            std::cout << "From " << glm::to_string(currBottom) << " to " << glm::to_string(actions.front().dest) << std::endl;;
+        }
+
+        // replan if needed
+        actionTimer += dT;
+        if (actionTimer >= actionTimeout && (actions.size() == nToDoActions))
+        {
+            actions = pathFinder.searchPathToward(m_position,
+                                                  player->mcr_position);
+            nToDoActions = actions.size();
+            actionTimer = 0.f;
+            std::cout << "Timeout - change plan << "<< std::endl;
+            std::cout << "Update actions : " << actions.size() << std::endl;
+        }
     }
+
+    // particular for JUMP
+    else if ((!onGround) && (!actions.empty()) && (actions.front().action == JUMP))
+    {
+        // continue the jump
+        faceToward(actions.front().dest);
+        tryJumpToward(dT, actions.front().dest);
+
+        actionTimer += dT;
+        if ((actionTimer >= actionTimeout) && (actions.size() == nToDoActions))
+        {
+            actions = pathFinder.searchPathToward(m_position,
+                                                  player->mcr_position);
+            nToDoActions = actions.size();
+            actionTimer = 0.f;
+            std::cout << "Jump Timeout - change plan << "<< std::endl;
+            std::cout << "Update actions : " << actions.size() << std::endl;
+        }
+    }
+
+    else
+
+    {
+        tryMove(dT);
+    }
+
     walkingDistCycle += glm::length(m_position - prev_m_position);
+    prev_m_position = m_position;
     updateLimbRotations();
 }
 
@@ -112,6 +190,18 @@ void NPC::tick(float dT)
  */
 void NPC::updateLimbRotations()
 {
+    float maxLimbDeg;
+    float limbRotationSpeed;
+
+    if (onGround)
+    {
+        maxLimbDeg = maxLimbDegOnGround;
+        limbRotationSpeed = limbRotationSpeedOnGround;
+    } else {
+        maxLimbDeg = maxLimbDegOffGround;
+        limbRotationSpeed = limbRotationSpeedOffGround;
+    }
+
     float deg = glm::sin(walkingDistCycle * limbRotationSpeed) * maxLimbDeg;
     for (Node *p : limbRotNodes)
     {
@@ -123,6 +213,17 @@ void NPC::updateLimbRotations()
     }
 }
 
+
+/**
+ * @brief NPC::getBottomCenter
+ * @return
+ */
+glm::vec3 NPC::getBottomCenter() const
+{
+    glm::vec3 bottomCenter = m_position;
+    bottomCenter[1] -= rootToGround;
+    return bottomCenter;
+}
 
 /**
  * @brief NPC::faceSlowlyToward
@@ -214,21 +315,75 @@ void NPC::faceSlowlyTowardTangent(float dT, glm::vec3 center)
 
 
 /**
- * @brief NPC::tryMove
- *  Basically, follow the current forward direction,
- *  check the collision (X, Y, Z) before applying the displacement
- *  to the position.
+ * @brief NPC::tryMoveToward
+ *  Make the NPC to move to the specified target.
+ *  Usually, the target is the destination of an action.
  * @param dT
+ * @param target
  */
-void NPC::tryMove(float dT)
+void NPC::tryMoveToward(float dT, glm::vec3 target)
+{
+    // apply current acceleration & gravity
+    m_velocity[1] += dT * (m_gravity[1] + m_acceleration[1]);
+    // prevent NPCs from penetraing the terrain
+    m_velocity[1] = glm::max(maxFallingSpeed, m_velocity[1]);
+
+    // m_forward: current forward direction
+    glm::vec3 currVelocity = m_velocity;
+    currVelocity[0] = (target[0] - m_position[0]) * m_velocity[0];
+    currVelocity[2] = (target[2] - m_position[2]) * m_velocity[2];
+
+    // add horizontal displacement
+    glm::vec3 disp = dT * currVelocity;
+    // add vertical displacement
+    disp[1] += (dT * currVelocity[1]);
+
+    if (checkYCollision())
+    {
+        // collide against the ground
+        disp[1] = 0.f;
+        // remove the gravity effect
+        m_velocity[1] = 0.f;
+        m_acceleration[1] = 0.f;
+        onGround = true;
+    }
+
+    if (checkXZCollision(0))
+    {
+        disp[0] = 0.f;
+    }
+
+    if (checkXZCollision(2))
+    {
+        disp[2] = 0.f;
+    }
+
+    // set the previous m_position
+    prev_m_position = m_position;
+
+    // this changes m_position
+    moveAlongVector(disp);
+}
+
+
+/**
+ * @brief NPC::tryJumpToward
+ * @param dT
+ * @param target
+ */
+void NPC::tryJumpToward(float dT, glm::vec3 target)
 {
     // experiment with jump
-    jumpCycle += dT;
-    if (onGround && (jumpCycle >= 3.f))
+    if (onGround)
     {
         m_acceleration[1] = 100.f;
+        // define horizontal changes
+        glm::vec3 totalDisp = target - m_position;
+        totalDisp[1] = 0.f;
+        // assume it reaches there in a second
+        m_velocity[0] = totalDisp[0];
+        m_velocity[2] = totalDisp[2];
         onGround = false;
-        jumpCycle = 0.f;
     }
 
     // apply current acceleration & gravity
@@ -245,11 +400,60 @@ void NPC::tryMove(float dT)
     }
 
     // m_forward: current forward direction
+    glm::vec3 currVelocity = dT * m_velocity;
+
+    // add horizontal displacement
+    glm::vec3 disp = currVelocity;
+    // add vertical displacement
+    disp[1] += (dT * currVelocity[1]);
+
+    if (checkYCollision() && (m_acceleration[1] + m_gravity[1] <= 0.f))
+    {
+        // collide against the ground
+        disp[1] = 0.f;
+        // remove the gravity effect
+        m_velocity = glm::vec3(3.f, 0.f, 3.f);
+        m_acceleration[1] = 0.f;
+        onGround = true;
+    }
+
+    if (checkXZCollision(0))
+    {
+        disp[0] = 0.f;
+    }
+
+    if (checkXZCollision(2))
+    {
+        disp[2] = 0.f;
+    }
+
+    // set the previous m_position
+    prev_m_position = m_position;
+
+    // this changes m_position
+    moveAlongVector(disp);
+}
+
+/**
+ * @brief NPC::tryMove
+ *  Basically, follow the current forward direction,
+ *  check the collision (X, Y, Z) before applying the displacement
+ *  to the position.
+ * @param dT
+ */
+void NPC::tryMove(float dT)
+{
+    // apply current acceleration & gravity
+    m_velocity[1] += dT * (m_gravity[1] + m_acceleration[1]);
+    // prevent NPCs from penetraing the terrain
+    m_velocity[1] = glm::max(maxFallingSpeed, m_velocity[1]);
+
+    // m_forward: current forward direction
     glm::vec3 currVelocity = m_velocity;
 
-    // horizontal displacement
+    // add horizontal displacement
     glm::vec3 disp = (dT * currVelocity * m_forward);
-    // vertical displacement
+    // add vertical displacement
     disp[1] += (dT * currVelocity[1]);
 
     if (checkYCollision() && (m_acceleration[1] + m_gravity[1] <= 0.f))
@@ -279,67 +483,6 @@ void NPC::tryMove(float dT)
     moveAlongVector(disp);
 }
 
-
-///**
-// * @brief NPC::tryMove
-// *  Basically, follow the current forward direction,
-// *  check the collision (X, Y, Z) before applying the displacement
-// *  to the position.
-// * @param dT
-// */
-//void NPC::tryMove(float dT)
-//{
-//    jumpCycle += dT;
-
-//    if (onGround && (jumpCycle >= 3.f))
-//    {
-//        m_velocity[1] = 65.f;
-//        onGround = false;
-//        jumpCycle = 0.f;
-//    }
-
-//    // m_forward: current forward direction
-//    glm::vec3 currVelocity = m_velocity;
-
-//    // assume m_forward's y is always 0.f
-//    glm::vec3 disp = (dT * currVelocity * m_forward);
-
-//    // gravity pull
-//    disp[1] += (dT * gravity[1]);
-
-//    if (!onGround)
-//    {
-//        disp[1] += (dT * currVelocity[1]);
-//        // update velocity
-//        m_velocity[1] = glm::max(0.f, m_velocity[1] + 0.8f * gravity[1]);
-//    }
-
-//    if (checkYCollision(mcr_terrain) && (m_velocity[1] <= 0.f))
-//    {
-//        // collide against the ground
-//        disp[1] = 0.f;
-//        m_velocity[1] = 0.f;
-//        onGround = true;
-//    }
-
-//    if (checkXZCollision(0, mcr_terrain))
-//    {
-//        disp[0] = 0.f;
-//    }
-
-//    if (checkXZCollision(2, mcr_terrain))
-//    {
-//        disp[2] = 0.f;
-//    }
-
-//    // set the previous m_position
-//    prev_m_position = m_position;
-
-//    // this changes m_position
-//    moveAlongVector(disp);
-//}
-
-
 /**
  * @brief NPC::checkXZCollision
  *  Note: m_position is the center of the NPC's body
@@ -353,7 +496,7 @@ bool NPC::checkXZCollision(int idx) {
     glm::vec3 axisDir = glm::vec3(0.f);
 
     // only handle x & z
-    axisDir[idx] = m_forward[idx] > 0.f ? 1.f : -1.f;
+    axisDir[idx] = m_forward[idx] > 0.f ? 0.5f : -0.5f;
 
     if (m_forward[idx] == 0.f)
     {
@@ -361,8 +504,7 @@ bool NPC::checkXZCollision(int idx) {
         return false;
     }
 
-    float tolerance = 0.25f;
-
+    float tolerance = 0.1f;
     // idx must be either 0 (x) or 2 (z)
     glm::ivec3 out_blockHit = glm::ivec3(0);
     float out_dist = 0.f;
@@ -372,9 +514,7 @@ bool NPC::checkXZCollision(int idx) {
     topCenter[1] += rootToTop;
     glm::vec3 bottomCenter = m_position;
     bottomCenter[1] -= rootToGround;
-    glm::vec3 midCenter = m_position;
-    midCenter[1] = (topCenter[1] + bottomCenter[1]) / 2.f;
-    std::vector<glm::vec3> centers = {m_position, topCenter, midCenter, bottomCenter};
+    std::vector<glm::vec3> centers = {m_position, topCenter, bottomCenter};
 
     // get radius
     std::vector<glm::vec3> cornerDirs = {

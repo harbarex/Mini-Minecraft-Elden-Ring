@@ -18,31 +18,35 @@ protected:
 
     Terrain *mcr_terrain;
 
-    // path finder
+    // path finder related
     PathFinder pathFinder;
+    std::queue<NPCAction> actions;
+    float actionTimer;
+    float actionTimeout;
+    uint nToDoActions;
 
     // NPC's physics params
     glm::vec3 m_acceleration;
     glm::vec3 m_velocity;
     glm::vec3 m_gravity;
+    glm::vec3 m_default_velocity;
+
+    // keep track of last position
+    glm::vec3 prev_m_position;
 
     // used to prevent NPCs from penetraing the terrrain
     float maxFallingSpeed;
-
     bool onGround;
-    float jumpCycle;
 
     // a variable to accumulate traveled distance (do % 360)
     float walkingDistCycle;
 
     // keep a collection of rotation nodes (for walking movements)
     std::vector<Node*> limbRotNodes;
-    float limbRotationSpeed;
-    float maxLimbDeg;
-
-
-    // keep track of last position
-    glm::vec3 prev_m_position;
+    float limbRotationSpeedOnGround;
+    float limbRotationSpeedOffGround;
+    float maxLimbDegOnGround;
+    float maxLimbDegOffGround;
 
     // npc's total height
     float rootToGround;
@@ -77,24 +81,29 @@ public:
     virtual void tick(float dT, InputBundle &input) override;
     virtual void tick(float dT);
 
+    // move
+    virtual void tryMove(float dT);
+    virtual void tryMoveToward(float dT, glm::vec3 target);
+    virtual void tryJumpToward(float dT, glm::vec3 target);
+
     // helpers for NPC's movement
     // face toward the target
     virtual void faceToward(glm::vec3 target);
     virtual void faceSlowlyToward(float dT, glm::vec3 target);
+
     // face the direction perpendicular to the direction (target - NPC)
     virtual void faceSlowlyTowardTangent(float dT, glm::vec3 center);
 
+    // apply limb rotations
+    virtual void updateLimbRotations();
 
-    // move
-    void tryMove(float dT);
+    // get bottom center
+    virtual glm::vec3 getBottomCenter() const;
 
     // re-write collision
     virtual bool checkXZCollision(int idx);
     virtual bool checkYCollision();
     bool gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, float *out_dist, glm::ivec3 *out_blockHit);
-
-    // apply limb rotations
-    virtual void updateLimbRotations();
 
     virtual ~NPC();
 };

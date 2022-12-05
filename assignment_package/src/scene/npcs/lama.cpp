@@ -9,7 +9,8 @@ Lama::Lama(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &play
       limb(context, LAMALIMB)
 {
     // change speed
-    // m_velocity = glm::vec3(2.f, 0.f, 2.f);
+    m_velocity = glm::vec3(3.f, 0.f, 3.f);
+    m_default_velocity = glm::vec3(3.f, 0.f, 3.f);
 }
 
 
@@ -100,7 +101,7 @@ void Lama::initSceneGraph()
 void Lama::tick(float dT)
 {
     // turn to the player's direction
-    faceToward(player->mcr_position);
+    // faceToward(player->mcr_position);
 
     // tick
     NPC::tick(dT);

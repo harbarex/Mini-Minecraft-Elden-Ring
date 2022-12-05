@@ -14,7 +14,8 @@ Sheep::Sheep(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &pl
       limb(context, SHEEPLIMB)
 {
     // change speed
-    // m_velocity = glm::vec3(2.f, 0.f, 2.f);
+    m_velocity = glm::vec3(2.f, 0.f, 2.f);
+    m_default_velocity = glm::vec3(2.f, 0.f, 2.f);
 }
 
 
@@ -91,7 +92,7 @@ void Sheep::initSceneGraph()
 void Sheep::tick(float dT)
 {
     // turn to the player's direction
-    faceToward(player->mcr_position);
+    // faceToward(player->mcr_position);
 
     // tick
     NPC::tick(dT);

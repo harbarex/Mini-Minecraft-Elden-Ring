@@ -111,7 +111,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
     int xMin, xMax, yMin, yMax, zMin, zMax;
     xMin = -radius;
     xMax = radius + 1;
-    yMin = -1;
+    yMin = -2;
     yMax = 2;
     zMin = -radius;
     zMax = radius + 1;
@@ -125,7 +125,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
     Path initialPath = Path({NPCAction(startPos, REST)}, 0.f, getDistance(startPos, targetPos), 0, 0, 0);
     pathsToExplore.push(initialPath);
 
-    float minDist = getDistance(startPos, targetPos);
+    float minDist = std::numeric_limits<float>::infinity();
     Path minPath = initialPath;
 
     // assume only walk & each walk takes 1 block
@@ -167,6 +167,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
                 {
                     if (dx == 0 && dy == 0 && dz == 0)
                     {
+                        // skip the origin
                         continue;
                     }
 
@@ -174,9 +175,10 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
                     int y = currPath.currY + dy;
                     int z = currPath.currZ + dz;
 
-                    int id = (y + 1) * 3 * ((x + radius) * sideLen + (z + radius));
+                    // y from [-2, 2)
+                    int id = (y + 1) * 4 * ((x + radius) * sideLen + (z + radius));
 
-                    // skip the boundary
+                    // out of search grid
                     if (x < xMin || x >= xMax || y < yMin || y >= yMax || z < zMin || z >= zMax )
                     {
                         continue;
@@ -191,7 +193,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
 
                     // explore this action
                     glm::vec3 nextDest = currPath.dest + glm::vec3(dx, dy, dz);
-                    // TODO: check valid block
+
                     glm::vec3 nextDestTop = glm::vec3(nextDest.x, nextDest.y + 1.f, nextDest.z);
 
                     if (mcr_terrain->getBlockAt(nextDestTop) != EMPTY)
