@@ -269,7 +269,9 @@ void MyGL::paintGL() {
     renderTexture(textureAll, m_progInventoryItemOnHand, 0, inventoryItemsOnHand);
     // In container
     // TODO: draw the container widget and items in container if the player opens it
-    renderTexture(inventoryWidgetInContainerTexture, m_progInventoryWidgetInContainer, 4, inventoryWidgetInContainer);
+    if (m_player.isOpenContainer()) {
+        renderTexture(inventoryWidgetInContainerTexture, m_progInventoryWidgetInContainer, 4, inventoryWidgetInContainer);
+    }
 
     glEnable(GL_BLEND);
     renderTexture(textureFont, m_progText, 3, textOnScreen.get());

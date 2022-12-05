@@ -635,7 +635,7 @@ bool Player::isUnderLava(const Terrain &terrain, InputBundle &input) {
  */
 void Player::destroyBlock(InputBundle &inputs, Terrain &terrain) {
 
-    if (!inputs.leftMouseButtonPressed) {
+    if (!inputs.leftMouseButtonPressed || isOpenContainer()) {
         return;
     }
 
