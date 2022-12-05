@@ -844,3 +844,39 @@ bool Player::isOpenContainer() {
     return containerMode;
 }
 
+/**
+ * @brief Player::setGrabItemPos
+ *   pull out the item in container once the player
+ *   click on the container
+ */
+void Player::setGrabItemPos(float posX, float posY) {
+
+}
+
+/**
+ * @brief Player::releaseGrabItemPos
+ *   release the item in container once the player
+ *   release the left mousekey
+ */
+void Player::releaseGrabItem(float posX, float posY) {
+
+}
+
+/**
+ * @brief Player::isGrabbing
+ *   return the state if the player is
+ *   grabbing the item or not
+ */
+bool Player::isGrabbing() {
+    return true;
+}
+
+/**
+ * @brief Player::widgetInteraction
+ *   called from tick function,
+ *   for implementing the widget interaction
+ */
+void Player::widgetInteraction() {
+    return;
+}
+

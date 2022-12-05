@@ -55,11 +55,8 @@ public:
     BlockType changeSelectedBlock();
     BlockType changeSelectedBlock(int newBlockIdx);
 
-    // the function would be activated if the user clicks the block either in inventory or on hand
-    // by mouse when the inventory shows up
-    // switch the block position between inventory and hand
-    // return true if the action succeeds, and return false if the target is full
-    bool switchBlocks(int blockIdxFrom);
+    // switch the items in the same inventory
+    bool switchItems(int overallIdxFrom, int overallIdxTo);
 
     // getter function of size
     int getBlocksOnHandSize();

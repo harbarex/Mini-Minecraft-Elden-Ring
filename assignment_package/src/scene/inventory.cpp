@@ -110,9 +110,8 @@ BlockType Inventory::changeSelectedBlock() {
     return changeSelectedBlock(targetIdx);
 }
 
-bool Inventory::switchBlocks(int blockIdxFrom) {
-    // TODO: fill the pos with same blockType first
-    // if no available blocktype and no empty pos: return false
+bool Inventory::switchItems(int overallIdxFrom, int overallIdxTo) {
+    // TODO: switch the items in the same inventory
 
     return true;
 }

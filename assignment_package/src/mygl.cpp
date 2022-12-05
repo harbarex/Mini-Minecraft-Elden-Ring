@@ -564,3 +564,16 @@ void MyGL::toggleMouseCursorMode() {
         setCursor(Qt::CrossCursor);
     }
 }
+
+/**
+ * @brief MyGL::convertPosToNormalizedPos
+ *  helper function to normalize the position
+ * @param pos : float, the position where the mouse click
+ * ranging from 0 to the width and height for x and y, respectively
+ * @return normalizePos : glm::vec2, the normalized position where the mouse click
+ * ranging from -1 to 1 for x and y, respectively
+ */
+glm::vec2 MyGL::convertPosToNormalizedPos(float posX, float posY) {
+    // TODO: finish the function
+    return glm::vec2(0);
+}

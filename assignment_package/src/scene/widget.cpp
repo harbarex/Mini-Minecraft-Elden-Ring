@@ -133,6 +133,18 @@ void Widget::findRegionInfoFromIdx(int overallIdx, RecRegion*& currRegion, int* 
 }
 
 /**
+ * @brief Widget::findOverallIdxFromScreenPos
+ *  find where user clicks on the widget with the screen position
+ *  0-indexed, start from top-left corner of the first region
+ * @param screenPos : float, the screen position where the mouse click, ranging from -1 to 1 for x and y
+ * @return overallIdx : int, the index of item among all regions in current widget
+ */
+void Widget::findOverallIdxFromScreenPos(float screenPosX, float screenPosY, int* overallIdx) {
+    // TODO: finish the function
+}
+
+
+/**
  * @brief Widget::getWidgetItemNumberInfo
  *  get the number information based on the region where current index (item) located
  * @param overallIdx : int, the index of item among all regions in current widget

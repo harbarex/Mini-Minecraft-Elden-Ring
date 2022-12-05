@@ -43,6 +43,28 @@ private:
     void destroyBlock(InputBundle &inputs, Terrain &terrain); // destroy the block within 3 unit from camera pos when left mouse button is pressed
     void placeBlock(InputBundle &inputs, Terrain &terrain);
 
+    // interaction in widget in container
+    // the state indicating if the player is grabbing item or not
+    bool isGrabbingItem;
+    // the position where the player grab the item in container
+    glm::vec2 grabItemScreenPos;
+    // the overall index of the grabbed item
+    glm::ivec2 grabItemOverallIdx;
+
+    // set up the grab position in player object
+    // called from MyGL
+    void setGrabItemPos(float posX, float posY);
+
+    // release the grab to given position in player object
+    // called from MyGL
+    void releaseGrabItem(float posX, float posY);
+
+    // check if the player is grabbing item
+    bool isGrabbing();
+    // draw the grab item
+    void widgetInteraction();
+
+
 public:
     // Readonly public reference to our camera
     // for easy access from MyGL

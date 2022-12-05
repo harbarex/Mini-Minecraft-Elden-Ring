@@ -113,6 +113,8 @@ public:
     // hard-code
     void getWidgetItemNumberInfo(int overallIdx, glm::vec2* top_left_pos, float* height);
 
+    void findOverallIdxFromScreenPos(float screenPosX, float screenPosY, int* overallIdx);
+
     virtual void createVBOdata();
 };
 

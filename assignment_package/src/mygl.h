@@ -85,6 +85,9 @@ private:
     long long prevExpandTime;
 
 
+    glm::vec2 convertPosToNormalizedPos(float posX, float posY);
+
+
 public:
     explicit MyGL(QWidget *parent = nullptr);
     ~MyGL();
@@ -107,6 +110,8 @@ public:
     // Called from paintGL()
     // Render the shader program with simple texture map
     void renderTexture(Texture& texture, ShaderProgram& shaderProgram, int slot, Drawable* d);
+
+
 
 protected:
     // Automatically invoked when the user
