@@ -32,10 +32,10 @@ glm::vec3 PathFinder::getBlockAt(glm::vec3 pos)
     return blockPos;
 }
 
-glm::vec3 PathFinder::getBlockTopCenterAt(glm::vec3 pos)
+glm::vec3 PathFinder::getBlockTopAt(glm::vec3 pos)
 {
     glm::vec3 blockPos = getBlockAt(pos);
-    blockPos += glm::vec3(0.5f, 1.f, 0.5f);
+    blockPos += glm::vec3(0.f, 1.f, 0.f);
     return blockPos;
 }
 
@@ -104,8 +104,8 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
     startPos = getBlockRightBelow(startPos);
     targetPos = getBlockRightBelow(targetPos);
 
-    std::cout << "Start from: " << glm::to_string(startPos) << std::endl;
-    std::cout << "Target to: " << glm::to_string(targetPos) << std::endl;
+    // std::cout << "Start from: " << glm::to_string(startPos) << std::endl;
+    // std::cout << "Target to: " << glm::to_string(targetPos) << std::endl;
 
     // define the search limits based on the radius
     int xMin, xMax, yMin, yMax, zMin, zMax;
@@ -122,10 +122,10 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
 
     // heap (costSoFar, pos)
     std::priority_queue<Path, std::vector<Path>, CompareStep> pathsToExplore;
-    Path initialPath = Path({NPCAction(startPos, REST)}, 0.f, getDistance(startPos, targetPos), 0, 0, 0);
+    Path initialPath = Path({NPCAction(startPos, REST)}, 0.f, estimate(startPos, targetPos), 0, 0, 0);
     pathsToExplore.push(initialPath);
 
-    float minDist = std::numeric_limits<float>::infinity();
+    float minCost = std::numeric_limits<float>::infinity();
     Path minPath = initialPath;
 
     // assume only walk & each walk takes 1 block
@@ -137,20 +137,11 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
         // get the top
         Path currPath = pathsToExplore.top();
 
-        float currDist = getDistance(currPath.dest, targetPos);
-
-        // update the minPath if it's closer
-        if (currDist < minDist)
-        {
-            minDist = currDist;
-            minPath = currPath;
-        }
-
         // reach the goal or not
         if (currPath.dest == targetPos)
         {
             minPath = currPath;
-            std::cout << "Found Destination!!" << std::endl;
+            // std::cout << "Found Destination!!" << std::endl;
             break;
         }
 
@@ -207,7 +198,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
                     }
 
                     int nextNSteps = currPath.nStepsSoFar + 1;
-                    float nextCost = getDistance(nextDest, targetPos) + (float) nextNSteps;
+                    float nextCost = estimate(nextDest, targetPos) + (float) nextNSteps;
 
                     std::vector<NPCAction> nextActions = currPath.actions;
                     if (dy == 1)
@@ -218,18 +209,23 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
                     {
                         nextActions.push_back(NPCAction(nextDest, WALK));
                     }
+                    Path nextPath = Path(nextActions, nextNSteps, nextCost, x, y, z);
+                    pathsToExplore.push(nextPath);
 
-                    pathsToExplore.push(Path(nextActions, nextNSteps, nextCost, x, y, z));
+                    // update the minPath if it's closer
+                    if (nextCost < minCost)
+                    {
+                        minCost = nextCost;
+                        minPath = nextPath;
+                    }
                 }
             }
         }
-
-        // TODO: how about jump
     }
 
     // update the actions
     std::queue<NPCAction> npcPath = std::queue<NPCAction>();
-    std::cout << "Plan: -----------" << std::endl;
+    // std::cout << "Plan: -----------" << std::endl;
     for (int i = 0; i < minPath.actions.size(); i++)
     {
         if (i == 0)
@@ -237,10 +233,11 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
             continue;
         }
 
-        glm::vec3 blockTopCenter = getBlockTopCenterAt(minPath.actions[i].dest);
-        std::cout << "To block center at: " << glm::to_string(blockTopCenter) << std::endl;
+        glm::vec3 blockTopCenter = getBlockTopAt(minPath.actions[i].dest);
+        // std::cout << "To block (top) at: " << glm::to_string(blockTopCenter) << std::endl;
         npcPath.push(NPCAction(blockTopCenter, minPath.actions[i].action));
     }
+    // always add a jump
 
     return npcPath;
 }

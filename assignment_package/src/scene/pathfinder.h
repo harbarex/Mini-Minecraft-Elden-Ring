@@ -79,7 +79,7 @@ class PathFinder
     Terrain *mcr_terrain;
 
     glm::vec3 getBlockAt(glm::vec3 pos);
-    glm::vec3 getBlockTopCenterAt(glm::vec3 pos);
+    glm::vec3 getBlockTopAt(glm::vec3 pos);
     glm::vec3 getBlockRightBelow(glm::vec3 pos);
 
     // manhattan

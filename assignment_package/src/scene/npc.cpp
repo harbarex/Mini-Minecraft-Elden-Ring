@@ -108,8 +108,11 @@ void NPC::tick(float dT)
 
     if (onGround)
     {
+        // reset horizontal speed
+        m_velocity[0] = m_default_velocity[0];
+        m_velocity[2] = m_default_velocity[2];
+
         // check if need to find a path
-        m_velocity = m_default_velocity;
         if (actions.empty())
         {
             // update the path
@@ -123,7 +126,7 @@ void NPC::tick(float dT)
         // perform the next action
         if (!actions.empty())
         {
-            faceToward(actions.front().dest);
+            faceSlowlyToward(dT, actions.front().dest);
             switch (actions.front().action)
             {
                 case WALK:
@@ -158,7 +161,7 @@ void NPC::tick(float dT)
     else if ((!onGround) && (!actions.empty()) && (actions.front().action == JUMP))
     {
         // continue the jump
-        faceToward(actions.front().dest);
+        faceSlowlyToward(dT, actions.front().dest);
         tryJumpToward(dT, actions.front().dest);
 
         actionTimer += dT;
