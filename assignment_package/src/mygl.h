@@ -34,9 +34,11 @@ private:
     ShaderProgram m_progNoOp;
     ShaderProgram m_progInventoryWidgetOnHand;
     ShaderProgram m_progInventoryItemOnHand;
+    ShaderProgram m_progInventoryWidgetInContainer;
     ShaderProgram m_progText;
     Quad m_quad;
     Widget* inventoryWidgetOnHand;
+    Widget* inventoryWidgetInContainer;
     BlockInWidget* inventoryItemsOnHand;
     std::vector<uPtr<Widget>> widgets;
     uPtr<Text> textOnScreen;
@@ -62,6 +64,7 @@ private:
 
     Texture textureAll;
     Texture inventoryWidgetOnHandTexture;
+    Texture inventoryWidgetInContainerTexture;
     Texture textureFont;
 
     void moveMouseToCenter(); // Forces the mouse position to the screen's center. You should call this

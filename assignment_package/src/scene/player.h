@@ -32,6 +32,7 @@ private:
     int selectedBlockOnHandPtr;
     Inventory inventory;
     Widget *inventoryWidgetOnHand;
+    Widget *inventoryWidgetInContainer;
     BlockInWidget *inventoryItemOnHand;
     Text* textOnScreen;
 

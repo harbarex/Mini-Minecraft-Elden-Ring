@@ -749,12 +749,13 @@ void Player::selectBlockOnHand(InputBundle &inputs) {
  * @param widgets : vector of widget pointers, with the following order
  * 1. inventoryWidgetOnHand
  * 2. inventoryItemOnHand
- * 3. inventoryWidgetInBox
+ * 3. inventoryWidgetInContainer
  * 4. inventoryItemInBox
  */
 void Player::setupWidget(std::vector<Widget*> widgets) {
     inventoryWidgetOnHand = widgets[0];
     inventoryItemOnHand = (BlockInWidget*)widgets[1];
+    inventoryWidgetInContainer = widgets[2];
 }
 
 void Player::setupText(Text* text) {

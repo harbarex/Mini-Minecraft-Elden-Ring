@@ -9,5 +9,7 @@
         <file>textures/widget_item_on_hand_info.txt</file>
         <file>textures/text_info.txt</file>
         <file>textures/ascii.png</file>
+        <file>textures/inventory.png</file>
+        <file>textures/widget_in_container_info.txt</file>
     </qresource>
 </RCC>
