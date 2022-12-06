@@ -212,6 +212,8 @@ void MyGL::paintGL() {
     renderTerrain(TerrainDrawType::transparent);
     glDisable(GL_BLEND);
 
+    m_terrain.drawErdtree(glm::ivec2(32,48));
+
 
     glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
     glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());

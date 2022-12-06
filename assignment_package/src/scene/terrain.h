@@ -11,6 +11,7 @@
 #include "utils.h"
 #include <QMutex>
 #include <QThreadPool>
+#include "lsystems.h"
 
 
 //using namespace std;
@@ -67,8 +68,6 @@ private:
     // this set represents the currently loaded 5 x 5 zones
     std::unordered_set<int64_t> m_prevBorderZones;
 
-
-
     void destroyZoneVBOs(int xCorner, int zCorner);
 
     OpenGLContext* mp_context;
@@ -113,6 +112,8 @@ public:
     // see when the base code is run.
     void CreateTestScene();
     void CreateTestGrassScene();
+
+    void drawErdtree(const glm::ivec2);
 
     // Terrain expansion that instantiate the Chunks (including the blocks inside)
     // around the player.

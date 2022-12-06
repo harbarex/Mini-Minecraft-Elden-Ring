@@ -6,10 +6,10 @@ SOURCES += \
     $$PWD/main.cpp \
     $$PWD/mainwindow.cpp \
     $$PWD/mygl.cpp \
+    $$PWD/scene/lsystems.cpp \
     $$PWD/scene/noise.cpp \
     $$PWD/scene/block.cpp \
     $$PWD/scene/quad.cpp \
-    $$PWD/scene/turtle.cpp \
     $$PWD/shaderprogram.cpp \
     $$PWD/drawable.cpp \
     $$PWD/cameracontrolshelp.cpp \
@@ -29,10 +29,10 @@ HEADERS += \
     $$PWD/la.h \
     $$PWD/mainwindow.h \
     $$PWD/mygl.h \
+    $$PWD/scene/lsystems.h \
     $$PWD/scene/noise.h \
     $$PWD/scene/block.h \
     $$PWD/scene/quad.h \
-    $$PWD/scene/turtle.h \
     $$PWD/shaderprogram.h \
     $$PWD/drawable.h \
     $$PWD/cameracontrolshelp.h \
