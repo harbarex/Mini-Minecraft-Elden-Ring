@@ -159,6 +159,12 @@ glm::vec4 Block::getColors(BlockType type)
     case SNOW:
         color = glm::vec4(1.f, 1.f, 1.f, 1.f);
         break;
+    case GWOOD:
+        color = glm::vec4(255.f, 223.f, 0.f, 128.f) / 255.f;
+
+    case GLEAF:
+        color = glm::vec4(255.f, 223.f, 0.f, 128.f) / 255.f;
+
     default:
         // Other block types are not yet handled, so we default to debug purple
         color = glm::vec4(1.f, 0.f, 1.f, 1.f);
@@ -192,11 +198,13 @@ std::unordered_map<std::string, BlockType> Block::blockTypeMap = {
     {"BEDROCK", BEDROCK},
     {"ICE", ICE},
     {"WOOD", WOOD},
-    {"LEAF", LEAF}}
+    {"LEAF", LEAF},
+    {"GWOOD", GWOOD},
+    {"GLEAF", GLEAF}}
 };
 
 std::unordered_set<BlockType> Block::transparentBlockTypes = {
-    EMPTY, WATER, ICE
+    EMPTY, WATER, ICE, GWOOD, GLEAF
 };
 
 std::unordered_set<BlockType> Block::animatableBlockTypes = {

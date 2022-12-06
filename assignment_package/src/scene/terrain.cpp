@@ -763,7 +763,7 @@ void drawErdtree(Chunk* chunk, const glm::ivec2 pos){
     //int n = 1;
 
     for(int i = 1; i <= n; ++i){
-        chunk->setBlockAt(pos[0], h + i, pos[1], WOOD);
+        chunk->setBlockAt(pos[0], h + i, pos[1], GWOOD);
     }
 
     glm::vec2 turtlePos;
@@ -792,7 +792,7 @@ void drawErdtree(Chunk* chunk, const glm::ivec2 pos){
 
                 BlockType t = chunk->getBlockAt(leafDir[0] + pos[0], h + n + yPos, leafDir[1] + pos[1]);
                 if (t == EMPTY){
-                    chunk->setBlockAt(leafDir[0] + pos[0], h + n + yPos, leafDir[1] + pos[1], LEAF);
+                    chunk->setBlockAt(leafDir[0] + pos[0], h + n + yPos, leafDir[1] + pos[1], GLEAF);
                 }
             }
         }
@@ -836,7 +836,7 @@ void Terrain::drawErdtree(const glm::ivec2 pos){
         for(int x=pos[0]-thickness; x<=pos[0]+thickness; x++){
             for(int z=pos[1]-thickness; z<=pos[1]+thickness; z++){
                 for(int i = 1; i <= height; ++i){
-                    setBlockAt(x, rootHeight + i, z, WOOD);
+                    setBlockAt(x, rootHeight + i, z, GWOOD);
                 }
             }
         }
@@ -867,7 +867,7 @@ void Terrain::drawErdtree(const glm::ivec2 pos){
 
                     BlockType t = getBlockAt(leafDir[0] + pos[0], rootHeight + height - 3 + yPos, leafDir[1] + pos[1]);
                     if (t == EMPTY){
-                        setBlockAt(leafDir[0] + pos[0], rootHeight + height - 3 + yPos, leafDir[1] + pos[1], LEAF);
+                        setBlockAt(leafDir[0] + pos[0], rootHeight + height - 3 + yPos, leafDir[1] + pos[1], GLEAF);
                     }
                 }
             }
