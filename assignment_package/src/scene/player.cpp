@@ -850,7 +850,28 @@ bool Player::isOpenContainer() {
  *   click on the container
  */
 void Player::setGrabItemPos(float posX, float posY) {
+    if (isGrabbing()) {
+        return;
+    }
+    int overallIdxInContainer;
+    inventoryItemInContainer->findOverallIdxFromScreenPos(posX, posY, &overallIdxInContainer);
 
+    // check if the current clicked position has an item or not
+    if (overallIdxInContainer < 0) {
+        return;
+    }
+
+    // convert the overall index to inventory version
+    grabItemOverallIdx = covertIdxFromContainerToInventory(overallIdxInContainer);
+
+    // store the grab item info
+    inventory.getItemInfo(grabItemOverallIdx, &grabItemType, &grabItemCount);
+
+    // set the grabbed item to empty in inventory
+    inventory.clearItem(grabItemOverallIdx);
+
+    isGrabbingItem = true;
+    return;
 }
 
 /**
@@ -859,7 +880,27 @@ void Player::setGrabItemPos(float posX, float posY) {
  *   release the left mousekey
  */
 void Player::releaseGrabItem(float posX, float posY) {
+    if(!isGrabbing()) {
+        return;
+    }
+    int overallIdxReleasedInContainer;
+    inventoryItemInContainer->findOverallIdxFromScreenPos(posX, posY, &overallIdxReleasedInContainer);
 
+    // check if the current clicked position has an item or not
+    if (overallIdxReleasedInContainer < 0) {
+        // put back the item to original position if the release pos is invalid
+        inventory.setBlock(grabItemOverallIdx, grabItemType, grabItemCount);
+        return;
+    }
+
+    // convert the overall index to inventory version
+    int releaseItemOverallIdx;
+    releaseItemOverallIdx = covertIdxFromContainerToInventory(overallIdxReleasedInContainer);
+
+    inventory.switchItems(grabItemOverallIdx, releaseItemOverallIdx, grabItemType, grabItemCount);
+
+    isGrabbingItem = false;
+    return;
 }
 
 /**
@@ -868,7 +909,7 @@ void Player::releaseGrabItem(float posX, float posY) {
  *   grabbing the item or not
  */
 bool Player::isGrabbing() {
-    return true;
+    return isGrabbingItem;
 }
 
 /**
@@ -877,6 +918,26 @@ bool Player::isGrabbing() {
  *   for implementing the widget interaction
  */
 void Player::widgetInteraction() {
+    // TODO: draw the grabbed item
     return;
 }
+
+/**
+ * @brief Player::covertIdxFromContainerToInventory
+ *   convert the index format from container widget to inventory
+ */
+int Player::covertIdxFromContainerToInventory(int overallIdxInContainer) {
+    // hard-code
+
+    int onHandSize = inventory.getBlocksOnHandSize();
+    int overallSize = inventory.getBlocksInInventorySize();
+
+    if (overallIdxInContainer >= (overallSize - onHandSize)) {
+        return overallIdxInContainer - overallSize + onHandSize;
+    }
+
+    return overallIdxInContainer + onHandSize;
+
+}
+
 

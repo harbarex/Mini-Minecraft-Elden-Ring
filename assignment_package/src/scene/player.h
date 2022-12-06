@@ -46,24 +46,18 @@ private:
     // interaction in widget in container
     // the state indicating if the player is grabbing item or not
     bool isGrabbingItem;
-    // the position where the player grab the item in container
-    glm::vec2 grabItemScreenPos;
-    // the overall index of the grabbed item
-    glm::ivec2 grabItemOverallIdx;
+    // the overall index in inventory of the grabbed item
+    int grabItemOverallIdx;
+    // the type of grabbed item
+    BlockType grabItemType;
+    // the count of grabbed item
+    int grabItemCount;
 
-    // set up the grab position in player object
-    // called from MyGL
-    void setGrabItemPos(float posX, float posY);
-
-    // release the grab to given position in player object
-    // called from MyGL
-    void releaseGrabItem(float posX, float posY);
-
-    // check if the player is grabbing item
-    bool isGrabbing();
     // draw the grab item
     void widgetInteraction();
 
+    // convert the index format from container widget to inventory
+    int covertIdxFromContainerToInventory(int overallIdxInContainer);
 
 public:
     // Readonly public reference to our camera
@@ -140,5 +134,15 @@ public:
     bool isOpenContainer();
     bool setContainerMode(bool state);
     bool toggleContainerMode();
+
+    // check if the player is grabbing item
+    bool isGrabbing();
+    // set up the grab position in player object
+    // called from MyGL
+    void setGrabItemPos(float posX, float posY);
+
+    // release the grab to given position in player object
+    // called from MyGL
+    void releaseGrabItem(float posX, float posY);
 };
 

@@ -85,7 +85,7 @@ private:
     long long prevExpandTime;
 
 
-    glm::vec2 convertPosToNormalizedPos(float posX, float posY);
+    glm::vec2 convertPosToNormalizedPos(QMouseEvent *e);
 
 
 public:

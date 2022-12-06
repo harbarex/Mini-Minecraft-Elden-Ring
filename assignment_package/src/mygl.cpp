@@ -450,6 +450,10 @@ void MyGL::mousePressEvent(QMouseEvent *e) {
     case (Qt::LeftButton):
         m_inputs.leftMouseButtonPressed = true;
         // TODO: grab the block item if the player opens the container
+        if (!m_player.isGrabbing() && m_player.isOpenContainer()) {
+            glm::vec2 pos = convertPosToNormalizedPos(e);
+            m_player.setGrabItemPos(pos.x, pos.y);
+        }
         break;
     case (Qt::RightButton):
         m_inputs.rightMouseButtonPressed = true;
@@ -466,6 +470,10 @@ void MyGL::mouseReleaseEvent(QMouseEvent *e) {
         m_inputs.leftMouseButtonPressed = false;
         // TODO: release the selected block item to a new place (or switch the items)
         // if the player opens the container
+        if (m_player.isGrabbing() && m_player.isOpenContainer()) {
+            glm::vec2 pos = convertPosToNormalizedPos(e);
+            m_player.releaseGrabItem(pos.x, pos.y);
+        }
         break;
     case (Qt::RightButton):
         m_inputs.rightMouseButtonPressed = false;
@@ -573,7 +581,11 @@ void MyGL::toggleMouseCursorMode() {
  * @return normalizePos : glm::vec2, the normalized position where the mouse click
  * ranging from -1 to 1 for x and y, respectively
  */
-glm::vec2 MyGL::convertPosToNormalizedPos(float posX, float posY) {
+glm::vec2 MyGL::convertPosToNormalizedPos(QMouseEvent *e) {
     // TODO: finish the function
-    return glm::vec2(0);
+    float halfWidth = width()/2.f;
+    float halfHeight = height()/2.f;
+    float posX = (e->pos().x() - halfWidth) / halfWidth;
+    float posY = (halfHeight - e->pos().y()) / halfHeight;
+    return glm::vec2(posX, posY);
 }

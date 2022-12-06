@@ -15,8 +15,32 @@ void Inventory::initBlocks() {
     }
 }
 
+/**
+ * @brief Inventory::getItemInfo
+ *  get the item type and count given the index
+ * @param overallIdx : int, the index of the item located in the inventory
+ * @return itemType : BlockType, the type of the item
+ * @return count : int, the count of the item
+ */
+void Inventory::getItemInfo(float overallIdx, BlockType* itemType, int* count) {
+    *itemType = blocksInInventory[overallIdx].first;
+    *count = blocksInInventory[overallIdx].second;
+}
+
 void Inventory::getItemInfo(std::vector<std::pair<BlockType, int>>* itemsInfo) {
     *itemsInfo = blocksInInventory;
+}
+
+/**
+ * @brief Inventory::setBlock
+ *  set the block at the specific location
+ * @param overallIdx : int, the index of the item located in the inventory
+ * @param blockType : BlockType, type of the item
+ * @param count : int, count of the item
+ */
+void Inventory::setBlock(int overallIdx, BlockType& blockType, int count) {
+    blocksInInventory[overallIdx] = (std::make_pair(blockType, count));
+    return;
 }
 
 void Inventory::setBlocks(std::vector<BlockType>& blockTypes, int count) {
@@ -113,5 +137,33 @@ BlockType Inventory::changeSelectedBlock() {
 bool Inventory::switchItems(int overallIdxFrom, int overallIdxTo) {
     // TODO: switch the items in the same inventory
 
+    return switchItems(overallIdxFrom, overallIdxTo, blocksInInventory[overallIdxFrom].first, blocksInInventory[overallIdxFrom].second);
+}
+
+bool Inventory::switchItems(int overallIdxFrom, int overallIdxTo, BlockType fromItemType, int fromItemCount) {
+
+    if (fromItemType == blocksInInventory[overallIdxTo].first) {
+        if (fromItemCount + blocksInInventory[overallIdxTo].second > max_blocks) {
+            blocksInInventory[overallIdxFrom].second = fromItemCount + blocksInInventory[overallIdxTo].second - max_blocks;
+            blocksInInventory[overallIdxTo].second = max_blocks;
+        } else {
+            blocksInInventory[overallIdxTo].second += blocksInInventory[overallIdxFrom].second;
+            blocksInInventory[overallIdxFrom].first = EMPTY;
+            blocksInInventory[overallIdxFrom].second = 0;
+        }
+        return true;
+    }
+
+    BlockType tempFrom = fromItemType;
+    int tempFromCount = fromItemCount;
+    blocksInInventory[overallIdxFrom].first = blocksInInventory[overallIdxTo].first;
+    blocksInInventory[overallIdxFrom].second = blocksInInventory[overallIdxTo].second;
+    blocksInInventory[overallIdxTo].first = tempFrom;
+    blocksInInventory[overallIdxTo].second = tempFromCount;
     return true;
+}
+
+void Inventory::clearItem(int overallIdx) {
+    blocksInInventory[overallIdx].first = EMPTY;
+    blocksInInventory[overallIdx].second = 0;
 }

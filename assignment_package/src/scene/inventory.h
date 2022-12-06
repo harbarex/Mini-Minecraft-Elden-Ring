@@ -35,11 +35,13 @@ public:
     // initialize the blocks on hand and those in inventory
     void initBlocks();
 
+    void getItemInfo(float overallIdx, BlockType* itemType, int* count);
     void getItemInfo(std::vector<std::pair<BlockType, int>>* itemsInfo);
 
     // Assign blocks to the player
     // mainly used for debug or creative mode
     void setBlocks();
+    void setBlock(int overallIdx, BlockType& blockType, int count);
     void setBlocks(std::vector<BlockType>& blockTypes, int count);
 
     // add destroyed block to inventory
@@ -49,6 +51,9 @@ public:
     // return the selected block and subtract the block by 1
     BlockType placeBlock();
 
+    // clear the block at specific index
+    void clearItem(int overallIdx);
+
     // change the selected block to given index and return the blocktype of new selected block
     // EMPTY is allowed
     // default: move to the next block
@@ -57,6 +62,7 @@ public:
 
     // switch the items in the same inventory
     bool switchItems(int overallIdxFrom, int overallIdxTo);
+    bool switchItems(int overallIdxFrom, int overallIdxTo, BlockType fromItemType, int fromItemCount);
 
     // getter function of size
     int getBlocksOnHandSize();

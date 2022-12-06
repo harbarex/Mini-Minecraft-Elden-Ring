@@ -1,4 +1,5 @@
 #include "widget.h"
+#include <math.h>
 
 Widget::Widget(OpenGLContext *context)
     : Drawable(context)
@@ -141,6 +142,43 @@ void Widget::findRegionInfoFromIdx(int overallIdx, RecRegion*& currRegion, int* 
  */
 void Widget::findOverallIdxFromScreenPos(float screenPosX, float screenPosY, int* overallIdx) {
     // TODO: finish the function
+    RecRegion* currRegion = regions.front().get();
+    bool locationIsValid = false;
+    int accumulatedIdx = 0;
+    float regionLowerBoundX;
+    float regionUpperBoundY;
+    float regionUpperBoundX;
+    float regionLowerBoundY;
+
+    do {
+        regionLowerBoundX = currRegion->firstItemTopLeftScreenCoord.x;
+        regionUpperBoundY = currRegion->firstItemTopLeftScreenCoord.y;
+        regionUpperBoundX = regionLowerBoundX + currRegion->size.x * currRegion->shiftDist.x;
+        regionLowerBoundY = regionUpperBoundY - currRegion->size.y * currRegion->shiftDist.y;
+
+        if (regionLowerBoundX <= screenPosX && regionUpperBoundX >= screenPosX
+                && regionLowerBoundY <= screenPosY && regionUpperBoundY >= screenPosY) {
+            locationIsValid = true;
+            break;
+        }
+
+        accumulatedIdx += currRegion->capacity;
+        currRegion = currRegion->next;
+    } while (currRegion != nullptr);
+
+    if (!locationIsValid) {
+        // the clicked position does not match any item
+        *overallIdx = -1;
+        return;
+    }
+
+    int gridX, gridY;
+
+    std::remquo(screenPosX-regionLowerBoundX, currRegion->shiftDist.x, &gridX);
+    std::remquo(regionUpperBoundY-screenPosY, currRegion->shiftDist.y, &gridY);
+
+    *overallIdx = accumulatedIdx + gridX + gridY * currRegion->size.x;
+    return;
 }
 
 
