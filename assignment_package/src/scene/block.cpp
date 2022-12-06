@@ -239,6 +239,13 @@ void Block::getUVCoords(BlockType blockType, std::array<glm::vec2, 4>* uvCoords,
     return;
 }
 
+BlockType Block::getDestroyedBlockType(BlockType blockType) {
+    if (blockTransformationMap.find(blockType) == blockTransformationMap.end()) {
+        return blockType;
+    }
+
+    return blockTransformationMap[blockType];
+};
 
 /**
  * Instantiate various kinds of blocks here.
@@ -266,6 +273,11 @@ std::unordered_map<std::string, BlockType> Block::blockTypeMap = {
     {"SAND", SAND},
     {"DIAMOND", DIAMOND},
     {"TNT", TNT}}
+};
+
+std::unordered_map<BlockType, BlockType> Block::blockTransformationMap = {
+    {{GRASS, DIRT},
+     {STONE, COBBLESTONE}}
 };
 
 std::unordered_set<BlockType> Block::transparentBlockTypes = {

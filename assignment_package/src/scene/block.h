@@ -90,6 +90,9 @@ public:
     // the relationship between string in uv text file and the corresponding BlockType
     static std::unordered_map<std::string, BlockType> blockTypeMap;
 
+    // the transformation of block type during destroy process
+    static std::unordered_map<BlockType, BlockType> blockTransformationMap;
+
     // a collection of transparent block type
     // all blocktypes not in this set is opque
     static std::unordered_set<BlockType> transparentBlockTypes;
@@ -134,6 +137,7 @@ public:
     // order (bottom-left, bottom-right, top-right, top-left)
     static void getUVCoords(BlockType blockType, std::array<glm::vec2, 4>* uvCoords, Direction dir=XPOS);
 
+    static BlockType getDestroyedBlockType(BlockType blockType);
 };
 
 

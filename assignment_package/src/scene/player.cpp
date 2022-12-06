@@ -655,6 +655,7 @@ void Player::destroyBlock(InputBundle &inputs, Terrain &terrain) {
 
     // add destroyed block to inventory
     BlockType destroyedBlockType = terrain.getBlockAt(glm::vec3(out_blockHit));
+    destroyedBlockType = Block::getDestroyedBlockType(destroyedBlockType);
     inventory.storeBlock(destroyedBlockType);
 
     // remove hit block
