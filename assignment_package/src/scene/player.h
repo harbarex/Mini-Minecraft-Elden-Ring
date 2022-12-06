@@ -144,5 +144,8 @@ public:
     // release the grab to given position in player object
     // called from MyGL
     void releaseGrabItem(float posX, float posY);
+
+    // fill all available blocks in inventory
+    void fillAllBlocks();
 };
 

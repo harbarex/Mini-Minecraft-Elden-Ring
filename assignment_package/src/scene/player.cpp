@@ -867,6 +867,11 @@ void Player::setGrabItemPos(float posX, float posY) {
     // store the grab item info
     inventory.getItemInfo(grabItemOverallIdx, &grabItemType, &grabItemCount);
 
+    // grab nothing
+    if (Block::isEmpty(grabItemType)) {
+        return;
+    }
+
     // set the grabbed item to empty in inventory
     inventory.clearItem(grabItemOverallIdx);
 
@@ -938,6 +943,10 @@ int Player::covertIdxFromContainerToInventory(int overallIdxInContainer) {
 
     return overallIdxInContainer + onHandSize;
 
+}
+
+void Player::fillAllBlocks(){
+    inventory.setBlocks();
 }
 
 

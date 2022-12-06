@@ -341,7 +341,8 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
     } else if (e->key() == Qt::Key_E) {
         m_inputs.ePressed = true;
     } else if (e->key() == Qt::Key_P) {
-        m_inputs.debugButtonPressed = true;
+        m_inputs.pPressed = true;
+        m_player.fillAllBlocks();
     } else if (e->key() == Qt::Key_N) {
         m_inputs.nPressed = true;
         m_player.selectNextBlockOnHand(m_inputs);
@@ -389,7 +390,7 @@ void MyGL::keyReleaseEvent(QKeyEvent *e)
     } else if (e->key() == Qt::Key_E) {
         m_inputs.ePressed = false;
     } else if (e->key() == Qt::Key_P) {
-        m_inputs.debugButtonPressed = false;
+        m_inputs.pPressed = false;
     } else if (e->key() == Qt::Key_N) {
         m_inputs.nPressed = false;
     } else if (e->key() == Qt::Key_Space) {

@@ -259,11 +259,17 @@ std::unordered_map<std::string, BlockType> Block::blockTypeMap = {
     {"BEDROCK", BEDROCK},
     {"ICE", ICE},
     {"WOOD", WOOD},
-    {"LEAF", LEAF}}
+    {"LEAF", LEAF},
+    {"COBBLESTONE", COBBLESTONE},
+    {"GLASS", GLASS},
+    {"BRICK", BRICK},
+    {"SAND", SAND},
+    {"DIAMOND", DIAMOND},
+    {"TNT", TNT}}
 };
 
 std::unordered_set<BlockType> Block::transparentBlockTypes = {
-    EMPTY, WATER, ICE
+    EMPTY, WATER, ICE, GLASS
 };
 
 std::unordered_set<BlockType> Block::animatableBlockTypes = {

@@ -1,7 +1,7 @@
 #include "inventory.h"
 
 Inventory::Inventory()
-    : selectedBlockPtr(0), max_blocks(1), blocksOnHandSize(9), blocksInInventorySize(blocksOnHandSize+27)
+    : selectedBlockPtr(0), max_blocks(64), blocksOnHandSize(9), blocksInInventorySize(blocksOnHandSize+27)
 {
     initBlocks();
 }
@@ -64,6 +64,12 @@ void Inventory::setBlocks() {
     blockTypes.push_back(LEAF);
     blockTypes.push_back(SNOW);
     blockTypes.push_back(DIRT);
+    blockTypes.push_back(COBBLESTONE);
+    blockTypes.push_back(GLASS);
+    blockTypes.push_back(BRICK);
+    blockTypes.push_back(SAND);
+    blockTypes.push_back(DIAMOND);
+    blockTypes.push_back(TNT);
 
     setBlocks(blockTypes, max_blocks);
 }
@@ -142,12 +148,17 @@ bool Inventory::switchItems(int overallIdxFrom, int overallIdxTo) {
 
 bool Inventory::switchItems(int overallIdxFrom, int overallIdxTo, BlockType fromItemType, int fromItemCount) {
 
+    if (Block::isEmpty(fromItemType)) {
+        return false;
+    }
+
     if (fromItemType == blocksInInventory[overallIdxTo].first) {
         if (fromItemCount + blocksInInventory[overallIdxTo].second > max_blocks) {
             blocksInInventory[overallIdxFrom].second = fromItemCount + blocksInInventory[overallIdxTo].second - max_blocks;
+            blocksInInventory[overallIdxFrom].first = fromItemType;
             blocksInInventory[overallIdxTo].second = max_blocks;
         } else {
-            blocksInInventory[overallIdxTo].second += blocksInInventory[overallIdxFrom].second;
+            blocksInInventory[overallIdxTo].second += fromItemCount;
             blocksInInventory[overallIdxFrom].first = EMPTY;
             blocksInInventory[overallIdxFrom].second = 0;
         }
