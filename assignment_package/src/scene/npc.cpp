@@ -3,30 +3,31 @@
 extern void pushVec4ToBuffer(std::vector<float> &buf, const glm::vec4 &vec);
 extern void pushVec2ToBuffer(std::vector<float> &buf, const glm::vec2 &vec);
 
-/**
- * @brief NPC::NPC
- * @param context
- * @param pos
- * @param terrain
- */
-NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture):
+NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+         std::vector<glm::vec3> goals,
+         glm::vec3 initialVecloity,
+         float toleranceOfGoal,
+         float toleranceOfStep):
     Drawable(context),
     Entity(pos),
+    initPos(pos),
     mcr_terrain(&terrain),
-    goals(),
+    goals(goals),
     goalPtr(0),
     goalDir(1),
-    pathFinder(15, terrain),
+    pathFinder(25, terrain),
     actions(),
     actionTimer(0.f),
     actionTimeout(3.f),
     nToDoActions(0),
+    toleranceOfGoal(toleranceOfGoal),
+    toleranceOfStep(toleranceOfStep),
     m_acceleration(0.f, 0.f, 0.f),
-    m_velocity(4.f, 0.f, 4.f),
+    m_velocity(initialVecloity),
     m_gravity(0.f, -12.f, 0.f),
-    m_default_velocity(4.f, 0.f, 4.f),
+    m_default_velocity(initialVecloity),
     prev_m_position(pos),
-    maxFallingSpeed(-12.f),
+    maxFallingSpeed(-10.f),
     onGround(false),
     walkingDistCycle(0),
     limbRotNodes(),
@@ -42,6 +43,26 @@ NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player
     rootToRight(0.5f),
     player(&player),
     npcTexture(npcTexture)
+{}
+
+NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+         glm::vec3 initialVelocity, float toleranceOfGoal, float toleranceOfStep):
+    NPC(context, pos, terrain, player, npcTexture, {}, initialVelocity, toleranceOfGoal, toleranceOfStep)
+{}
+
+NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+         glm::vec3 initialVelocity):
+    NPC(context, pos, terrain, player, npcTexture, {}, initialVelocity, 1.5f, 1.3f)
+{}
+
+/**
+ * @brief NPC::NPC
+ * @param context
+ * @param pos
+ * @param terrain
+ */
+NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture):
+    NPC(context, pos, terrain, player, npcTexture, glm::vec3(3.f, 0.f, 3.f), 1.5f, 1.3f)
 {}
 
 
@@ -92,20 +113,16 @@ void NPC::tick(float dT, InputBundle &input)
     return;
 }
 
-/**
- * @brief NPC::tick
- * @param dT
- */
-void NPC::tick(float dT)
+glm::vec3 NPC::getCurrentGoal()
 {
-    // check if previous action is finished
+    // current bottom center
     glm::vec3 currBottom = getBottomCenter();
 
-    // check goals
     glm::vec3 currGoal = goals.empty() ? player->mcr_position : goals[goalPtr];
 
-    // goal achieved
-    if (glm::length(currGoal - currBottom) <= 2.f)
+    // see if this current goal is reached
+    // if reached, use the next goal depending on the ptr direction
+    if (glm::length(currGoal - currBottom) <= toleranceOfGoal)
     {
         // meet the current goal
         if (goalPtr == (goals.size() - 1))
@@ -119,23 +136,107 @@ void NPC::tick(float dT)
 
         goalPtr += goalDir;
         currGoal = goals[goalPtr];
+
+        // reset timer
+        actionTimer = 0.f;
+    }
+    return currGoal;
+}
+
+void NPC::checkActionIsDone()
+{
+    if (!actions.empty())
+    {
+        // there're actions
+        // check if the first action is done or not
+        glm::vec3 currBottom = getBottomCenter();
+        if (m_velocity[1] <= 0.f && onGround && glm::length(actions.front().dest - currBottom) <= toleranceOfStep)
+        {
+            // smaller than the tolerance => achieved the step
+            actions.pop();
+            // reset action Timer
+            actionTimer = 0.f;
+            nToDoActions -= 1;
+        }
     }
 
-    if ((!actions.empty()) && (glm::length(actions.front().dest - currBottom) <= 1.5f))
+}
+
+
+void NPC::resetHorizontalSpeed()
+{
+    m_velocity[0] = m_default_velocity[0];
+    m_velocity[2] = m_default_velocity[2];
+}
+
+
+bool NPC::isStuck()
+{
+    bool stuck = true;
+
+    glm::vec3 bot = getBottomCenter();
+    glm::vec3 blockPos = glm::vec3(glm::floor(bot.x),
+                                   glm::floor(bot.y),
+                                   glm::floor(bot.z));
+    glm::vec3 top = blockPos;
+    top[1] += 1.f;
+
+    if (mcr_terrain->getBlockAt(blockPos) == EMPTY && mcr_terrain->getBlockAt(top) == EMPTY)
     {
-        // std::cout << "done with 1 action" << std::endl;
-        actions.pop();
-        actionTimer = 0.f;
-        nToDoActions -= 1;
-        m_acceleration = glm::vec3(0.f);
-        onGround = true;
+        stuck = false;
     }
+
+    return stuck;
+}
+
+void NPC::replanIfNeeded(glm::vec3 goal)
+{
+    // either timeout or stuck
+    if ((actionTimer >= actionTimeout) && (actions.size() == nToDoActions))
+    {
+        actions = pathFinder.searchPathToward(m_position,
+                                              goal);
+        nToDoActions = actions.size();
+        actionTimer = 0.f;
+    }
+}
+
+void NPC::npcRestart()
+{
+    // set position to the initialPos
+    // velocity to default
+    m_position = initPos;
+    prev_m_position = initPos;
+    goalPtr = 0;
+    goalDir = 1;
+    actionTimer = 0.f;
+    actions = std::queue<NPCAction>();
+    resetHorizontalSpeed();
+    m_velocity[1] = 0.f;
+    m_acceleration = glm::vec3(0.f);
+    onGround = false;
+}
+
+
+/**
+ * @brief NPC::tick
+ * @param dT
+ */
+void NPC::tick(float dT)
+{
+    // check if previous action is finished
+    glm::vec3 currBottom = getBottomCenter();
+
+    // check goals
+    glm::vec3 currGoal = getCurrentGoal();
+
+    // check action
+    checkActionIsDone();
 
     if (onGround)
     {
         // reset horizontal speed
-        m_velocity[0] = m_default_velocity[0];
-        m_velocity[2] = m_default_velocity[2];
+        resetHorizontalSpeed();
 
         // check if need to find a path
         if (actions.empty())
@@ -155,14 +256,11 @@ void NPC::tick(float dT)
             {
                 case WALK:
                     tryMoveToward(dT, actions.front().dest);
-                    std::cout << "Try walk" << std::endl;
+                    // std::cout << "Try walk" << std::endl;
                     break;
                 case JUMP:
                     tryJumpToward(dT, actions.front().dest);
-                    std::cout << "Try jump" << std::endl;
-                    break;
-                case REST:
-                    //
+                    // std::cout << "Try jump" << std::endl;
                     break;
                 default:
                     break;
@@ -172,42 +270,34 @@ void NPC::tick(float dT)
 
         // replan if needed
         actionTimer += dT;
-        if (actionTimer >= actionTimeout && (actions.size() == nToDoActions))
-        {
-            actions = pathFinder.searchPathToward(m_position,
-                                                  currGoal);
-
-            nToDoActions = actions.size();
-            actionTimer = 0.f;
-        }
+        replanIfNeeded(currGoal);
     }
 
-    // particular for JUMP
+    // particular for the state during the jump
     else if ((!onGround) && (!actions.empty()) && (actions.front().action == JUMP))
     {
         // continue the jump
-        faceToward(actions.front().dest);
+        // finish the jump until it gets back to the ground
+        // faceToward(actions.front().dest);
         tryJumpToward(dT, actions.front().dest);
-
         actionTimer += dT;
-        if ((actionTimer >= actionTimeout) && (actions.size() == nToDoActions))
-        {
-            actions = pathFinder.searchPathToward(m_position,
-                                                  currGoal);
-            nToDoActions = actions.size();
-            actionTimer = 0.f;
-        }
     }
 
-    else
+    else if (!onGround && actions.empty())
 
     {
         tryMove(dT);
     }
 
-    walkingDistCycle += glm::length(m_position - prev_m_position);
-    prev_m_position = m_position;
+    // do limb rotations
     updateLimbRotations();
+
+    // restart if stuck
+    if (isStuck())
+    {
+        npcRestart();
+    }
+
 }
 
 
@@ -216,6 +306,9 @@ void NPC::tick(float dT)
  */
 void NPC::updateLimbRotations()
 {
+    walkingDistCycle += glm::length(m_position - prev_m_position);
+    prev_m_position = m_position;
+
     float maxLimbDeg;
     float limbRotationSpeed;
 
@@ -356,26 +449,26 @@ void NPC::faceSlowlyTowardTangent(float dT, glm::vec3 center)
 void NPC::tryMoveToward(float dT, glm::vec3 target)
 {
     // apply current acceleration & gravity
-    m_velocity[1] += dT * (m_gravity[1] + m_acceleration[1]);
+    m_velocity[1] += dT * (m_gravity[1]);
+
     // prevent NPCs from penetraing the terrain
     m_velocity[1] = glm::max(maxFallingSpeed, m_velocity[1]);
 
     // m_forward: current forward direction
     glm::vec3 currVelocity = m_velocity;
-    currVelocity[0] = (target[0] - m_position[0]) * m_velocity[0];
-    currVelocity[2] = (target[2] - m_position[2]) * m_velocity[2];
+    glm::vec3 currBottom = getBottomCenter();
+    currVelocity[0] = (target[0] - currBottom[0]) * m_velocity[0];
+    currVelocity[2] = (target[2] - currBottom[2]) * m_velocity[2];
 
     // add horizontal displacement
     glm::vec3 disp = dT * currVelocity;
-    // add vertical displacement
-    disp[1] += (dT * currVelocity[1]);
 
     if (checkYCollision())
     {
         // collide against the ground
         disp[1] = 0.f;
         // remove the gravity effect
-        m_velocity[1] = 0.f;
+        resetHorizontalSpeed();
         m_acceleration[1] = 0.f;
         onGround = true;
     }
@@ -405,26 +498,24 @@ void NPC::tryMoveToward(float dT, glm::vec3 target)
  */
 void NPC::tryJumpToward(float dT, glm::vec3 target)
 {
-    // experiment with jump
     if (onGround)
     {
         // acceleration might be based on the y
-        float yDiff = target[1] - (m_position[1] - rootToGround);
+        float yDiff = target[1] - getBottomCenter()[1];
         m_acceleration[1] = 100.f + yDiff * 10.f;
-        // define horizontal changes
-        glm::vec3 totalDisp = target - m_position;
-        totalDisp[1] = 0.f;
-        // assume it reaches there in a second
-        m_velocity[0] = totalDisp[0];
-        m_velocity[2] = totalDisp[2];
+        // onGround to false
         onGround = false;
     }
 
     // apply current acceleration & gravity
     m_velocity[1] += dT * (m_gravity[1] + m_acceleration[1]);
 
+    // set upper bound
+    m_velocity[1] = glm::min(6.f, m_velocity[1]);
+
     // prevent NPCs from penetraing the terrain
     m_velocity[1] = glm::max(maxFallingSpeed, m_velocity[1]);
+
 
     // acceleration fade out
     if (m_acceleration[1] > 0.f)
@@ -434,19 +525,18 @@ void NPC::tryJumpToward(float dT, glm::vec3 target)
     }
 
     // m_forward: current forward direction
-    glm::vec3 currVelocity = dT * m_velocity;
+    glm::vec3 currVelocity = m_velocity;
+    currVelocity[0] = (target[0] - getBottomCenter()[0]) * m_velocity[0];
+    currVelocity[2] = (target[2] - getBottomCenter()[2]) * m_velocity[2];
 
-    // add horizontal displacement
-    glm::vec3 disp = currVelocity;
-    // add vertical displacement
-    disp[1] += (dT * currVelocity[1]);
+    glm::vec3 disp = dT * currVelocity;
 
-    if (checkYCollision() && (m_acceleration[1] + m_gravity[1] <= 0.f))
+    if (checkYCollision() && ((m_acceleration[1] + m_gravity[1] <= 0.f) || m_velocity[1] <= 0.f))
     {
         // collide against the ground
         disp[1] = 0.f;
         // remove the gravity effect
-        m_velocity = glm::vec3(m_default_velocity[0], 0.f, m_default_velocity[1]);
+        resetHorizontalSpeed();
         m_acceleration[1] = 0.f;
         onGround = true;
     }
@@ -478,7 +568,8 @@ void NPC::tryJumpToward(float dT, glm::vec3 target)
 void NPC::tryMove(float dT)
 {
     // apply current acceleration & gravity
-    m_velocity[1] += dT * (m_gravity[1] + m_acceleration[1]);
+    m_velocity[1] += dT * (m_gravity[1]);
+
     // prevent NPCs from penetraing the terrain
     m_velocity[1] = glm::max(maxFallingSpeed, m_velocity[1]);
 
@@ -486,11 +577,53 @@ void NPC::tryMove(float dT)
     glm::vec3 currVelocity = m_velocity;
 
     // add horizontal displacement
-    glm::vec3 disp = (dT * currVelocity * m_forward);
+    glm::vec3 disp = dT * currVelocity;
+
+    if (checkYCollision())
+    {
+        // collide against the ground
+        disp[1] = 0.f;
+        // remove the gravity effect
+        resetHorizontalSpeed();
+        m_acceleration[1] = 0.f;
+        onGround = true;
+    }
+
+    if (checkXZCollision(0))
+    {
+        disp[0] = 0.f;
+    }
+
+    if (checkXZCollision(2))
+    {
+        disp[2] = 0.f;
+    }
+
+    // set the previous m_position
+    prev_m_position = m_position;
+
+    // this changes m_position
+    moveAlongVector(disp);
+
+}
+
+void NPC::fall(float dT)
+{
+    // apply current acceleration & gravity
+    m_velocity[1] += dT * (m_gravity[1]);
+
+    // prevent NPCs from penetraing the terrain
+    m_velocity[1] = glm::max(maxFallingSpeed, m_velocity[1]);
+
+    // m_forward: current forward direction
+    glm::vec3 currVelocity = m_velocity;
+
+    // add horizontal displacement
+    glm::vec3 disp = glm::vec3(0.f);
     // add vertical displacement
     disp[1] += (dT * currVelocity[1]);
 
-    if (checkYCollision() && (m_acceleration[1] + m_gravity[1] <= 0.f))
+    if (checkYCollision())
     {
         // collide against the ground
         disp[1] = 0.f;
@@ -516,7 +649,6 @@ void NPC::tryMove(float dT)
     // this changes m_position
     moveAlongVector(disp);
 }
-
 
 /**
  * @brief NPC::checkXZCollision

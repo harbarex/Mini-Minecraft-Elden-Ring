@@ -86,6 +86,26 @@ float PathFinder::getHorizontalDistance(glm::vec3 currPos, glm::vec3 targetPos)
 
 
 /**
+ * @brief PathFinder::getStableStartPoint
+ * @param pos
+ * @return
+ */
+glm::vec3 PathFinder::getStableStartPoint(glm::vec3 pos)
+{
+    glm::vec3 npcPos = getBlockAt(pos);
+
+    // current bottom
+    glm::vec3 startPos = getBlockRightBelow(pos);
+    if (glm::abs(startPos[1] - npcPos[1]) >= 3.f)
+    {
+        startPos = npcPos;
+        startPos[1] -= 1.f;
+        return startPos;
+    }
+    return startPos;
+}
+
+/**
  * @brief PathFinder::searchPathToward
  *  Apply A* search algorithm to find the path
  *  from the block located at StartPos to the block
@@ -101,11 +121,11 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
 {
     // align the startPos & targetPos with the grid (of the world)
     // the block right below the npc
-    startPos = getBlockRightBelow(startPos);
+    startPos = getStableStartPoint(startPos);
     targetPos = getBlockRightBelow(targetPos);
 
-    // std::cout << "Start from: " << glm::to_string(startPos) << std::endl;
-    // std::cout << "Target to: " << glm::to_string(targetPos) << std::endl;
+    std::cout << "Start from: " << glm::to_string(startPos) << std::endl;
+    std::cout << "Target to: " << glm::to_string(targetPos) << std::endl;
 
     // define the search limits based on the radius
     int xMin, xMax, yMin, yMax, zMin, zMax;
@@ -354,6 +374,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
 
     // update the actions
     std::queue<NPCAction> npcPath = std::queue<NPCAction>();
+    // std::cout << "Plan" << std::endl;
     for (int i = 0; i < finalPath.actions.size(); i++)
     {
         if (i == 0)
@@ -363,6 +384,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
 
         glm::vec3 blockTopCenter = getBlockTopAt(finalPath.actions[i].dest);
         npcPath.push(NPCAction(blockTopCenter, finalPath.actions[i].action));
+        // std::cout << "finalPath act: " << (finalPath.actions[i].action == JUMP) << std::endl;
     }
 
     return npcPath;

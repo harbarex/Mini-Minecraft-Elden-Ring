@@ -91,9 +91,11 @@ class PathFinder
     glm::vec3 getBlockAt(glm::vec3 pos);
     glm::vec3 getBlockTopAt(glm::vec3 pos);
     glm::vec3 getBlockRightBelow(glm::vec3 pos);
+    glm::vec3 getStableStartPoint(glm::vec3 pos);
 
     // manhattan
     float estimate(glm::vec3 currPos, glm::vec3 targetPos);
+
     // Euclidean
     float getDistance(glm::vec3 currPos, glm::vec3 targetPos);
     float getHorizontalDistance(glm::vec3 currPos, glm::vec3 targetPos);

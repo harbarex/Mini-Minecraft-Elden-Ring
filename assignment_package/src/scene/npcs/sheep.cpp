@@ -1,6 +1,28 @@
 #include "sheep.h"
 
 
+Sheep::Sheep(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+    std::vector<glm::vec3> goals,
+    glm::vec3 initialVelocity,
+    float toleranceOfGoal,
+    float toleranceOfStep)
+         : NPC(context, pos, terrain, player, npcTexture, goals, initialVelocity, toleranceOfGoal, toleranceOfStep),
+         head(context, SHEEPHEAD),
+         body(context, SHEEPBODY),
+         limb(context, SHEEPLIMB)
+{}
+
+
+Sheep::Sheep(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+    glm::vec3 initialVelocity, float toleranceOfGoal, float toleranceOfStep)
+    : Sheep(context, pos, terrain, player, npcTexture, {}, initialVelocity, toleranceOfGoal, toleranceOfStep)
+{}
+
+Sheep::Sheep(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+    glm::vec3 initialVelocity)
+    : Sheep(context, pos, terrain, player, npcTexture, {}, initialVelocity, 1.5f, 1.3f)
+
+{}
 /**
  * @brief Sheep::Sheep
  * @param context
@@ -8,15 +30,9 @@
  * @param terrain
  */
 Sheep::Sheep(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture)
-    : NPC(context, pos, terrain, player, npcTexture),
-      head(context, SHEEPHEAD),
-      body(context, SHEEPBODY),
-      limb(context, SHEEPLIMB)
-{
-    // change speed
-    m_velocity = glm::vec3(1.f, 0.f, 1.f);
-    m_default_velocity = glm::vec3(1.f, 0.f, 1.f);
-}
+    : Sheep(context, pos, terrain, player, npcTexture, {}, glm::vec3(2.f, 0.f, 2.f), 1.5f, 1.3f)
+{}
+
 
 
 /**

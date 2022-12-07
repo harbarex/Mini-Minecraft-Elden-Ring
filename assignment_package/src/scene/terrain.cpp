@@ -741,63 +741,125 @@ void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height)
     }
 }
 
-void addNPCJumpingStages(Chunk *chunk, int chunkXCorner, int chunkZCorner)
+
+/**
+ * @brief addNPCJumpStages
+ *  Helper to hard code the jump stages for fornite lama(s)
+ * @param chunk
+ * @param chunkXCorner
+ * @param chunkZCorner
+ */
+void addNPCJumpStages(Chunk *chunk, int chunkXCorner, int chunkZCorner)
 {
     if (chunkXCorner == 32 && chunkZCorner == 32)
     {
-        for (int x = 0; x < 7; x++)
+
+        for (int x = 0; x < 6; x++)
         {
-            for (int z = 0; z < 7; z++)
+            for (int z = 0; z < 6; z++)
             {
+
                 chunk->setBlockAt(x, 145, z, STONE);
             }
         }
 
-        for (int x = 8; x < 15; x++)
+        for (int x = 2; x < 4; x++)
         {
-            for (int z = 6; z < 15; z++)
+            for (int z = 2; z < 4; z++)
+            {
+                chunk->setBlockAt(x, 145, z, EMPTY);
+            }
+        }
+
+        for (int x = 8; x < 16; x++)
+        {
+            for (int z = 4; z < 12; z++)
             {
                 chunk->setBlockAt(x, 146, z, STONE);
             }
+        }
+        for (int x = 10; x < 14; x++)
+        {
+            for (int z = 6; z < 10; z++)
+            {
+                chunk->setBlockAt(x, 146, z, EMPTY);
+            }
+        }
+
+        for (int x = 13; x < 16; x++)
+        {
+            for (int z = 13; z < 16; z++)
+            {
+                chunk->setBlockAt(x, 147, z, STONE);
+            }
+        }
+
+    }
+
+    if (chunkXCorner == 48 && chunkZCorner == 32)
+    {
+        // x = 0
+        for (int z = 11; z < 16; z++)
+        {
+            chunk->setBlockAt(0, 147, z, STONE);
+            chunk->setBlockAt(1, 147, z, STONE);
+            chunk->setBlockAt(2, 147, z, STONE);
         }
     }
 
     if (chunkXCorner == 48 && chunkZCorner == 48)
     {
-        for (int x = 0; x < 7; x++)
+        for (int x = 1; x < 6; x++)
         {
-            for (int z = 0; z < 7; z++)
+            for (int z = 1; z < 6; z++)
             {
-                chunk->setBlockAt(x, 148, z, STONE);
+
+                chunk->setBlockAt(x, 149, z, STONE);
+            }
+        }
+        for (int x = 2; x < 4; x++)
+        {
+            for (int z = 2; z < 4; z++)
+            {
+                chunk->setBlockAt(x, 149, z, EMPTY);
             }
         }
 
-        for (int x = 9; x < 15; x++)
+        int start = 7;
+        for (int i = 0; i < 8; i++)
         {
-            for (int z = 6; z < 15; z++)
-            {
-                chunk->setBlockAt(x, 149, z, STONE);
-            }
+            chunk->setBlockAt(start + i, 150, start + i, STONE);
+            chunk->setBlockAt(start + i + 1, 150, start + i, STONE);
         }
     }
 
     if (chunkXCorner == 64 && chunkZCorner == 64)
     {
-        for (int x = 0; x < 7; x++)
+        for (int x = 0; x < 6; x++)
         {
-            for (int z = 0; z < 7; z++)
+            for (int z = 0; z < 6; z++)
+            {
+
+                chunk->setBlockAt(x, 151, z, STONE);
+            }
+        }
+        for (int x = 2; x < 4; x++)
+        {
+            for (int z = 2; z < 4; z++)
+            {
+                chunk->setBlockAt(x, 151, z, EMPTY);
+            }
+        }
+
+        for (int x = 8; x < 16; x++)
+        {
+            for (int z = 4; z < 12; z++)
             {
                 chunk->setBlockAt(x, 151, z, STONE);
             }
         }
 
-        for (int x = 9; x < 15; x++)
-        {
-            for (int z = 6; z < 15; z++)
-            {
-                chunk->setBlockAt(x, 152, z, STONE);
-            }
-        }
+        chunk->setBlockAt(12, 152, 8, WOOD);
     }
 }
 
@@ -853,7 +915,7 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
     // explicitly for test terrain
     // 48.f, 148.f, 32.f
     // 48.f, 32.f
-    addNPCJumpingStages(chunk, chunkXCorner, chunkZCorner);
+    addNPCJumpStages(chunk, chunkXCorner, chunkZCorner);
 
 }
 

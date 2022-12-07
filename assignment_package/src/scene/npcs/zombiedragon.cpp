@@ -21,6 +21,7 @@ ZombieDragon::ZombieDragon(OpenGLContext *context, glm::vec3 pos, Terrain &terra
 {
     // update m_velocity
     m_velocity = glm::vec3(5.f, 0.f, 5.f);
+    m_default_velocity = glm::vec3(5.f, 0.f, 5.f);
 }
 
 /**

@@ -36,24 +36,32 @@ MyGL::MyGL(QWidget *parent)
     m_player.setBlocksHold();
 
     // the initial set of NPCs
-    // target to 57 49 glm::vec3(57.f, 152.f, 40.f)
     // for jumping
-    std::vector<glm::vec3> jumpGoals = {glm::vec3(35.f, 146.f, 35.f),
-                                        glm::vec3(42.f, 146.f, 42.f),
-                                        glm::vec3(51.f, 148.f, 51.f),
-                                        glm::vec3(58.f, 149.f, 58.f),
-                                        glm::vec3(67.f, 151.f, 67.f),
-                                        glm::vec3(75.f, 152.f, 75.f)};
+    std::vector<glm::vec3> jumpGoals1 = {glm::vec3(33.f, 146.f, 33.f),
+                                        glm::vec3(76.f, 152.f, 72.f)};
+    std::vector<glm::vec3> jumpGoals2 = {glm::vec3(76.f, 152.f, 72.f),
+                                         glm::vec3(33.f, 146.f, 33.f)};
+    m_npcs.push_back(mkU<Lama>(this, glm::vec3(32.f, 148.f, 33.f),
+                               m_terrain, m_player, GLAMA,
+                               jumpGoals1,
+                               glm::vec3(3.f, 0.f, 3.f),
+                               1.5f, 1.f));
+    m_npcs.push_back(mkU<Lama>(this, glm::vec3(73.f, 155.f, 73.f),
+                               m_terrain, m_player, WLAMA,
+                               jumpGoals2,
+                               glm::vec3(2.5f, 0.f, 2.5f),
+                               1.5f, 1.f));
 
-    m_npcs.push_back(mkU<Sheep>(this, glm::vec3(36.f, 148.f, 35.f), m_terrain, m_player, SHEEP));
-    m_npcs[0]->setupGoals(jumpGoals);
-    m_npcs.push_back(mkU<Lama>(this, glm::vec3(37.f, 148.f, 35.f), m_terrain, m_player, LAMA));
-    m_npcs[1]->setupGoals(jumpGoals);
+//    m_npcs.push_back(mkU<Lama>(this, glm::vec3(34.f, 148.f, 35.f), m_terrain, m_player, BLAMA));
+//    m_npcs[2]->setupGoals(jumpGoals);
 
-    m_npcs.push_back(mkU<Steve>(this, glm::vec3(60.f, 145.f, 35.f), m_terrain, m_player, STEVE));
+    m_npcs.push_back(mkU<Steve>(this, glm::vec3(60.f, 145.f, 35.f),
+                                m_terrain, m_player, STEVE,
+                                glm::vec3(2.5f, 0.f, 2.5f),
+                                1.5f, 1.5f));
 
-    // flying around
-    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(65.f, 170.f, 32.f), m_terrain, m_player, ZDRAGON));
+//    // flying around
+//    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(65.f, 170.f, 32.f), m_terrain, m_player, ZDRAGON));
 }
 
 MyGL::~MyGL() {
@@ -245,7 +253,7 @@ void MyGL::paintGL() {
 
     m_progFlat.setModelMatrix(glm::mat4());
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
-    m_progFlat.draw(m_worldAxes);
+    //m_progFlat.draw(m_worldAxes);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -448,9 +456,15 @@ void MyGL::createNPCTextures()
     npcTextures[ZDRAGON].load(5);
 
     // Lama
-    npcTextures[LAMA] = Texture(this);
-    npcTextures[LAMA].create(":/textures/graylama.png");
-    npcTextures[LAMA].load(6);
+    npcTextures[GLAMA] = Texture(this);
+    npcTextures[GLAMA].create(":/textures/graylama.png");
+    npcTextures[GLAMA].load(6);
+    npcTextures[WLAMA] = Texture(this);
+    npcTextures[WLAMA].create(":/textures/whitelama.png");
+    npcTextures[WLAMA].load(7);
+    npcTextures[BLAMA] = Texture(this);
+    npcTextures[BLAMA].create(":/textures/brownlama.png");
+    npcTextures[BLAMA].load(8);
 
     // TODO: others
 }

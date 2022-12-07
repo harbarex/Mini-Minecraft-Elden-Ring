@@ -1,18 +1,38 @@
 #include "lama.h"
 
-Lama::Lama(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture)
-    : NPC(context, pos, terrain, player, npcTexture),
-      head(context, LAMAHEAD),
-      nose(context, LAMANOSE),
-      ear(context, LAMAEAR),
-      body(context, LAMABODY),
-      limb(context, LAMALIMB)
-{
-    // change speed
-    m_velocity = glm::vec3(1.5f, 0.f, 1.5f);
-    m_default_velocity = glm::vec3(1.5f, 0.f, 1.5f);
-}
+Lama::Lama(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+    std::vector<glm::vec3> goals,
+    glm::vec3 initialVelocity,
+    float toleranceOfGoal,
+    float toleranceOfStep)
+         : NPC(context, pos, terrain, player, npcTexture, goals, initialVelocity, toleranceOfGoal, toleranceOfStep),
+         head(context, LAMAHEAD),
+         nose(context, LAMANOSE),
+         ear(context, LAMAEAR),
+         body(context, LAMABODY),
+         limb(context, LAMALIMB)
+{}
 
+
+Lama::Lama(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+    glm::vec3 initialVelocity, float toleranceOfGoal, float toleranceOfStep)
+    : Lama(context, pos, terrain, player, npcTexture, {}, initialVelocity, toleranceOfGoal, toleranceOfStep)
+{}
+
+Lama::Lama(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+    glm::vec3 initialVelocity)
+    : Lama(context, pos, terrain, player, npcTexture, {}, initialVelocity, 1.5f, 1.3f)
+
+{}
+/**
+ * @brief Lama::Lama
+ * @param context
+ * @param pos
+ * @param terrain
+ */
+Lama::Lama(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture)
+    : Lama(context, pos, terrain, player, npcTexture, {}, glm::vec3(2.f, 0.f, 2.f), 1.5f, 1.3f)
+{}
 
 void Lama::initSceneGraph()
 {

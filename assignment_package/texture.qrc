@@ -9,5 +9,6 @@
         <file>textures/sheep.png</file>
         <file>textures/graylama.png</file>
         <file>textures/whitelama.png</file>
+        <file>textures/brownlama.png</file>
     </qresource>
 </RCC>

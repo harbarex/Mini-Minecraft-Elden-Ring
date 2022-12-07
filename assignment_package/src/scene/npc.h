@@ -13,6 +13,9 @@ class NPC : public Drawable, public Entity
 {
 protected:
 
+    // original position
+    glm::vec3 initPos;
+
     // scene graph
     uPtr<Node> root;
 
@@ -30,11 +33,26 @@ protected:
     float actionTimeout;
     uint nToDoActions;
 
+    bool isStuck();
+    void replanIfNeeded(glm::vec3 goal);
+    void npcRestart();
+
+    // tolerance of goals & steps (destinations)
+    float toleranceOfGoal;
+    float toleranceOfStep;
+
+    // helper to check the goal
+    glm::vec3 getCurrentGoal();
+
+    void checkActionIsDone();
+
     // NPC's physics params
     glm::vec3 m_acceleration;
     glm::vec3 m_velocity;
     glm::vec3 m_gravity;
     glm::vec3 m_default_velocity;
+
+    void resetHorizontalSpeed();
 
     // keep track of last position
     glm::vec3 prev_m_position;
@@ -69,6 +87,16 @@ public:
 
     // constructors
     NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture);
+    NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+        glm::vec3 initialVelocity);
+    NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+        glm::vec3 initialVelocity, float toleranceOfGoal, float toleranceOfStep);
+
+    NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+        std::vector<glm::vec3> goals,
+        glm::vec3 initialVelocity,
+        float toleranceOfGoal,
+        float toleranceOfStep);
 
     // NPC's Texture ID
     NPCTexture npcTexture;
@@ -90,6 +118,7 @@ public:
     virtual void tryMove(float dT);
     virtual void tryMoveToward(float dT, glm::vec3 target);
     virtual void tryJumpToward(float dT, glm::vec3 target);
+    virtual void fall(float dT);
 
     // helpers for NPC's movement
     // face toward the target
