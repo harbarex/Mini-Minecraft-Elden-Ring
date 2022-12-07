@@ -112,21 +112,26 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
     xMin = -radius;
     xMax = radius + 1;
     yMin = -2;
-    yMax = 2;
+    yMax = 3;
     zMin = -radius;
     zMax = radius + 1;
 
-    // set of seenPos
-    // treat current position as (0, 0, 0)
-    std::unordered_set<int> visited = {};
+    // set of visited positions (for each state)
+    // currently, there are only two states (walk & jump)
+    std::unordered_set<int> walkVisited = {};
+    std::unordered_set<int> jumpVisited = {};
 
     // heap (costSoFar, pos)
     std::priority_queue<Path, std::vector<Path>, CompareStep> pathsToExplore;
     Path initialPath = Path({NPCAction(startPos, REST)}, 0.f, estimate(startPos, targetPos), 0, 0, 0);
     pathsToExplore.push(initialPath);
 
-    float minCost = std::numeric_limits<float>::infinity();
+    bool foundDestination = false;
     Path minPath = initialPath;
+
+    // keep top 10 paths for random sampling (if no destination is found)
+    std::priority_queue<Path, std::vector<Path>, CompareStepMaxHeap> minCostPathHeap;
+    int nToKeep = 5;
 
     // assume only walk & each walk takes 1 block
     // able to explore 8 directions with y (+-1)
@@ -137,22 +142,29 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
         // get the top
         Path currPath = pathsToExplore.top();
 
+        // pop the top
+        pathsToExplore.pop();
+
         // reach the goal or not
         if (currPath.dest == targetPos)
         {
             minPath = currPath;
-            // std::cout << "Found Destination!!" << std::endl;
+            foundDestination = true;
             break;
         }
 
-        // pop the top
-        pathsToExplore.pop();
+        minCostPathHeap.push(currPath);
+        if (minCostPathHeap.size() > nToKeep)
+        {
+            // this will pop out the max cost in the heap so far
+            minCostPathHeap.pop();
+        }
 
-        // explore
+        // explore walk
         // search x & z
         for (int dx : {-1, 0, 1})
         {
-            for (int dy : {-1, 0, 1})
+            for (int dy : {-2, -1, 0})
             {
                 for (int dz : {-1, 0, 1})
                 {
@@ -166,8 +178,6 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
                     int y = currPath.currY + dy;
                     int z = currPath.currZ + dz;
 
-                    // y from [-2, 2)
-                    int id = (y + 1) * 4 * ((x + radius) * sideLen + (z + radius));
 
                     // out of search grid
                     if (x < xMin || x >= xMax || y < yMin || y >= yMax || z < zMin || z >= zMax )
@@ -175,12 +185,15 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
                         continue;
                     }
 
-                    if (visited.find(id) != visited.end())
+                    // y from [-2, 2)
+                    int id = (y + 2) * 5 * ((x + radius) * sideLen + (z + radius));
+
+                    if (walkVisited.find(id) != walkVisited.end())
                     {
                         continue;
                     }
 
-                    visited.insert(id);
+                    walkVisited.insert(id);
 
                     // explore this action
                     glm::vec3 nextDest = currPath.dest + glm::vec3(dx, dy, dz);
@@ -198,46 +211,159 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
                     }
 
                     int nextNSteps = currPath.nStepsSoFar + 1;
+
                     float nextCost = estimate(nextDest, targetPos) + (float) nextNSteps;
 
                     std::vector<NPCAction> nextActions = currPath.actions;
-                    if (dy == 1)
-                    {
-                        nextActions.push_back(NPCAction(nextDest, JUMP));
-                    }
-                    else
-                    {
-                        nextActions.push_back(NPCAction(nextDest, WALK));
-                    }
+
+                    nextActions.push_back(NPCAction(nextDest, WALK));
                     Path nextPath = Path(nextActions, nextNSteps, nextCost, x, y, z);
                     pathsToExplore.push(nextPath);
 
-                    // update the minPath if it's closer
-                    if (nextCost < minCost)
+                }
+            }
+        }
+
+        // no continuous jump
+        if (currPath.lastAct == JUMP)
+        {
+            continue;
+        }
+
+        // if there's any obstacle around, try jump?
+        // either empty or having blocks
+        bool hasObstacles = false;
+        for (int dx : {-1, 0, 1})
+        {
+            for (int dz : {-1, 0, 1})
+            {
+                if (dx == 0 && dz == 0)
+                {
+                    continue;
+                }
+                glm::vec3 neighbor = currPath.dest + glm::vec3(dx, 0, dz);
+                glm::vec3 neighborTop = glm::vec3(neighbor.x, neighbor.y + 1.f, neighbor.z);
+                if (mcr_terrain->getBlockAt(neighborTop) != EMPTY)
+                {
+                    hasObstacles = true;
+                }
+                // empty
+                int nToCheck = 3;
+                bool allEmpty = true;
+                for (int i = 0; i < nToCheck; i++)
+                {
+                    glm::vec3 neighborDown = glm::vec3(neighbor.x, neighbor.y - (float)i, neighbor.z);
+                    if (mcr_terrain->getBlockAt(neighborDown) != EMPTY)
                     {
-                        minCost = nextCost;
-                        minPath = nextPath;
+                        allEmpty = false;
+                    }
+                }
+                if (allEmpty)
+                {
+                    hasObstacles = true;
+                }
+            }
+
+        }
+
+        if (hasObstacles)
+        {
+            // explore jump
+            for (int dx : {-3, -2, -1, 0, 1, 2, 3})
+            {
+                for (int dy : {-2, -1, 0, 1, 2})
+                {
+                    for (int dz : {-3, -2, -1, 0, 1, 2, 3})
+                    {
+                        if (dx == 0 && dy == 0 && dz == 0)
+                        {
+                            // skip the origin
+                            continue;
+                        }
+
+                        int x = currPath.currX + dx;
+                        int y = currPath.currY + dy;
+                        int z = currPath.currZ + dz;
+
+                        // y from [-2, 2)
+                        int id = (y + 2) * 5 * ((x + radius) * sideLen + (z + radius));
+
+                        // out of search grid
+                        if (x < xMin || x >= xMax || y < yMin || y >= yMax || z < zMin || z >= zMax )
+                        {
+                            continue;
+                        }
+
+                        if (jumpVisited.find(id) != jumpVisited.end())
+                        {
+                            continue;
+                        }
+
+                        jumpVisited.insert(id);
+
+                        // explore this action
+                        glm::vec3 nextDest = currPath.dest + glm::vec3(dx, dy, dz);
+
+                        glm::vec3 nextDestTop = glm::vec3(nextDest.x, nextDest.y + 1.f, nextDest.z);
+
+                        if (mcr_terrain->getBlockAt(nextDestTop) != EMPTY)
+                        {
+                            continue;
+                        }
+
+                        if (validBlocks.find(mcr_terrain->getBlockAt(nextDest)) == validBlocks.end())
+                        {
+                            continue;
+                        }
+
+                        int maxD = glm::abs(dx) + glm::abs(dz);
+                        int nextNSteps = currPath.nStepsSoFar + 1;
+
+                        // additional cost for farther jump
+                        float nextCost = estimate(nextDest, targetPos) + (float) nextNSteps + (float)(maxD);
+
+                        std::vector<NPCAction> nextActions = currPath.actions;
+
+                        nextActions.push_back(NPCAction(nextDest, JUMP));
+
+                        Path nextPath = Path(nextActions, nextNSteps, nextCost, x, y, z);
+                        pathsToExplore.push(nextPath);
+
                     }
                 }
             }
         }
+
+    }
+
+    // if found destination => use minPath
+    // if not explore options
+    Path finalPath = minPath;
+    if (!foundDestination)
+    {
+        int selectID =  rand() % minCostPathHeap.size();
+        // std::cout << "Random path : " << selectID << " out of " << minCostPathHeap.size() << std::endl;
+        while (selectID > 0)
+        {
+            minCostPathHeap.pop();
+            selectID -= 1;
+        }
+        finalPath = minCostPathHeap.top();
+
     }
 
     // update the actions
     std::queue<NPCAction> npcPath = std::queue<NPCAction>();
-    // std::cout << "Plan: -----------" << std::endl;
-    for (int i = 0; i < minPath.actions.size(); i++)
+    for (int i = 0; i < finalPath.actions.size(); i++)
     {
         if (i == 0)
         {
             continue;
         }
 
-        glm::vec3 blockTopCenter = getBlockTopAt(minPath.actions[i].dest);
-        // std::cout << "To block (top) at: " << glm::to_string(blockTopCenter) << std::endl;
-        npcPath.push(NPCAction(blockTopCenter, minPath.actions[i].action));
+        glm::vec3 blockTopCenter = getBlockTopAt(finalPath.actions[i].dest);
+        npcPath.push(NPCAction(blockTopCenter, finalPath.actions[i].action));
     }
-    // always add a jump
 
     return npcPath;
 }

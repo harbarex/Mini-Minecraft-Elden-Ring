@@ -18,6 +18,11 @@ protected:
 
     Terrain *mcr_terrain;
 
+    // Goals
+    std::vector<glm::vec3> goals;
+    int goalPtr;
+    int goalDir;
+
     // path finder related
     PathFinder pathFinder;
     std::queue<NPCAction> actions;
@@ -62,7 +67,7 @@ protected:
 
 public:
 
-    // constructos
+    // constructors
     NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture);
 
     // NPC's Texture ID
@@ -99,6 +104,9 @@ public:
 
     // get bottom center
     virtual glm::vec3 getBottomCenter() const;
+
+    // set up the goals (explicitly)
+    virtual void setupGoals(std::vector<glm::vec3> targetPositions);
 
     // re-write collision
     virtual bool checkXZCollision(int idx);

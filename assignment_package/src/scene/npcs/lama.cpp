@@ -9,22 +9,25 @@ Lama::Lama(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &play
       limb(context, LAMALIMB)
 {
     // change speed
-    m_velocity = glm::vec3(3.f, 0.f, 3.f);
-    m_default_velocity = glm::vec3(3.f, 0.f, 3.f);
+    m_velocity = glm::vec3(1.5f, 0.f, 1.5f);
+    m_default_velocity = glm::vec3(1.5f, 0.f, 1.5f);
 }
 
 
 void Lama::initSceneGraph()
 {
     // body as center
-    glm::vec3 bodyScale = glm::vec3(1.f, 0.833f, 1.7f);
-    root = mkU<TranslateNode>(nullptr, glm::vec3(0.f));
+    glm::vec3 bodyScale = glm::vec3(1.f, 1.7f, 0.833f);
+
+    root = mkU<RotateNode>(nullptr,  glm::vec3(1.f, 0.f, 0.f), 90.f);
+    // root = mkU<TranslateNode>(nullptr,  glm::vec3(0.f));
     root->addChild(mkU<ScaleNode>(&body, bodyScale));
 
     // to head
     glm::vec3 headScale = glm::vec3(0.66f, 1.7f, 0.5f);
-    glm::vec3 headTranslate = glm::vec3(0.f, (headScale.y / 2.f) - (bodyScale.y / 4.f), (bodyScale.z / 2.f));
-    Node &bodyToHead = root->addChild(mkU<TranslateNode>(nullptr, headTranslate));
+    glm::vec3 headTranslate = glm::vec3(0.f, (headScale.y / 3.f), (bodyScale.y / 2.f));
+    Node &rotHead = root->addChild(mkU<RotateNode>(nullptr,  glm::vec3(-1.f, 0.f, 0.f), 90.f));
+    Node &bodyToHead = rotHead.addChild(mkU<TranslateNode>(nullptr, headTranslate));
     bodyToHead.addChild(mkU<ScaleNode>(&head, headScale));
 
     glm::vec3 noseScale = glm::vec3(0.33f, 0.33f, 0.75f);
@@ -51,20 +54,24 @@ void Lama::initSceneGraph()
     glm::vec3 rcTranslate = glm::vec3(0.f, -limbScale.y / 2.f,0.f);
     // left forth
     glm::vec3 lFTranslate = glm::vec3(bodyScale.x / 2.f - limbScale.x / 2.f,
-                                      - bodyScale.y / 2.f,
+                                      bodyScale.y / 2.f,
                                       bodyScale.z / 2.f - limbScale.z / 2.f) * ratio;
+
     Node &bodyToLF = root->addChild(mkU<TranslateNode>(nullptr, lFTranslate));
-    Node &rotLF = bodyToLF.addChild(mkU<RotateNode>(nullptr, glm::vec3(1.f, 0.f, 0.f), 5.f));
+    Node &bodyToRotLF = bodyToLF.addChild(mkU<RotateNode>(nullptr, glm::vec3(-1.f, 0.f, 0.f), 90.f));
+    Node &rotLF = bodyToRotLF.addChild(mkU<RotateNode>(nullptr, glm::vec3(1.f, 0.f, 0.f), 5.f));
     Node &transLF = rotLF.addChild(mkU<TranslateNode>(nullptr, rcTranslate));
     transLF.addChild(mkU<ScaleNode>(&limb, limbScale));
     limbRotNodes.push_back(&rotLF);
 
     // right forth
     glm::vec3 rFTranslate = glm::vec3(-bodyScale.x / 2.f + limbScale.x / 2.f,
-                                      - bodyScale.y / 2.f,
+                                      bodyScale.y / 2.f,
                                       bodyScale.z / 2.f - limbScale.z / 2.f) * ratio;
+
     Node &bodyToRF = root->addChild(mkU<TranslateNode>(nullptr, rFTranslate));
-    Node &rotRF = bodyToRF.addChild(mkU<RotateNode>(nullptr, glm::vec3(-1.f, 0.f, 0.f), 5.f));
+    Node &bodyToRotRF = bodyToRF.addChild(mkU<RotateNode>(nullptr, glm::vec3(-1.f, 0.f, 0.f), 90.f));
+    Node &rotRF = bodyToRotRF.addChild(mkU<RotateNode>(nullptr, glm::vec3(-1.f, 0.f, 0.f), 5.f));
     Node &transRF = rotRF.addChild(mkU<TranslateNode>(nullptr, rcTranslate));
     transRF.addChild(mkU<ScaleNode>(&limb, limbScale));
     limbRotNodes.push_back(&rotRF);
@@ -72,9 +79,11 @@ void Lama::initSceneGraph()
     // left back
     glm::vec3 lBTranslate = glm::vec3(bodyScale.x / 2.f - limbScale.x / 2.f,
                                       - bodyScale.y / 2.f,
-                                      - bodyScale.z / 2.f + limbScale.z / 2.f) * ratio;
+                                      bodyScale.z / 2.f - limbScale.z / 2.f) * ratio;
+
     Node &bodyToLB = root->addChild(mkU<TranslateNode>(nullptr, lBTranslate));
-    Node &rotLB = bodyToLB.addChild(mkU<RotateNode>(nullptr, glm::vec3(-1.f, 0.f, 0.f), 5.f));
+    Node &bodyToRotLB = bodyToLB.addChild(mkU<RotateNode>(nullptr, glm::vec3(-1.f, 0.f, 0.f), 90.f));
+    Node &rotLB = bodyToRotLB.addChild(mkU<RotateNode>(nullptr, glm::vec3(-1.f, 0.f, 0.f), 5.f));
     Node &transLB = rotLB.addChild(mkU<TranslateNode>(nullptr, rcTranslate));
     transLB.addChild(mkU<ScaleNode>(&limb, limbScale));
     limbRotNodes.push_back(&rotLB);
@@ -82,9 +91,11 @@ void Lama::initSceneGraph()
     // right back
     glm::vec3 rBTranslate = glm::vec3(-bodyScale.x / 2.f + limbScale.x / 2.f,
                                       - bodyScale.y / 2.f,
-                                      - bodyScale.z / 2.f + limbScale.z / 2.f) * ratio;
+                                      bodyScale.z / 2.f - limbScale.z / 2.f) * ratio;
+
     Node &bodyToRB = root->addChild(mkU<TranslateNode>(nullptr, rBTranslate));
-    Node &rotRB = bodyToRB.addChild(mkU<RotateNode>(nullptr, glm::vec3(1.f, 0.f, 0.f), 5.f));
+    Node &bodyToRotRB = bodyToRB.addChild(mkU<RotateNode>(nullptr, glm::vec3(-1.f, 0.f, 0.f), 90.f));
+    Node &rotRB = bodyToRotRB.addChild(mkU<RotateNode>(nullptr, glm::vec3(1.f, 0.f, 0.f), 5.f));
     Node &transRB = rotRB.addChild(mkU<TranslateNode>(nullptr, rcTranslate));
     transRB.addChild(mkU<ScaleNode>(&limb, limbScale));
     limbRotNodes.push_back(&rotRB);

@@ -16,7 +16,7 @@ MyGL::MyGL(QWidget *parent)
       m_progLambert(this), m_progFlat(this),
       m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_quad(this), m_progNPC(this),
       m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
-      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), m_npcs(),
+      m_terrain(this), m_player(glm::vec3(57.f, 155.f, 41.f), m_terrain), m_npcs(),
       frameCount(0),
       prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this), npcTextures(),
       prevExpandTime(QDateTime::currentMSecsSinceEpoch())
@@ -36,10 +36,24 @@ MyGL::MyGL(QWidget *parent)
     m_player.setBlocksHold();
 
     // the initial set of NPCs
-    m_npcs.push_back(mkU<Steve>(this, glm::vec3(55.f, 145.f, 32.f), m_terrain, m_player, STEVE));
-    m_npcs.push_back(mkU<Sheep>(this, glm::vec3(60.f, 145.f, 32.f), m_terrain, m_player, SHEEP));
+    // target to 57 49 glm::vec3(57.f, 152.f, 40.f)
+    // for jumping
+    std::vector<glm::vec3> jumpGoals = {glm::vec3(35.f, 146.f, 35.f),
+                                        glm::vec3(42.f, 146.f, 42.f),
+                                        glm::vec3(51.f, 148.f, 51.f),
+                                        glm::vec3(58.f, 149.f, 58.f),
+                                        glm::vec3(67.f, 151.f, 67.f),
+                                        glm::vec3(75.f, 152.f, 75.f)};
+
+    m_npcs.push_back(mkU<Sheep>(this, glm::vec3(36.f, 148.f, 35.f), m_terrain, m_player, SHEEP));
+    m_npcs[0]->setupGoals(jumpGoals);
+    m_npcs.push_back(mkU<Lama>(this, glm::vec3(37.f, 148.f, 35.f), m_terrain, m_player, LAMA));
+    m_npcs[1]->setupGoals(jumpGoals);
+
+    m_npcs.push_back(mkU<Steve>(this, glm::vec3(60.f, 145.f, 35.f), m_terrain, m_player, STEVE));
+
+    // flying around
     m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(65.f, 170.f, 32.f), m_terrain, m_player, ZDRAGON));
-    m_npcs.push_back(mkU<Lama>(this, glm::vec3(70.f, 145.f, 32.f), m_terrain, m_player, LAMA));
 }
 
 MyGL::~MyGL() {

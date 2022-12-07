@@ -16,8 +16,8 @@ Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &pl
       rLLimb(context, STEVERLL)
 {
     // change speed
-    m_velocity = glm::vec3(4.f, 0.f, 4.f);
-    m_default_velocity = glm::vec3(4.f, 0.f, 4.f);
+    m_velocity = glm::vec3(2.f, 0.f, 2.f);
+    m_default_velocity = glm::vec3(2.f, 0.f, 2.f);
 }
 
 

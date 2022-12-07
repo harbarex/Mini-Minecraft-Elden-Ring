@@ -13,10 +13,13 @@ NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player
     Drawable(context),
     Entity(pos),
     mcr_terrain(&terrain),
-    pathFinder(20, terrain),
+    goals(),
+    goalPtr(0),
+    goalDir(1),
+    pathFinder(15, terrain),
     actions(),
     actionTimer(0.f),
-    actionTimeout(1.f),
+    actionTimeout(3.f),
     nToDoActions(0),
     m_acceleration(0.f, 0.f, 0.f),
     m_velocity(4.f, 0.f, 4.f),
@@ -98,12 +101,34 @@ void NPC::tick(float dT)
     // check if previous action is finished
     glm::vec3 currBottom = getBottomCenter();
 
-    if ((!actions.empty()) && (glm::length(actions.front().dest - currBottom) <= 0.5f))
+    // check goals
+    glm::vec3 currGoal = goals.empty() ? player->mcr_position : goals[goalPtr];
+
+    // goal achieved
+    if (glm::length(currGoal - currBottom) <= 2.f)
     {
-        std::cout << "done with 1 action" << std::endl;
+        // meet the current goal
+        if (goalPtr == (goals.size() - 1))
+        {
+            goalDir = -1;
+        }
+        else if (goalPtr == 0)
+        {
+            goalDir = 1;
+        }
+
+        goalPtr += goalDir;
+        currGoal = goals[goalPtr];
+    }
+
+    if ((!actions.empty()) && (glm::length(actions.front().dest - currBottom) <= 1.5f))
+    {
+        // std::cout << "done with 1 action" << std::endl;
         actions.pop();
         actionTimer = 0.f;
         nToDoActions -= 1;
+        m_acceleration = glm::vec3(0.f);
+        onGround = true;
     }
 
     if (onGround)
@@ -117,23 +142,24 @@ void NPC::tick(float dT)
         {
             // update the path
             actions = pathFinder.searchPathToward(m_position,
-                                                  player->mcr_position);
+                                                  currGoal);
             nToDoActions = actions.size();
             actionTimer = 0.f;
-            std::cout << "Update actions : " << actions.size() << std::endl;
         }
 
         // perform the next action
         if (!actions.empty())
         {
-            faceSlowlyToward(dT, actions.front().dest);
+            faceToward(actions.front().dest);
             switch (actions.front().action)
             {
                 case WALK:
                     tryMoveToward(dT, actions.front().dest);
+                    std::cout << "Try walk" << std::endl;
                     break;
                 case JUMP:
                     tryJumpToward(dT, actions.front().dest);
+                    std::cout << "Try jump" << std::endl;
                     break;
                 case REST:
                     //
@@ -141,7 +167,7 @@ void NPC::tick(float dT)
                 default:
                     break;
             }
-            std::cout << "From " << glm::to_string(currBottom) << " to " << glm::to_string(actions.front().dest) << std::endl;;
+            // std::cout << "From " << glm::to_string(currBottom) << " to " << glm::to_string(actions.front().dest) << std::endl;
         }
 
         // replan if needed
@@ -149,11 +175,10 @@ void NPC::tick(float dT)
         if (actionTimer >= actionTimeout && (actions.size() == nToDoActions))
         {
             actions = pathFinder.searchPathToward(m_position,
-                                                  player->mcr_position);
+                                                  currGoal);
+
             nToDoActions = actions.size();
             actionTimer = 0.f;
-            std::cout << "Timeout - change plan << "<< std::endl;
-            std::cout << "Update actions : " << actions.size() << std::endl;
         }
     }
 
@@ -161,18 +186,16 @@ void NPC::tick(float dT)
     else if ((!onGround) && (!actions.empty()) && (actions.front().action == JUMP))
     {
         // continue the jump
-        faceSlowlyToward(dT, actions.front().dest);
+        faceToward(actions.front().dest);
         tryJumpToward(dT, actions.front().dest);
 
         actionTimer += dT;
         if ((actionTimer >= actionTimeout) && (actions.size() == nToDoActions))
         {
             actions = pathFinder.searchPathToward(m_position,
-                                                  player->mcr_position);
+                                                  currGoal);
             nToDoActions = actions.size();
             actionTimer = 0.f;
-            std::cout << "Jump Timeout - change plan << "<< std::endl;
-            std::cout << "Update actions : " << actions.size() << std::endl;
         }
     }
 
@@ -227,6 +250,12 @@ glm::vec3 NPC::getBottomCenter() const
     bottomCenter[1] -= rootToGround;
     return bottomCenter;
 }
+
+void NPC::setupGoals(std::vector<glm::vec3> targetPositions)
+{
+    goals = targetPositions;
+}
+
 
 /**
  * @brief NPC::faceSlowlyToward
@@ -379,7 +408,9 @@ void NPC::tryJumpToward(float dT, glm::vec3 target)
     // experiment with jump
     if (onGround)
     {
-        m_acceleration[1] = 100.f;
+        // acceleration might be based on the y
+        float yDiff = target[1] - (m_position[1] - rootToGround);
+        m_acceleration[1] = 100.f + yDiff * 10.f;
         // define horizontal changes
         glm::vec3 totalDisp = target - m_position;
         totalDisp[1] = 0.f;
@@ -415,7 +446,7 @@ void NPC::tryJumpToward(float dT, glm::vec3 target)
         // collide against the ground
         disp[1] = 0.f;
         // remove the gravity effect
-        m_velocity = glm::vec3(3.f, 0.f, 3.f);
+        m_velocity = glm::vec3(m_default_velocity[0], 0.f, m_default_velocity[1]);
         m_acceleration[1] = 0.f;
         onGround = true;
     }
@@ -485,6 +516,7 @@ void NPC::tryMove(float dT)
     // this changes m_position
     moveAlongVector(disp);
 }
+
 
 /**
  * @brief NPC::checkXZCollision

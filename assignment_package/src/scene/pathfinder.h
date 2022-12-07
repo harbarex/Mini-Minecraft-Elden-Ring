@@ -35,6 +35,7 @@ struct Path
     std::vector<NPCAction> actions;
 
     glm::vec3 dest;
+    Action lastAct;
 
     // the number of steps taken to get the endpoint
     float nStepsSoFar;
@@ -47,6 +48,7 @@ struct Path
         : actions(actions), nStepsSoFar(nSteps), costSoFar(totalCost), currX(x), currY(y), currZ(z)
     {
         dest = actions[actions.size() - 1].dest;
+        lastAct = actions[actions.size() - 1].action;
     }
 
 };
@@ -60,6 +62,14 @@ struct CompareStep
     bool operator() (const Path &p1, const Path &p2)
     {
         return p1.costSoFar > p2.costSoFar;
+    }
+};
+
+struct CompareStepMaxHeap
+{
+    bool operator() (const Path &p1, const Path &p2)
+    {
+        return p1.costSoFar < p2.costSoFar;
     }
 };
 

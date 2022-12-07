@@ -741,6 +741,67 @@ void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height)
     }
 }
 
+void addNPCJumpingStages(Chunk *chunk, int chunkXCorner, int chunkZCorner)
+{
+    if (chunkXCorner == 32 && chunkZCorner == 32)
+    {
+        for (int x = 0; x < 7; x++)
+        {
+            for (int z = 0; z < 7; z++)
+            {
+                chunk->setBlockAt(x, 145, z, STONE);
+            }
+        }
+
+        for (int x = 8; x < 15; x++)
+        {
+            for (int z = 6; z < 15; z++)
+            {
+                chunk->setBlockAt(x, 146, z, STONE);
+            }
+        }
+    }
+
+    if (chunkXCorner == 48 && chunkZCorner == 48)
+    {
+        for (int x = 0; x < 7; x++)
+        {
+            for (int z = 0; z < 7; z++)
+            {
+                chunk->setBlockAt(x, 148, z, STONE);
+            }
+        }
+
+        for (int x = 9; x < 15; x++)
+        {
+            for (int z = 6; z < 15; z++)
+            {
+                chunk->setBlockAt(x, 149, z, STONE);
+            }
+        }
+    }
+
+    if (chunkXCorner == 64 && chunkZCorner == 64)
+    {
+        for (int x = 0; x < 7; x++)
+        {
+            for (int z = 0; z < 7; z++)
+            {
+                chunk->setBlockAt(x, 151, z, STONE);
+            }
+        }
+
+        for (int x = 9; x < 15; x++)
+        {
+            for (int z = 6; z < 15; z++)
+            {
+                chunk->setBlockAt(x, 152, z, STONE);
+            }
+        }
+    }
+}
+
+
 /**
  * @brief FillBlocksWorker::setBlocks
  *  The private helper to set all the blocks of a given chunk
@@ -752,6 +813,7 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
 {
 
     Noise terrainHeightMap;
+
 
     for (int x = 0; x < 16; x++) {
         for (int z = 0; z < 16; z++) {
@@ -786,6 +848,12 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
 
         }
     }
+
+
+    // explicitly for test terrain
+    // 48.f, 148.f, 32.f
+    // 48.f, 32.f
+    addNPCJumpingStages(chunk, chunkXCorner, chunkZCorner);
 
 }
 

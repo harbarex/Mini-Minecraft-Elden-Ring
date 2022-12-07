@@ -14,8 +14,8 @@ Sheep::Sheep(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &pl
       limb(context, SHEEPLIMB)
 {
     // change speed
-    m_velocity = glm::vec3(2.f, 0.f, 2.f);
-    m_default_velocity = glm::vec3(2.f, 0.f, 2.f);
+    m_velocity = glm::vec3(1.f, 0.f, 1.f);
+    m_default_velocity = glm::vec3(1.f, 0.f, 1.f);
 }
 
 
