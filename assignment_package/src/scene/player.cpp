@@ -18,6 +18,7 @@ void Player::tick(float dT, InputBundle &input) {
     creationBufferTime += dT;
     destroyBlock(input, mcr_terrain);
     placeBlock(input, mcr_terrain);
+    widgetInteraction();
     selectBlockOnHand(input);
     drawInventoryItem();
     processInputs(input);
@@ -850,16 +851,16 @@ bool Player::isOpenContainer() {
  *   pull out the item in container once the player
  *   click on the container
  */
-void Player::setGrabItemPos(float posX, float posY) {
+bool Player::setGrabItemPos(float posX, float posY) {
     if (isGrabbing()) {
-        return;
+        return false;
     }
     int overallIdxInContainer;
     inventoryItemInContainer->findOverallIdxFromScreenPos(posX, posY, &overallIdxInContainer);
 
     // check if the current clicked position has an item or not
     if (overallIdxInContainer < 0) {
-        return;
+        return false;
     }
 
     // convert the overall index to inventory version
@@ -870,14 +871,14 @@ void Player::setGrabItemPos(float posX, float posY) {
 
     // grab nothing
     if (Block::isEmpty(grabItemType)) {
-        return;
+        return false;
     }
 
     // set the grabbed item to empty in inventory
     inventory.clearItem(grabItemOverallIdx);
 
     isGrabbingItem = true;
-    return;
+    return true;
 }
 
 /**
@@ -950,4 +951,7 @@ void Player::fillAllBlocks(){
     inventory.setBlocks();
 }
 
+BlockType Player::getGrabbedItemType() {
+    return grabItemType;
+}
 

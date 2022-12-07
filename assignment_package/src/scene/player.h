@@ -139,11 +139,13 @@ public:
     bool isGrabbing();
     // set up the grab position in player object
     // called from MyGL
-    void setGrabItemPos(float posX, float posY);
+    bool setGrabItemPos(float posX, float posY);
 
     // release the grab to given position in player object
     // called from MyGL
     void releaseGrabItem(float posX, float posY);
+
+    BlockType getGrabbedItemType();
 
     // fill all available blocks in inventory
     void fillAllBlocks();

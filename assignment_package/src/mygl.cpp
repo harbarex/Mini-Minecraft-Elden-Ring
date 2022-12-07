@@ -12,11 +12,11 @@ MyGL::MyGL(QWidget *parent)
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
       m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventoryWidgetOnHand(this), m_progInventoryItemOnHand(this), m_progInventoryWidgetInContainer(this),
-      m_progInventoryItemInContainer(this), m_progText(this),
-      m_quad(this), m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()), m_terrain(this),
-      m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), frameCount(0), prevFrameTime(QDateTime::currentMSecsSinceEpoch()),
-      mouseCursorMode(false), textureAll(this), inventoryWidgetOnHandTexture(this), inventoryWidgetInContainerTexture(this), textureFont(this),
-      prevExpandTime(QDateTime::currentMSecsSinceEpoch())
+      m_progInventoryItemInContainer(this), m_progGrabbedItem(this),
+      m_progText(this), m_quad(this), m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
+      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), frameCount(0),
+      prevFrameTime(QDateTime::currentMSecsSinceEpoch()), mouseCursorMode(false), textureAll(this), inventoryWidgetOnHandTexture(this), inventoryWidgetInContainerTexture(this),
+      textureFont(this), prevExpandTime(QDateTime::currentMSecsSinceEpoch())
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
@@ -95,6 +95,7 @@ void MyGL::initializeGL()
     m_progInventoryItemOnHand.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
     m_progInventoryWidgetInContainer.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
     m_progInventoryItemInContainer.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
+    m_progGrabbedItem.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
     m_progText.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -194,6 +195,8 @@ void MyGL::tick() {
 
     prevFrameTime = currFrameTime;
 
+    drawGrabbedItem();
+
     // pass delta-time to Player::tick
     m_player.tick(deltaTime, m_inputs);
 }
@@ -277,6 +280,9 @@ void MyGL::paintGL() {
     if (m_player.isOpenContainer()) {
         renderTexture(inventoryWidgetInContainerTexture, m_progInventoryWidgetInContainer, 4, inventoryWidgetInContainer);
         renderTexture(textureAll, m_progInventoryItemInContainer, 0, inventoryItemsInContainer);
+        if (m_player.isGrabbing()) {
+            renderTexture(textureAll, m_progGrabbedItem, 0, grabbedItem);
+        }
     }
 
     glEnable(GL_BLEND);
@@ -453,7 +459,10 @@ void MyGL::mousePressEvent(QMouseEvent *e) {
         // TODO: grab the block item if the player opens the container
         if (!m_player.isGrabbing() && m_player.isOpenContainer()) {
             glm::vec2 pos = convertPosToNormalizedPos(e);
-            m_player.setGrabItemPos(pos.x, pos.y);
+            if (m_player.setGrabItemPos(pos.x, pos.y)){
+                grabbedItemType = m_player.getGrabbedItemType();
+                Block::getUVCoords(grabbedItemType, &grabbedItemUVCoords);
+            }
         }
         break;
     case (Qt::RightButton):
@@ -554,6 +563,11 @@ void MyGL::initWidget() {
     widgets_raw.push_back(inventoryItemsInContainer);
     widgets.push_back(std::move(blockInWidget2));
 
+    uPtr<BlockInWidget> blockInWidget3 = mkU<BlockInWidget>(this);
+    grabbedItem = blockInWidget3.get();
+    widgets_raw.push_back(grabbedItem);
+    widgets.push_back(std::move(blockInWidget3));
+
     // pass widget raw pointers to player
     m_player.setupWidget(widgets_raw);
 }
@@ -589,4 +603,26 @@ glm::vec2 MyGL::convertPosToNormalizedPos(QMouseEvent *e) {
     float posX = (e->pos().x() - halfWidth) / halfWidth;
     float posY = (halfHeight - e->pos().y()) / halfHeight;
     return glm::vec2(posX, posY);
+}
+
+glm::vec2 MyGL::convertPosToNormalizedPos(glm::vec2 pixelPos) {
+    float halfWidth = width()/2.f;
+    float halfHeight = height()/2.f;
+    float posX = (pixelPos.x - halfWidth) / halfWidth;
+    float posY = (halfHeight - pixelPos.y) / halfHeight;
+    return glm::vec2(posX, posY);
+}
+
+void MyGL::drawGrabbedItem() {
+    // draw the grabbed item
+    if (!m_player.isGrabbing() || !m_player.isOpenContainer()) {
+        return;
+    }
+    QPoint point = QWidget::mapFromGlobal(QCursor::pos());
+    glm::vec2 mousePos(point.x(), point.y());
+
+    glm::vec2 pos = convertPosToNormalizedPos(mousePos);
+    // hard-code
+    glm::vec2 len(0.0945, 0.130);
+    grabbedItem->addItem(pos, len, grabbedItemUVCoords);
 }

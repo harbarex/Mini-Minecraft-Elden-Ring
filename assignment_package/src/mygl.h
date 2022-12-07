@@ -17,6 +17,7 @@
 
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
+#include <QApplication>
 #include <smartpointerhelp.h>
 
 
@@ -36,12 +37,14 @@ private:
     ShaderProgram m_progInventoryItemOnHand;
     ShaderProgram m_progInventoryWidgetInContainer;
     ShaderProgram m_progInventoryItemInContainer;
+    ShaderProgram m_progGrabbedItem;
     ShaderProgram m_progText;
     Quad m_quad;
     Widget* inventoryWidgetOnHand;
     Widget* inventoryWidgetInContainer;
     BlockInWidget* inventoryItemsOnHand;
     BlockInWidget* inventoryItemsInContainer;
+    BlockInWidget* grabbedItem;
     std::vector<uPtr<Widget>> widgets;
     uPtr<Text> textOnScreen;
 
@@ -84,8 +87,12 @@ private:
 
     long long prevExpandTime;
 
-
+    glm::vec2 convertPosToNormalizedPos(glm::vec2 pixelPos);
     glm::vec2 convertPosToNormalizedPos(QMouseEvent *e);
+
+    BlockType grabbedItemType;
+    std::array<glm::vec2, 4> grabbedItemUVCoords;
+    void drawGrabbedItem();
 
 
 public:

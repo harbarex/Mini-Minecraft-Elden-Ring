@@ -24,6 +24,35 @@ void BlockInWidget::addItem(int overallIdx, std::array<glm::vec2, 4>& uvCoords) 
 }
 
 /**
+ * @brief BlockInWidget::addItem
+ *  override addItem in Widget
+ *  add block item into widget object with given position and the length
+ * @param pos : glm::vec2, the center position of the block, -1 <= pos.x, pos.y <= 1
+ * @param len : glm::vec2, the width and height of the block, 0 <= len.x, len.y
+ * @param uvCoords: array of 4 uv coordinates of current block face, (order: bottom-left, bottom-right, top-right, top-left)
+ * @return
+ */
+void BlockInWidget::addItem(glm::vec2 pos, glm::vec2 len, std::array<glm::vec2, 4>& uvCoords) {
+    std::vector<glm::vec2> drawItem;
+
+    glm::vec2 topLeftFramePos = pos + glm::vec2(-len.x, len.y) / 2.f;
+    glm::vec2 bottomRightFramePos = pos + glm::vec2(len.x, -len.y) / 2.f;
+    glm::vec2 topRightFramePos(bottomRightFramePos.x, topLeftFramePos.y);
+    glm::vec2 bottomLeftFramePos(topLeftFramePos.x, bottomRightFramePos.y);
+
+    drawItem.push_back(bottomLeftFramePos);
+    drawItem.push_back(bottomRightFramePos);
+    drawItem.push_back(topRightFramePos);
+    drawItem.push_back(topLeftFramePos);
+
+    for (int i=0; i<4; ++i) {
+        drawItem.push_back(uvCoords[i]);
+    }
+
+    drawItems.push_back(drawItem);
+}
+
+/**
  * @brief BlockInWidget::storeItemIntoDrawVector
  *  override storeItemIntoDrawVector in Widget
  *  helper function to store the item into drawItems for further vbo creation
