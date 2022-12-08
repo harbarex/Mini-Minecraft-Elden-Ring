@@ -5,8 +5,9 @@ Player::Player(glm::vec3 pos, Terrain &terrain)
     : Entity(pos), m_velocity(0,0,0), m_acceleration(0,0,0),
       m_camera(pos + glm::vec3(0, 1.5f, 0)), mcr_terrain(terrain),
       flight_velocity_max(15.f), non_flight_velocity_max(10.f), m_velocity_val(flight_velocity_max),
-      m_acceleration_val(40.f), cameraBlockDist(3.f), flightMode(true),
-      destroyBufferTime(0.f), creationBufferTime(0.f), minWaitTime(0.5f), selectedBlockPtr(0), mcr_camera(m_camera)
+      m_acceleration_val(40.f), cameraBlockDist(3.f), flightMode(true), containerMode(false),
+      destroyBufferTime(0.f), creationBufferTime(0.f), minWaitTime(0.5f),
+      selectedBlockOnHandPtr(0), mcr_camera(m_camera)
 {}
 
 Player::~Player()
@@ -16,8 +17,10 @@ void Player::tick(float dT, InputBundle &input) {
     destroyBufferTime += dT;
     creationBufferTime += dT;
     destroyBlock(input, mcr_terrain);
-    placeNewBlock(input, mcr_terrain);
-    placeBlock(input, mcr_terrain, blocksHold[selectedBlockPtr]);
+    placeBlock(input, mcr_terrain);
+    widgetInteraction();
+    selectBlockOnHand(input);
+    drawInventoryItem();
     processInputs(input);
     computePhysics(dT, mcr_terrain, input);
 }
@@ -633,7 +636,7 @@ bool Player::isUnderLava(const Terrain &terrain, InputBundle &input) {
  */
 void Player::destroyBlock(InputBundle &inputs, Terrain &terrain) {
 
-    if (!inputs.leftMouseButtonPressed) {
+    if (!inputs.leftMouseButtonPressed || isOpenContainer()) {
         return;
     }
 
@@ -651,6 +654,11 @@ void Player::destroyBlock(InputBundle &inputs, Terrain &terrain) {
         return;
     }
 
+    // add destroyed block to inventory
+    BlockType destroyedBlockType = terrain.getBlockAt(glm::vec3(out_blockHit));
+    destroyedBlockType = Block::getDestroyedBlockType(destroyedBlockType);
+    inventory.storeBlock(destroyedBlockType);
+
     // remove hit block
     terrain.placeBlockAt(out_blockHit[0], out_blockHit[1], out_blockHit[2], EMPTY);
 
@@ -662,15 +670,14 @@ void Player::destroyBlock(InputBundle &inputs, Terrain &terrain) {
 }
 
 /**
- * @brief Player::placeNewBlock
- *  Place new block at the face of hit block,
- *  and set its type as that of hit block
+ * @brief Player::placeBlock
+ *  Place new block at the face of hit block with given blocktype
  * @param inputs : InputBundle, state of key pressed
  * @param terrain : Terrain, terrain storing block data
  */
-void Player::placeNewBlock(InputBundle &inputs, Terrain &terrain) {
+void Player::placeBlock(InputBundle &inputs, Terrain &terrain) {
 
-    if (!inputs.rightMouseButtonPressed) {
+    if (!inputs.rightMouseButtonPressed || isOpenContainer()) {
         return;
     }
 
@@ -688,70 +695,131 @@ void Player::placeNewBlock(InputBundle &inputs, Terrain &terrain) {
         return;
     }
 
-    // set the type of new block same as target hit block
-    BlockType prevCellType = terrain.getBlockAt(out_blockHit.x, out_blockHit.y, out_blockHit.z);
+    BlockType placeBlockType = inventory.placeBlock();
 
-    terrain.placeBlockAt(out_blockHitPrev.x, out_blockHitPrev.y, out_blockHitPrev.z, prevCellType);
+    if (Block::isEmpty(placeBlockType)) {
+        return;
+    }
+
+    terrain.placeBlockAt(out_blockHitPrev.x, out_blockHitPrev.y, out_blockHitPrev.z, placeBlockType);
 
     // reset the buffer time
     creationBufferTime = 0.f;
+
+    return;
+
+}
+
+void Player::selectNextBlockOnHand(InputBundle &inputs) {
+    if (!inputs.nPressed) {
+        return;
+    }
+
+    inventory.changeSelectedBlock();
+}
+
+/**
+ * @brief Player::selectBlockOnHand
+ *  change the selected block based on the input key (1-9)
+ *  Also setup the selected frame in inventoryWidgetOnHand
+ * @param inputs : InputBundle, state of key pressed
+ */
+void Player::selectBlockOnHand(InputBundle &inputs) {
+
+    // check if number from 1 to 9 is pressed or not
+    for (int i=1; i<10; ++i) {
+        if (inputs.numberPressed[i]) {
+            selectedBlockOnHandPtr = i-1;
+            break;
+        }
+    }
+
+    // setup the new selected pointer in inventory
+    inventory.changeSelectedBlock(selectedBlockOnHandPtr);
+
+    // setup the new selected pointer in widget
+    inventoryWidgetOnHand->addItem(selectedBlockOnHandPtr);
 
     return;
 
 }
 
 /**
- * @brief Player::placeBlock
- *  Place new block at the face of hit block with given blocktype
- * @param inputs : InputBundle, state of key pressed
- * @param terrain : Terrain, terrain storing block data
- * @param blocktype : BlockType, type of block user want to add
+ * @brief Player::setupWidget
+ *  setup widgets created in MyGL
+ *  use pointer to access the inherited class (BlockInWidget)
+ * @param widgets : vector of widget pointers, with the following order
+ * 1. inventoryWidgetOnHand
+ * 2. inventoryItemOnHand
+ * 3. inventoryWidgetInContainer
+ * 4. inventoryItemInBox
  */
-void Player::placeBlock(InputBundle &inputs, Terrain &terrain, BlockType blockType) {
-
-    if (!inputs.debugButtonPressed) {
-        return;
-    }
-
-    if (creationBufferTime < minWaitTime) {
-        return;
-    }
-
-    glm::ivec3 out_blockHit(0);
-    glm::ivec3 out_blockHitPrev(0);
-    glm::vec3 cameraRay(cameraBlockDist * m_camera.getForward());
-
-    bool newBlockHit = gridMarchPrevBlock(m_camera.getCurrentPos(), cameraRay, terrain, &out_blockHitPrev, &out_blockHit);
-
-    if (!newBlockHit) {
-        return;
-    }
-
-    terrain.placeBlockAt(out_blockHitPrev.x, out_blockHitPrev.y, out_blockHitPrev.z, blockType);
-
-    // reset the buffer time
-    creationBufferTime = 0.f;
-
-    return;
-
+void Player::setupWidget(std::vector<Widget*> widgets) {
+    inventoryWidgetOnHand = widgets[0];
+    inventoryItemOnHand = (BlockInWidget*)widgets[1];
+    inventoryWidgetInContainer = widgets[2];
+    inventoryItemInContainer = (BlockInWidget*)widgets[3];
 }
 
-void Player::setBlocksHold() {
-    for (auto const& iter : Block::blockTypeMap) {
-        blocksHold.push_back(iter.second);
-    }
-    std::cout << blocksHold.size() << std::endl;
+void Player::setupText(Text* text) {
+    textOnScreen = text;
 }
 
-void Player::selectNextBlock(InputBundle &inputs) {
-    if (!inputs.nPressed) {
-        return;
+void Player::drawInventoryItem() {
+    drawInventoryItemOnHand();
+    if (isOpenContainer()) {
+        drawInventoryItemInContainer();
     }
+}
 
-    selectedBlockPtr += 1;
+/**
+ * @brief Player::drawInventoryItemOnHand
+ *   pass all items in inventory on hand to widget object for further rendering
+ */
+void Player::drawInventoryItemOnHand() {
+    std::vector<std::pair<BlockType, int>> blocksInInventory;
+    inventory.getItemInfo(&blocksInInventory);
 
-    if (selectedBlockPtr >= (int)blocksHold.size()) {
-        selectedBlockPtr = 0;
+    for (int i=0; i<inventory.getBlocksOnHandSize(); ++i) {
+        if (Block::isEmpty(blocksInInventory[i].first)) {
+            continue;
+        }
+        std::array<glm::vec2, 4> uvCoords;
+        Block::getUVCoords(blocksInInventory[i].first, &uvCoords);
+        // draw the items in widget
+        inventoryItemOnHand->addItem(i, uvCoords);
+        // draw the count of items in widget
+        // the coordinate is hard-coded in widget.cpp (relative to the block position)
+        glm::vec2 top_left_pos;
+        float height;
+        inventoryItemOnHand->getWidgetItemNumberInfo(i, &top_left_pos, &height);
+        textOnScreen->addText(std::to_string(blocksInInventory[i].second), top_left_pos, height);
+    }
+}
+
+/**
+ * @brief Player::drawInventoryItemInContainer
+ *   pass all items in inventory in container to widget object for further rendering
+ */
+void Player::drawInventoryItemInContainer() {
+    std::vector<std::pair<BlockType, int>> blocksInInventory;
+    inventory.getItemInfo(&blocksInInventory);
+
+    for (int i=0; i<inventory.getBlocksInInventorySize(); ++i) {
+        if (Block::isEmpty(blocksInInventory[i].first)) {
+            continue;
+        }
+        int index = i - inventory.getBlocksOnHandSize();;
+        if (i < inventory.getBlocksOnHandSize()) {
+            index += inventory.getBlocksInInventorySize();
+        }
+        std::array<glm::vec2, 4> uvCoords;
+        Block::getUVCoords(blocksInInventory[i].first, &uvCoords);
+        inventoryItemInContainer->addItem(index, uvCoords);
+        glm::vec2 top_left_pos;
+        float height;
+        inventoryItemInContainer->getWidgetItemNumberInfo(index, &top_left_pos, &height);
+        textOnScreen->addText(std::to_string(blocksInInventory[i].second), top_left_pos, height);
     }
 }
 
@@ -760,4 +828,130 @@ bool Player::isLiquid(const Terrain &terrain, glm::ivec3* pos) {
     return Block::isLiquid(blockType);
 }
 
+bool Player::setContainerMode(bool state) {
+    containerMode = state;
+    return containerMode;
+}
+
+bool Player::toggleContainerMode() {
+    if (containerMode) {
+        containerMode = false;
+    } else {
+        containerMode = true;
+    }
+    return containerMode;
+}
+
+bool Player::isOpenContainer() {
+    return containerMode;
+}
+
+/**
+ * @brief Player::setGrabItemPos
+ *   pull out the item in container once the player
+ *   click on the container
+ */
+bool Player::setGrabItemPos(float posX, float posY) {
+    if (isGrabbing()) {
+        return false;
+    }
+    int overallIdxInContainer;
+    inventoryItemInContainer->findOverallIdxFromScreenPos(posX, posY, &overallIdxInContainer);
+
+    // check if the current clicked position has an item or not
+    if (overallIdxInContainer < 0) {
+        return false;
+    }
+
+    // convert the overall index to inventory version
+    grabItemOverallIdx = covertIdxFromContainerToInventory(overallIdxInContainer);
+
+    // store the grab item info
+    inventory.getItemInfo(grabItemOverallIdx, &grabItemType, &grabItemCount);
+
+    // grab nothing
+    if (Block::isEmpty(grabItemType)) {
+        return false;
+    }
+
+    // set the grabbed item to empty in inventory
+    inventory.clearItem(grabItemOverallIdx);
+
+    isGrabbingItem = true;
+    return true;
+}
+
+/**
+ * @brief Player::releaseGrabItemPos
+ *   release the item in container once the player
+ *   release the left mousekey
+ */
+void Player::releaseGrabItem(float posX, float posY) {
+    if(!isGrabbing()) {
+        return;
+    }
+    int overallIdxReleasedInContainer;
+    inventoryItemInContainer->findOverallIdxFromScreenPos(posX, posY, &overallIdxReleasedInContainer);
+
+    // check if the current clicked position has an item or not
+    if (overallIdxReleasedInContainer < 0) {
+        // put back the item to original position if the release pos is invalid
+        inventory.setBlock(grabItemOverallIdx, grabItemType, grabItemCount);
+        return;
+    }
+
+    // convert the overall index to inventory version
+    int releaseItemOverallIdx;
+    releaseItemOverallIdx = covertIdxFromContainerToInventory(overallIdxReleasedInContainer);
+
+    inventory.switchItems(grabItemOverallIdx, releaseItemOverallIdx, grabItemType, grabItemCount);
+
+    isGrabbingItem = false;
+    return;
+}
+
+/**
+ * @brief Player::isGrabbing
+ *   return the state if the player is
+ *   grabbing the item or not
+ */
+bool Player::isGrabbing() {
+    return isGrabbingItem;
+}
+
+/**
+ * @brief Player::widgetInteraction
+ *   called from tick function,
+ *   for implementing the widget interaction
+ */
+void Player::widgetInteraction() {
+    // TODO: draw the grabbed item
+    return;
+}
+
+/**
+ * @brief Player::covertIdxFromContainerToInventory
+ *   convert the index format from container widget to inventory
+ */
+int Player::covertIdxFromContainerToInventory(int overallIdxInContainer) {
+    // hard-code
+
+    int onHandSize = inventory.getBlocksOnHandSize();
+    int overallSize = inventory.getBlocksInInventorySize();
+
+    if (overallIdxInContainer >= (overallSize - onHandSize)) {
+        return overallIdxInContainer - overallSize + onHandSize;
+    }
+
+    return overallIdxInContainer + onHandSize;
+
+}
+
+void Player::fillAllBlocks(){
+    inventory.setBlocks();
+}
+
+BlockType Player::getGrabbedItemType() {
+    return grabItemType;
+}
 

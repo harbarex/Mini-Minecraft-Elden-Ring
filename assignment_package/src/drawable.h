@@ -64,6 +64,9 @@ public:
 
     bool bindTransparentIdx();
     bool bindTransparentData();
+
+    void pushVec4ToBuffer(std::vector<float> &buf, const glm::vec4 &vec);
+    void pushVec2ToBuffer(std::vector<float> &buf, const glm::vec2 &vec);
 };
 
 // A subclass of Drawable that enables the base code to render duplicates of

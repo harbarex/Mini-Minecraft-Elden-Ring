@@ -11,12 +11,12 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
-      m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_quad(this),
-      m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
-      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
-      frameCount(0),
-      prevFrameTime(QDateTime::currentMSecsSinceEpoch()), textureAll(this),
-      prevExpandTime(QDateTime::currentMSecsSinceEpoch())
+      m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventoryWidgetOnHand(this), m_progInventoryItemOnHand(this), m_progInventoryWidgetInContainer(this),
+      m_progInventoryItemInContainer(this), m_progGrabbedItem(this),
+      m_progText(this), m_quad(this), m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
+      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), frameCount(0),
+      prevFrameTime(QDateTime::currentMSecsSinceEpoch()), mouseCursorMode(false), textureAll(this), inventoryWidgetOnHandTexture(this), inventoryWidgetInContainerTexture(this),
+      textureFont(this), prevExpandTime(QDateTime::currentMSecsSinceEpoch())
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
@@ -29,7 +29,8 @@ MyGL::MyGL(QWidget *parent)
     prevMouseX = width() / 2;
     prevMouseY = height() / 2;
 
-    m_player.setBlocksHold();
+    initWidget();
+    initText();
 }
 
 MyGL::~MyGL() {
@@ -37,6 +38,9 @@ MyGL::~MyGL() {
     glDeleteVertexArrays(1, &vao);
 
     m_quad.destroyVBOdata();
+    inventoryWidgetOnHand->destroyVBOdata();
+    inventoryItemsOnHand->destroyVBOdata();
+    textOnScreen->destroyVBOdata();
     m_frameBuffer.destroy();
     m_worldAxes.destroyVBOdata();
 }
@@ -87,10 +91,41 @@ void MyGL::initializeGL()
     m_progUnderwater.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/underwater.frag.glsl");
     m_progLava.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/lava.frag.glsl");
     m_progNoOp.create(":/glsl/post/overlay.vert.glsl", ":/glsl/post/overlay.frag.glsl");
+    m_progInventoryWidgetOnHand.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
+    m_progInventoryItemOnHand.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
+    m_progInventoryWidgetInContainer.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
+    m_progInventoryItemInContainer.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
+    m_progGrabbedItem.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
+    m_progText.create(":/glsl/post/texture.vert.glsl", ":/glsl/post/texture.frag.glsl");
 
-    m_quad.createVBOdata();
+    ////////////////////////////////////////////////////////////////////////////////////
+    /// loading texture map from png
+    ////////////////////////////////////////////////////////////////////////////////////
+    // main texture map (slot = 0)
+    createTexture(textureAll, ":/textures/minecraft_textures_all.png", 0);
+    // loading uv coordinate of main texture map from text file
+    Block::loadUVCoordFromText(":/textures/uv_coord_texture_all.txt");
 
-    createTexture();
+    // widget texture map (slot = 2)
+    createTexture(inventoryWidgetOnHandTexture, ":/textures/minecraft_textures_widgets.png", 2);
+    inventoryWidgetOnHand->loadCoordFromText(":/textures/widget_on_hand_info.txt");
+
+    // block in widget (on hand)
+    inventoryItemsOnHand->loadCoordFromText(":/textures/widget_item_on_hand_info.txt");
+
+    // container widget texture map (slot = 4)
+    createTexture(inventoryWidgetInContainerTexture, ":/textures/inventory.png", 4);
+    inventoryWidgetInContainer->loadCoordFromText(":/textures/widget_in_container_info.txt");
+
+    // item in widget in container
+    inventoryItemsInContainer->loadCoordFromText(":/textures/widget_item_in_container_info.txt");
+
+    // text on the screen (slot = 3)
+    createTexture(textureFont, ":/textures/ascii.png", 3);
+    textOnScreen->loadUVCoordFromText(":/textures/text_info.txt");
+
+    ////////////////////////////////////////////////////////////////////////////////////
+
 
     // Set a color with which to draw geometry.
     // This will ultimately not be used when you change
@@ -120,10 +155,13 @@ void MyGL::resizeGL(int w, int h) {
     m_progNoOp.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
     m_progUnderwater.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
     m_progLava.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
+    m_progInventoryWidgetOnHand.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
 
     m_frameBuffer.resize(this->width(), this->height(), this->devicePixelRatio());
     m_frameBuffer.destroy();
     m_frameBuffer.create();
+
+    textOnScreen->resizeDimension(this->width(), this->height());
 
     printGLErrorLog();
 }
@@ -156,6 +194,8 @@ void MyGL::tick() {
     float deltaTime = (currFrameTime - prevFrameTime) / 1000.f;
 
     prevFrameTime = currFrameTime;
+
+    drawGrabbedItem();
 
     // pass delta-time to Player::tick
     m_player.tick(deltaTime, m_inputs);
@@ -228,6 +268,30 @@ void MyGL::paintGL() {
         m_progNoOp.drawOverlay(m_quad);
     }
 
+    // draw the widget at last
+    glDisable(GL_DEPTH_TEST);
+    // On hand
+    // widget and selected frame
+    renderTexture(inventoryWidgetOnHandTexture, m_progInventoryWidgetOnHand, 2, inventoryWidgetOnHand);
+    // blocks
+    renderTexture(textureAll, m_progInventoryItemOnHand, 0, inventoryItemsOnHand);
+    // In container
+    // TODO: draw the container widget and items in container if the player opens it
+    if (m_player.isOpenContainer()) {
+        renderTexture(inventoryWidgetInContainerTexture, m_progInventoryWidgetInContainer, 4, inventoryWidgetInContainer);
+        renderTexture(textureAll, m_progInventoryItemInContainer, 0, inventoryItemsInContainer);
+        if (m_player.isGrabbing()) {
+            renderTexture(textureAll, m_progGrabbedItem, 0, grabbedItem);
+        }
+    }
+
+    glEnable(GL_BLEND);
+    renderTexture(textureFont, m_progText, 3, textOnScreen.get());
+    glDisable(GL_BLEND);
+
+    glEnable(GL_DEPTH_TEST);
+
+
     frameCount++;
 }
 
@@ -237,7 +301,7 @@ void MyGL::paintGL() {
 void MyGL::renderTerrain(TerrainDrawType drawType) {
 
     // bind the texture
-    bindTexture();
+    bindTexture(textureAll, m_progLambert, 0);
 
     // only draw the 3 x 3 chunks around the player
     glm::vec3 pos = m_player.mcr_position;
@@ -283,14 +347,37 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
     } else if (e->key() == Qt::Key_E) {
         m_inputs.ePressed = true;
     } else if (e->key() == Qt::Key_P) {
-        m_inputs.debugButtonPressed = true;
+        m_inputs.pPressed = true;
+        m_player.fillAllBlocks();
     } else if (e->key() == Qt::Key_N) {
         m_inputs.nPressed = true;
-        m_player.selectNextBlock(m_inputs);
+        m_player.selectNextBlockOnHand(m_inputs);
     } else if (e->key() == Qt::Key_Space) {
         m_inputs.spacePressed = true;
     } else if (e->key() == Qt::Key_F) {
         m_player.toggleFlightMode();
+    } else if (e->key() == Qt::Key_0) {
+        m_inputs.numberPressed[0] = true;
+    } else if (e->key() == Qt::Key_1) {
+        m_inputs.numberPressed[1] = true;
+    } else if (e->key() == Qt::Key_2) {
+        m_inputs.numberPressed[2] = true;
+    } else if (e->key() == Qt::Key_3) {
+        m_inputs.numberPressed[3] = true;
+    } else if (e->key() == Qt::Key_4) {
+        m_inputs.numberPressed[4] = true;
+    } else if (e->key() == Qt::Key_5) {
+        m_inputs.numberPressed[5] = true;
+    } else if (e->key() == Qt::Key_6) {
+        m_inputs.numberPressed[6] = true;
+    } else if (e->key() == Qt::Key_7) {
+        m_inputs.numberPressed[7] = true;
+    } else if (e->key() == Qt::Key_8) {
+        m_inputs.numberPressed[8] = true;
+    } else if (e->key() == Qt::Key_9) {
+        m_inputs.numberPressed[9] = true;
+    } else if (e->key() == Qt::Key_I) {
+        m_inputs.iPressed = true;
     }
 }
 
@@ -309,11 +396,35 @@ void MyGL::keyReleaseEvent(QKeyEvent *e)
     } else if (e->key() == Qt::Key_E) {
         m_inputs.ePressed = false;
     } else if (e->key() == Qt::Key_P) {
-        m_inputs.debugButtonPressed = false;
+        m_inputs.pPressed = false;
     } else if (e->key() == Qt::Key_N) {
         m_inputs.nPressed = false;
     } else if (e->key() == Qt::Key_Space) {
         m_inputs.spacePressed = false;
+    } else if (e->key() == Qt::Key_0) {
+        m_inputs.numberPressed[0] = false;
+    } else if (e->key() == Qt::Key_1) {
+        m_inputs.numberPressed[1] = false;
+    } else if (e->key() == Qt::Key_2) {
+        m_inputs.numberPressed[2] = false;
+    } else if (e->key() == Qt::Key_3) {
+        m_inputs.numberPressed[3] = false;
+    } else if (e->key() == Qt::Key_4) {
+        m_inputs.numberPressed[4] = false;
+    } else if (e->key() == Qt::Key_5) {
+        m_inputs.numberPressed[5] = false;
+    } else if (e->key() == Qt::Key_6) {
+        m_inputs.numberPressed[6] = false;
+    } else if (e->key() == Qt::Key_7) {
+        m_inputs.numberPressed[7] = false;
+    } else if (e->key() == Qt::Key_8) {
+        m_inputs.numberPressed[8] = false;
+    } else if (e->key() == Qt::Key_9) {
+        m_inputs.numberPressed[9] = false;
+    } else if (e->key() == Qt::Key_I) {
+        m_inputs.iPressed = false;
+        m_player.toggleContainerMode();
+        toggleMouseCursorMode();
     }
 }
 
@@ -333,17 +444,26 @@ void MyGL::mouseMoveEvent(QMouseEvent *e) {
 
 //    #endif
 
+    if (mouseCursorMode) {
+        return;
+    }
     m_player.rotateCameraView(m_inputs);
-
     moveMouseToCenter();
 }
 
 void MyGL::mousePressEvent(QMouseEvent *e) {
-    // TODO
 
     switch (e->button()) {
     case (Qt::LeftButton):
         m_inputs.leftMouseButtonPressed = true;
+        // TODO: grab the block item if the player opens the container
+        if (!m_player.isGrabbing() && m_player.isOpenContainer()) {
+            glm::vec2 pos = convertPosToNormalizedPos(e);
+            if (m_player.setGrabItemPos(pos.x, pos.y)){
+                grabbedItemType = m_player.getGrabbedItemType();
+                Block::getUVCoords(grabbedItemType, &grabbedItemUVCoords);
+            }
+        }
         break;
     case (Qt::RightButton):
         m_inputs.rightMouseButtonPressed = true;
@@ -354,11 +474,16 @@ void MyGL::mousePressEvent(QMouseEvent *e) {
 }
 
 void MyGL::mouseReleaseEvent(QMouseEvent *e) {
-    // TODO
 
     switch (e->button()) {
     case (Qt::LeftButton):
         m_inputs.leftMouseButtonPressed = false;
+        // TODO: release the selected block item to a new place (or switch the items)
+        // if the player opens the container
+        if (m_player.isGrabbing() && m_player.isOpenContainer()) {
+            glm::vec2 pos = convertPosToNormalizedPos(e);
+            m_player.releaseGrabItem(pos.x, pos.y);
+        }
         break;
     case (Qt::RightButton):
         m_inputs.rightMouseButtonPressed = false;
@@ -368,54 +493,136 @@ void MyGL::mouseReleaseEvent(QMouseEvent *e) {
     }
 }
 
-void MyGL::createTexture() {
-    loadTextureUVCoord();
-    textureAll.create(":/textures/minecraft_textures_all.png");
-    textureAll.load(0);
+/**
+ * @brief MyGL::createTexture
+ *   assign texture image to the texture object
+ *   called from initializeGL
+ * @param texture :texture object that the texture map would assign to
+ * @param img_path : image path of texture map (in qrc)
+ * @param slot: slot that would be allocated to this texture object
+ */
+void MyGL::createTexture(Texture& texture, const char* img_path, int slot) {
+    texture.create(img_path);
+    texture.load(slot);
 }
 
-// This function is used to load uv coordinate of the block from text file
-void MyGL::loadTextureUVCoord() {
+/**
+ * @brief MyGL::bindTexture
+ *   helper function to bind the shadeProgram to texture
+ * @param texture : texture object
+ * @param shaderProgram : shaderProgram
+ * @param slot: texture slot
+ */
+void MyGL::bindTexture(Texture& texture, ShaderProgram& shaderProgram, int slot) {
+    texture.bind(slot);
+    shaderProgram.setTexture(slot);
+}
 
-    // read text file
-    QFile f(":/textures/uv_coord_texture_all.txt");
-    f.open(QIODevice::ReadOnly);
-    QTextStream s(&f);
-    QString line;
-    bool readCoord = false;
-    int coordCount = 0;
-    std::array<glm::vec2, 6> uvOffsets;
-    BlockType currBlockType;
+/**
+ * @brief MyGL::renderTexture
+ *   render the object only requires the texture map
+ *   called from paintGL
+ * @param texture : texture object used in this drawable object
+ * @param shaderProgram : shaderProgram of the drawable object
+ * @param slot: texture slot
+ * @param drawable : pointer to drawable object (for inherited class)
+ */
+void MyGL::renderTexture(Texture& texture, ShaderProgram& shaderProgram, int slot, Drawable* d) {
+    d->createVBOdata();
+    bindTexture(texture, shaderProgram, slot);
+    shaderProgram.drawTexture(*d);
+}
 
-    while (!s.atEnd()) {
-        line = s.readLine();
-        if (line.size() == 0 || line.startsWith("#")) {
-            // skip empty line and line starts with #
-            continue;
-        }
+void MyGL::initWidget() {
+    /**
+     * widget setup
+     * 1. inventoryWidgetOnHand
+     * 2. inventoryItemOnHand
+     * 3. inventoryWidgetInContainer
+     * 4. inventoryItemInContainer
+     */
+    std::vector<Widget*> widgets_raw;
 
-        if (readCoord) {
-            // store uv coordinate into temp array
-            uvOffsets[coordCount] = glm::vec2(line.split(" ")[0].toDouble(), line.split(" ")[1].toDouble());
-            coordCount += 1;
-        } else if (Block::blockTypeMap.find(line.toStdString()) != Block::blockTypeMap.end()) {
-            // identify which block
-            currBlockType = Block::blockTypeMap[line.toStdString()];
-            readCoord = true;
-        }
+    uPtr<Widget> widget = mkU<Widget>(this);
+    inventoryWidgetOnHand = widget.get();
+    widgets_raw.push_back(inventoryWidgetOnHand);
+    widgets.push_back(std::move(widget));
 
-        if (coordCount == 6) {
-            // store 6 uv coordinates into BlockCollection
+    uPtr<BlockInWidget> blockInWidget = mkU<BlockInWidget>(this);
+    inventoryItemsOnHand = blockInWidget.get();
+    widgets_raw.push_back(inventoryItemsOnHand);
+    widgets.push_back(std::move(blockInWidget));
 
-            Block::insertNewUVCoord(currBlockType, uvOffsets);
-            uvOffsets.empty();
-            coordCount = 0;
-            readCoord = false;
-        }
+    uPtr<Widget> widget2 = mkU<Widget>(this);
+    inventoryWidgetInContainer = widget2.get();
+    widgets_raw.push_back(inventoryWidgetInContainer);
+    widgets.push_back(std::move(widget2));
+
+    uPtr<BlockInWidget> blockInWidget2 = mkU<BlockInWidget>(this);
+    inventoryItemsInContainer = blockInWidget2.get();
+    widgets_raw.push_back(inventoryItemsInContainer);
+    widgets.push_back(std::move(blockInWidget2));
+
+    uPtr<BlockInWidget> blockInWidget3 = mkU<BlockInWidget>(this);
+    grabbedItem = blockInWidget3.get();
+    widgets_raw.push_back(grabbedItem);
+    widgets.push_back(std::move(blockInWidget3));
+
+    // pass widget raw pointers to player
+    m_player.setupWidget(widgets_raw);
+}
+
+void MyGL::initText() {
+    textOnScreen = mkU<Text>(this, width(), height());
+    m_player.setupText(textOnScreen.get());
+
+}
+
+void MyGL::toggleMouseCursorMode() {
+    if (mouseCursorMode) {
+        mouseCursorMode = false;
+        setCursor(Qt::BlankCursor);
+    } else {
+        mouseCursorMode = true;
+        setCursor(Qt::CrossCursor);
     }
 }
 
-void MyGL::bindTexture() {
-    textureAll.bind(0);
-    m_progLambert.setTexture();
+/**
+ * @brief MyGL::convertPosToNormalizedPos
+ *  helper function to normalize the position
+ * @param pos : float, the position where the mouse click
+ * ranging from 0 to the width and height for x and y, respectively
+ * @return normalizePos : glm::vec2, the normalized position where the mouse click
+ * ranging from -1 to 1 for x and y, respectively
+ */
+glm::vec2 MyGL::convertPosToNormalizedPos(QMouseEvent *e) {
+    // TODO: finish the function
+    float halfWidth = width()/2.f;
+    float halfHeight = height()/2.f;
+    float posX = (e->pos().x() - halfWidth) / halfWidth;
+    float posY = (halfHeight - e->pos().y()) / halfHeight;
+    return glm::vec2(posX, posY);
+}
+
+glm::vec2 MyGL::convertPosToNormalizedPos(glm::vec2 pixelPos) {
+    float halfWidth = width()/2.f;
+    float halfHeight = height()/2.f;
+    float posX = (pixelPos.x - halfWidth) / halfWidth;
+    float posY = (halfHeight - pixelPos.y) / halfHeight;
+    return glm::vec2(posX, posY);
+}
+
+void MyGL::drawGrabbedItem() {
+    // draw the grabbed item
+    if (!m_player.isGrabbing() || !m_player.isOpenContainer()) {
+        return;
+    }
+    QPoint point = QWidget::mapFromGlobal(QCursor::pos());
+    glm::vec2 mousePos(point.x(), point.y());
+
+    glm::vec2 pos = convertPosToNormalizedPos(mousePos);
+    // hard-code
+    glm::vec2 len(0.0945, 0.130);
+    grabbedItem->addItem(pos, len, grabbedItemUVCoords);
 }

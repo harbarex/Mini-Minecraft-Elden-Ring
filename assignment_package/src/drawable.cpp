@@ -188,3 +188,32 @@ void InstancedDrawable::clearColorBuf() {
         m_colGenerated = false;
     }
 }
+
+/**
+ * @brief pushVec4ToBuffer
+ *  The helper func to push 4 elements into buffer array
+ *  same as the code in chunk.cpp
+ * @param buf
+ * @param vec
+ */
+void Drawable::pushVec4ToBuffer(std::vector<float> &buf, const glm::vec4 &vec)
+{
+    for (int i = 0; i < 4; i++) {
+        buf.push_back(vec[i]);
+    }
+}
+
+
+/**
+ * @brief pushVec2ToBuffer
+ *   The helper func to push 2 elements into buffer array
+ *   same as the code in chunk.cpp
+ * @param buf
+ * @param vec
+ */
+void Drawable::pushVec2ToBuffer(std::vector<float> &buf, const glm::vec2 &vec)
+{
+    for (int i = 0; i < 2; i++) {
+        buf.push_back(vec[i]);
+    }
+}
