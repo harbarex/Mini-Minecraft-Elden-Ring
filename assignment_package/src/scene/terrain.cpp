@@ -295,7 +295,7 @@ void Terrain::draw(float playerX, float playerZ, int halfGridSize, ShaderProgram
                     minZ,
                     maxZ);
 
-    // use the origianl terrain::draw
+    // use the original terrain::draw
     draw(minX, maxX, minZ, maxZ, shaderProgram, drawType);
 
 }
@@ -741,81 +741,6 @@ void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height)
     }
 }
 
-
-void drawErdtree(Chunk* chunk, const glm::ivec2 pos){
-    //chunk->setBlockAt(pos[0], 130, pos[1], EMPTY); // temporary fix
-
-    int h = 137;
-    BlockType baseBlock = chunk->getBlockAt(pos[0], h, pos[1]);
-    //std::cerr<<"BlockType: "<<baseBlock<<std::endl;
-    if (baseBlock != GRASS){
-        return;
-    }
-
-    Tree tree = Tree(glm::vec2(0.5f, 0.5f), 1.0f);
-    Tree *tr = &tree;
-
-    tr->generatePath(5, "FX");
-    tr->populateOps();
-
-    // draw the tree trunk
-    int n = 7 + (int)(4.0f * (static_cast <float> (rand()) / static_cast <float> (RAND_MAX)));
-    //int n = 1;
-
-    for(int i = 1; i <= n; ++i){
-        chunk->setBlockAt(pos[0], h + i, pos[1], GWOOD);
-    }
-
-    glm::vec2 turtlePos;
-    int yPos;
-
-    //std::cerr<<"\nTree Path: "<<(tr->path).toStdString()<<std::endl;
-
-    // loop over LSystem string path
-    for(int i = 0; i < tr->path.length(); ++i){
-
-        // dereference function pointer mapped to path character
-        (tr->*(tr->charToDrawingOperation[tr->path[i]]))();
-
-        // if turtle moves forward, draw a leaf block
-        if (tr->path[i] == 'F'){
-
-            turtlePos           = tr->activeTurtle.position;
-            yPos                = floor(turtlePos[1]);
-            glm::vec2 leafDir   = glm::vec2(turtlePos[0], 0.0f);
-            float angle         = 0.0f;
-
-            for(int j = 0; j < 8; ++j){
-                angle       = 11.25f;
-                leafDir     = glm::vec2(leafDir[0] * cosf(angle) - leafDir[1] * sinf(angle),
-                                        leafDir[0] * sinf(angle) + leafDir[1] * cosf(angle));
-
-                BlockType t = chunk->getBlockAt(leafDir[0] + pos[0], h + n + yPos, leafDir[1] + pos[1]);
-                if (t == EMPTY){
-                    chunk->setBlockAt(leafDir[0] + pos[0], h + n + yPos, leafDir[1] + pos[1], GLEAF);
-                }
-            }
-        }
-//        else if(tr->path[i] == ']'){
-//            turtlePos           = tr->activeTurtle.position;
-//            yPos                = floor(turtlePos[1]);
-//            glm::vec2 leafDir   = glm::vec2(turtlePos[0], 0.0f);
-//            float angle         = 0.0f;
-
-//            for(int j = 0; j < 16; ++j){
-//                angle       = 11.25f;
-//                leafDir     = glm::vec2(leafDir[0] * cosf(angle) - leafDir[1] * sinf(angle),
-//                                        leafDir[0] * sinf(angle) + leafDir[1] * cosf(angle));
-
-//                BlockType t = chunk->getBlockAt(leafDir[0] + pos[0], h + n + yPos, leafDir[1] + pos[1]);
-//                if (t == EMPTY){
-//                    chunk->setBlockAt(leafDir[0] + pos[0], h + n + yPos, leafDir[1] + pos[1], WOOD);
-//                }
-//            }
-//        }
-    }
-}
-
 void Terrain::drawErdtree(const glm::ivec2 pos){
 
     if(hasChunkAt(pos[0], pos[1])) {
@@ -865,9 +790,36 @@ void Terrain::drawErdtree(const glm::ivec2 pos){
                     leafDir     = glm::vec2(leafDir[0] * cosf(angle) - leafDir[1] * sinf(angle),
                                             leafDir[0] * sinf(angle) + leafDir[1] * cosf(angle));
 
-                    BlockType t = getBlockAt(leafDir[0] + pos[0], rootHeight + height - 3 + yPos, leafDir[1] + pos[1]);
+                    int xpos    = leafDir[0] + pos[0];
+                    int ypos    = rootHeight + height - 3 + yPos;
+                    int zpos    = leafDir[1] + pos[1];
+
+                    BlockType t = getBlockAt(xpos, ypos, zpos);
                     if (t == EMPTY){
-                        setBlockAt(leafDir[0] + pos[0], rootHeight + height - 3 + yPos, leafDir[1] + pos[1], GLEAF);
+                        setBlockAt(xpos, ypos, zpos, GLEAF);
+                    }
+                }
+            }
+
+            else if (tr->path[i] == '+'){
+
+                turtlePos           = tr->activeTurtle.position;
+                yPos                = floor(turtlePos[1]);
+                glm::vec2 leafDir   = glm::vec2(turtlePos[0], 0.0f);
+                float angle         = 0.0f;
+
+                for(int j = 0; j < 8; ++j){
+                    angle       = 11.25f;
+                    leafDir     = glm::vec2(leafDir[0] * cosf(angle) - leafDir[1] * sinf(angle),
+                                            leafDir[0] * sinf(angle) + leafDir[1] * cosf(angle));
+
+                    int xpos    = leafDir[0] + pos[0];
+                    int ypos    = rootHeight + height + yPos;
+                    int zpos    = leafDir[1] + pos[1];
+
+                    BlockType t = getBlockAt(xpos, ypos, zpos);
+                    if (t == EMPTY || t == GLEAF){
+                        setBlockAt(xpos, ypos, zpos, GWOOD);
                     }
                 }
             }
