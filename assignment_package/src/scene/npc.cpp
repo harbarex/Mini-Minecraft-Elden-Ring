@@ -231,7 +231,7 @@ void NPC::replanIfNeeded(glm::vec3 goal)
     // either timeout or stuck
     if ((actionTimer >= actionTimeout) && (actions.size() == nToDoActions))
     {
-        std::cout << "Replan ..." << std::endl;
+        // std::cout << "Replan ..." << std::endl;
         actions = pathFinder.searchPathToward(m_position,
                                               goal);
         nToDoActions = actions.size();

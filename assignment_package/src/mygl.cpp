@@ -230,12 +230,10 @@ void MyGL::tick() {
     // TODO: pass delta-time to NPC's tick as well
     if (frameCount > 15.f * 60.f)
     {
-        std::cout << "tick npc"  << std::endl;
         for (const uPtr<NPC> &npc : m_npcs)
         {
             npc->tick(deltaTime);
         }
-        std::cout << "finish npc tick" << std::endl;
     }
 
 }
