@@ -11,12 +11,29 @@ BlockInWidget::~BlockInWidget() {}
 /**
  * @brief BlockInWidget::addItem
  *  override addItem in Widget
- *  add block item into widget object
+ *  add block item into widget object (2D)
  * @param overallIdx : int, the index among all regions in the widget
  * @param uvCoords: array of 4 uv coordinates of current block face, (order: bottom-left, bottom-right, top-right, top-left)
  * @return
  */
 void BlockInWidget::addItem(int overallIdx, std::array<glm::vec2, 4>& uvCoords) {
+    RecRegion* currRegion = regions.front().get();
+    int shiftX, shiftY;
+    findRegionInfoFromIdx(overallIdx, currRegion, &shiftX, &shiftY);
+    storeItemIntoDrawVector(currRegion, shiftX, shiftY, uvCoords);
+}
+
+
+/**
+ * @brief BlockInWidget::addItem
+ *  override addItem in Widget
+ *  add block item into widget object (3D)
+ * @param overallIdx : int, the index among all regions in the widget
+ * @param uvCoords: array of 4 uv coordinates (order: bottom-left, bottom-right, top-right, top-left)
+ * of 3 block face, (order: XPOS, YPOS, ZPOS
+ * @return
+ */
+void BlockInWidget::addItem(int overallIdx, std::array<std::array<glm::vec2, 4>, 3>& uvCoords) {
     RecRegion* currRegion = regions.front().get();
     int shiftX, shiftY;
     findRegionInfoFromIdx(overallIdx, currRegion, &shiftX, &shiftY);
@@ -52,6 +69,56 @@ void BlockInWidget::addItem(glm::vec2 pos, glm::vec2 len, std::array<glm::vec2, 
     drawItems.push_back(drawItem);
 }
 
+void BlockInWidget::addItem(glm::vec2 pos, glm::vec2 len, std::array<std::array<glm::vec2, 4>, 3>& uvCoords) {
+
+    glm::vec2 topLeftFramePos = pos + glm::vec2(-len.x, len.y) / 2.f;
+    glm::vec2 bottomRightFramePos = pos + glm::vec2(len.x, -len.y) / 2.f;
+    glm::vec2 topRightFramePos(bottomRightFramePos.x, topLeftFramePos.y);
+    glm::vec2 bottomLeftFramePos(topLeftFramePos.x, bottomRightFramePos.y);
+    glm::vec2 centerFramePos = (topLeftFramePos + bottomRightFramePos + topRightFramePos + bottomLeftFramePos) / 4.f;
+
+    // YPOS (top), XPOS (bottom-right), ZPOS (bottom-left)
+    std::array<glm::vec2, 3> topLeftPos;
+    std::array<glm::vec2, 3> bottomRightPos;
+    std::array<glm::vec2, 3> topRightPos;
+    std::array<glm::vec2, 3> bottomLeftPos;
+
+    // convert to 3 faces
+    // top face (YPOS)
+    bottomLeftPos[1] = topLeftFramePos * 3.f/4.f + bottomLeftFramePos * 1.f/4.f;
+    bottomRightPos[1] = centerFramePos;
+    topRightPos[1] = topRightFramePos * 3.f/4.f + bottomRightFramePos * 1.f/4.f;
+    topLeftPos[1] = (topLeftFramePos + topRightFramePos) / 2.f;
+
+    // bottom right (XPOS)
+    bottomLeftPos[0] = (bottomLeftFramePos + bottomRightFramePos) / 2.f;
+    bottomRightPos[0] = topRightFramePos * 1.f/4.f + bottomRightFramePos * 3.f/4.f;
+    topRightPos[0] = topRightFramePos * 3.f/4.f + bottomRightFramePos * 1.f/4.f;
+    topLeftPos[0] = centerFramePos;
+
+    // bottom left (ZPOS)
+    bottomLeftPos[2] = topLeftFramePos * 1.f/4.f + bottomLeftFramePos * 3.f/4.f;
+    bottomRightPos[2] = (bottomLeftFramePos + bottomRightFramePos) / 2.f;
+    topRightPos[2] = centerFramePos;
+    topLeftPos[2] = topLeftFramePos * 3.f/4.f + bottomLeftFramePos * 1.f/4.f;
+
+    for (int i=0; i<3; ++i) {
+        std::vector<glm::vec2> drawItem;
+        drawItem.clear();
+        drawItem.push_back(bottomLeftPos[i]);
+        drawItem.push_back(bottomRightPos[i]);
+        drawItem.push_back(topRightPos[i]);
+        drawItem.push_back(topLeftPos[i]);
+
+        for (int j=0; j<4; ++j) {
+            drawItem.push_back(uvCoords[i][j]);
+        }
+
+        drawItems.push_back(drawItem);
+    }
+
+}
+
 /**
  * @brief BlockInWidget::storeItemIntoDrawVector
  *  override storeItemIntoDrawVector in Widget
@@ -79,6 +146,67 @@ void BlockInWidget::storeItemIntoDrawVector(RecRegion* currRegion, int shiftX, i
     }
 
     drawItems.push_back(drawItem);
+}
+
+/**
+ * @brief BlockInWidget::storeItemIntoDrawVector
+ *  override storeItemIntoDrawVector in Widget (3D)
+ *  helper function to store the item into drawItems for further vbo creation
+ * @param currRegion : region where the item locates, here we use the pos and shift info
+ * @param shiftX, shiftY : the coordinate (0-indexed) of the item in currRegion (unit: element, not pixel)
+ * @param uvCoords: array of 4 uv coordinates of current block face, (order: bottom-left, bottom-right, top-right, top-left)
+ */
+void BlockInWidget::storeItemIntoDrawVector(RecRegion* currRegion, int shiftX, int shiftY, std::array<std::array<glm::vec2, 4>, 3>& uvCoords) {
+
+    // get the overall position
+    glm::vec2 shift(shiftX * currRegion->shiftDist.x, -shiftY * currRegion->shiftDist.y);
+
+    glm::vec2 topLeftFramePos = currRegion->firstItemTopLeftScreenCoord + shift;
+    glm::vec2 bottomRightFramePos = currRegion->firstItemBottomRightScreenCoord + shift;
+    glm::vec2 topRightFramePos(bottomRightFramePos.x, topLeftFramePos.y);
+    glm::vec2 bottomLeftFramePos(topLeftFramePos.x, bottomRightFramePos.y);
+    glm::vec2 centerFramePos = (topLeftFramePos + bottomRightFramePos + topRightFramePos + bottomLeftFramePos) / 4.f;
+
+    // YPOS (top), XPOS (bottom-right), ZPOS (bottom-left)
+    std::array<glm::vec2, 3> topLeftPos;
+    std::array<glm::vec2, 3> bottomRightPos;
+    std::array<glm::vec2, 3> topRightPos;
+    std::array<glm::vec2, 3> bottomLeftPos;
+
+    // convert to 3 faces
+    // top face (YPOS)
+    bottomLeftPos[1] = topLeftFramePos * 3.f/4.f + bottomLeftFramePos * 1.f/4.f;
+    bottomRightPos[1] = centerFramePos;
+    topRightPos[1] = topRightFramePos * 3.f/4.f + bottomRightFramePos * 1.f/4.f;
+    topLeftPos[1] = (topLeftFramePos + topRightFramePos) / 2.f;
+
+    // bottom right (XPOS)
+    bottomLeftPos[0] = (bottomLeftFramePos + bottomRightFramePos) / 2.f;
+    bottomRightPos[0] = topRightFramePos * 1.f/4.f + bottomRightFramePos * 3.f/4.f;
+    topRightPos[0] = topRightFramePos * 3.f/4.f + bottomRightFramePos * 1.f/4.f;
+    topLeftPos[0] = centerFramePos;
+
+    // bottom left (ZPOS)
+    bottomLeftPos[2] = topLeftFramePos * 1.f/4.f + bottomLeftFramePos * 3.f/4.f;
+    bottomRightPos[2] = (bottomLeftFramePos + bottomRightFramePos) / 2.f;
+    topRightPos[2] = centerFramePos;
+    topLeftPos[2] = topLeftFramePos * 3.f/4.f + bottomLeftFramePos * 1.f/4.f;
+
+    for (int i=0; i<3; ++i) {
+        std::vector<glm::vec2> drawItem;
+        drawItem.clear();
+        drawItem.push_back(bottomLeftPos[i]);
+        drawItem.push_back(bottomRightPos[i]);
+        drawItem.push_back(topRightPos[i]);
+        drawItem.push_back(topLeftPos[i]);
+
+        for (int j=0; j<4; ++j) {
+            drawItem.push_back(uvCoords[i][j]);
+        }
+
+        drawItems.push_back(drawItem);
+    }
+
 }
 
 void BlockInWidget::setWidgetInfo() {
