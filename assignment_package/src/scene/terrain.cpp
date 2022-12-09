@@ -769,7 +769,7 @@ void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height)
 bool FillBlocksWorker::hasChunksForErdTree()
 {
     // origin at erdTreeRootChunk
-    int radius = 6;
+    int radius = 3;
     int originChunkX = erdTreeRootChunk[0] - radius * 16;
     int originChunkZ = erdTreeRootChunk[1] - radius * 16;
     bool allExist = true;
