@@ -1,3 +1,9 @@
 Compile code based on operating system
 https://stackoverflow.com/questions/6649936/c-compiling-on-windows-and-linux-ifdef-switch
 
+Ref of widget texture map
+https://www.planetminecraft.com/texture-pack/dark-ui-1-9-1-17/
+
+Ref of NPC texture maps
+https://www.planetminecraft.com/texture-pack/fortnite-llama-pack/
+https://www.planetminecraft.com/mob-skin/small-zombie-dragon-mob-skintober-2020-day-5/

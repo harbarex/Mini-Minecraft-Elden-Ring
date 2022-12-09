@@ -1,0 +1,59 @@
+# The text file is for setup widget info
+# Every data is written in one line, and x and y are separated by the space " "
+# the program would ignore empty line and line that starts with #
+
+# 1. shift distance of the item in this region
+# mapping range from (-1, -1) to (1, 1)
+# 2. size of the region
+# 3. top-left screen coordinate of the first item in this region
+# 4. bottom right screen coordinate of the first item in this region
+# mapping range from (-1, -1) to (1, 1)
+# origin pos: (432, 549) to (486, 603) in 409*270 to 983*821
+# 5. top-left uv coordinate of the first item in this region
+# 6. bottom right uv coordinate of the first item in this region
+# origin pos: (166, 166) to (188, 189) in 256*256
+regionInfo
+0.0945 0.148
+9 3
+-0.4231 0
+-0.3366 -0.1163
+0.64844 0.35156
+0.73438 0.26171
+
+# 1. shift distance of the item in this region
+# mapping range from (-1, -1) to (1, 1)
+# x: 432 to 962 in 409*270 to 983*821
+# y: 549 to 725 in 409*270 to 983*821
+# 2. size of the region
+# 3. top-left screen coordinate of the first item in this region
+# 4. bottom right screen coordinate of the first item in this region
+# mapping range from (-1, -1) to (1, 1)
+# origin pos: (432, 742) to (486, 800) in 409*270 to 983*821
+# 5. top-left uv coordinate of the first item in this region
+# 6. bottom right uv coordinate of the first item in this region
+# origin pos: (166, 166) to (188, 189) in 256*256
+regionInfo
+0.0945 0.148
+9 1
+-0.4231 -0.4005
+-0.3366 -0.52331
+0.64844 0.35156
+0.73438 0.26171
+
+# first: top-left coords
+# second: bottom-right coords
+# origin pos: (0, 0) to (181, 21) in 256*256
+widgetUV
+0 1
+0.6836 0.3547
+
+# first: top-left coords
+# second: bottom-right coords
+# origin pos: (574, 296) to (1590, 1140) in 2160*1440
+# mapping range from (-1, -1) to (1, 1)
+widgetScreen
+-0.46 0.58889
+0.46 -0.58889
+
+
+

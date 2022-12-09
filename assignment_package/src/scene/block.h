@@ -3,6 +3,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <array>
+#include <QApplication>
+#include <QFile>
 
 
 //using namespace std;
@@ -13,8 +15,15 @@
 // block types, but in the scope of this project we'll never get anywhere near that many.
 enum BlockType : unsigned char
 {
-    EMPTY, GRASS, DIRT, STONE, WATER, SNOW, LAVA, BEDROCK, ICE, WOOD, LEAF, GWOOD, GLEAF
+    EMPTY, GRASS, DIRT, STONE, WATER, SNOW, LAVA, BEDROCK, ICE, WOOD, LEAF, GWOOD, GLEAF,
+    COBBLESTONE, GLASS, BRICK, SAND, DIAMOND, TNT,
+    // for NPCs
+    SHEEPHEAD, SHEEPBODY, SHEEPLIMB,
+    STEVEHEAD, STEVEBODY, STEVELUL, STEVERUL, STEVELLL, STEVERLL,
+    ZDHEAD, ZDBODY, ZDLBODY, ZDTAIL, ZDLCW, ZDRCW, ZDLOW, ZDROW,
+    LAMAHEAD, LAMANOSE, LAMAEAR, LAMABODY, LAMALIMB,
 };
+
 
 // The six cardinal directions in 3D space
 enum Direction : unsigned char
@@ -76,24 +85,37 @@ private:
 
     // create the 6 faces of a block with manually defined uv offsets of each face
     static std::array<BlockFace, 6> createBlockFaces(std::array<glm::vec2, 6> uvOffsets);
+
     // default func to create the 6 faces of a given block (uv offset is set to (0, 0))
     static std::array<BlockFace, 6> createBlockFaces();
+
+    // for NPC blocks
+    static std::array<BlockFace, 6> createBlockFaces(std::array<glm::vec4, 6> uvs);
 
 public:
 
     // a collection of all the pos, nor, col, uvs of all types of blocks
     static std::unordered_map<BlockType, std::array<BlockFace, 6>> BlockCollection;
 
+    // static std::unordered_map<BlockType, std::array<BlockFace, 6>> NPCBlockCollection;
+
     // the relationship between string in uv text file and the corresponding BlockType
     static std::unordered_map<std::string, BlockType> blockTypeMap;
 
+    // the transformation of block type during destroy process
+    static std::unordered_map<BlockType, BlockType> blockTransformationMap;
+
     // a collection of transparent block type
+    // all blocktypes not in this set is opque
     static std::unordered_set<BlockType> transparentBlockTypes;
 
     // a collection of animatable block type
+    // all blocktypes not in this set is non-animatable
     static std::unordered_set<BlockType> animatableBlockTypes;
 
-    // a collection of liqui block type
+    // a collection of liquid block type
+    // player can transpass
+    // all blocktypes not in this set in solid
     static std::unordered_set<BlockType> liquidBlockTypes;
 
     // the rule to determine whether a given block is opaque or not
@@ -119,6 +141,20 @@ public:
 
     // insert new uv coordinate of texture map into BlockCollection
     static void insertNewUVCoord(BlockType blockType, std::array<glm::vec2, 6> uv);
+
+
+    // insert new uv coordinate of texture map for NPCBlockCollection
+    static void insertNewUVCoord(BlockType blockType, std::array<glm::vec4, 6> uv);
+
+
+    // load uv coordinate of all blocktypes from text file
+    static void loadUVCoordFromText(const char* text_path);
+
+    // get the uv coordinates of given blocktype and direction
+    // order (bottom-left, bottom-right, top-right, top-left)
+    static void getUVCoords(BlockType blockType, std::array<glm::vec2, 4>* uvCoords, Direction dir=XPOS);
+
+    static BlockType getDestroyedBlockType(BlockType blockType);
 
 };
 

@@ -8,8 +8,9 @@ struct InputBundle {
     // flight mode is inactive
     bool spacePressed;
     bool leftMouseButtonPressed, rightMouseButtonPressed;
-    bool debugButtonPressed;
+    bool pPressed;
     bool nPressed;
+    bool iPressed;
     float mouseX, mouseY;
 
     // Checking Terrain
@@ -17,11 +18,15 @@ struct InputBundle {
     bool underLava;
     bool onGround;
 
+    // select the block (from 0 to 9, but 0 is not used)
+    bool numberPressed[10];
+
     InputBundle()
         : wPressed(false), aPressed(false), sPressed(false),
           dPressed(false), qPressed(false), ePressed(false), spacePressed(false),
-          leftMouseButtonPressed(false), rightMouseButtonPressed(false), debugButtonPressed(false),
-          nPressed(false), mouseX(0.f), mouseY(0.f), underWater(false), underLava(false), onGround(false)
+          leftMouseButtonPressed(false), rightMouseButtonPressed(false), pPressed(false),
+          nPressed(false), iPressed(false), mouseX(0.f), mouseY(0.f), underWater(false), underLava(false),
+          onGround(false), numberPressed {false, false, false, false, false, false, false, false, false, false}
     {}
 };
 

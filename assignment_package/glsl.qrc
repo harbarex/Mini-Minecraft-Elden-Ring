@@ -9,5 +9,8 @@
         <file>glsl/post/underwater.frag.glsl</file>
         <file>glsl/post/overlay.vert.glsl</file>
         <file>glsl/post/overlay.frag.glsl</file>
+        <file>glsl/npc.frag.glsl</file>
+        <file>glsl/post/texture.vert.glsl</file>
+        <file>glsl/post/texture.frag.glsl</file>
     </qresource>
 </RCC>
