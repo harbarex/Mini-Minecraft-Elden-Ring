@@ -122,6 +122,7 @@ public:
     bool isOnGround(const Terrain &terrain, InputBundle &inputs);
     bool isUnderWater(const Terrain &terrain, InputBundle &inputs);
     bool isUnderLava(const Terrain &terrain, InputBundle &inputs);
+
     // check if the given position is liquid or not
     bool isLiquid(const Terrain &terrain, glm::ivec3* pos);
 

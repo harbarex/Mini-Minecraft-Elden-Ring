@@ -178,6 +178,11 @@ void MyGL::resizeGL(int w, int h) {
 
     m_progLambert.setViewProjMatrix(viewproj);
     m_progFlat.setViewProjMatrix(viewproj);
+    m_progUnderwater.setViewProjMatrix(viewproj);
+
+    m_frameBuffer.resize(this->width(), this->height(), this->devicePixelRatio());
+    m_frameBuffer.destroy();
+    m_frameBuffer.create();
     m_progNPC.setViewProjMatrix(viewproj);
 
     m_progNoOp.setDimensions(glm::ivec2(w * this->devicePixelRatio(), h * this->devicePixelRatio()));
@@ -289,6 +294,9 @@ void MyGL::paintGL() {
     renderNPCs();
     glDisable(GL_BLEND);
 
+    // Draw Golden Tree (s)
+    m_terrain.drawErdtree(glm::ivec2(32, 48));
+
 
 
     glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
@@ -298,7 +306,7 @@ void MyGL::paintGL() {
     m_frameBuffer.bindToTextureSlot(1);
 
     // Post-process Shaders
-    if(m_player.isUnderWater(m_terrain, m_inputs)){    
+    if(m_player.isUnderWater(m_terrain, m_inputs)){
         m_progUnderwater.setTexture(m_frameBuffer.getTextureSlot());
         m_progUnderwater.drawOverlay(m_quad);
     }

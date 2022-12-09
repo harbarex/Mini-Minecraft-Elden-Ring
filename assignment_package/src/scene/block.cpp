@@ -202,6 +202,12 @@ glm::vec4 Block::getColors(BlockType type)
     case SNOW:
         color = glm::vec4(1.f, 1.f, 1.f, 1.f);
         break;
+    case GWOOD:
+        color = glm::vec4(255.f, 223.f, 0.f, 128.f) / 255.f;
+
+    case GLEAF:
+        color = glm::vec4(255.f, 223.f, 0.f, 128.f) / 255.f;
+
     default:
         // Other block types are not yet handled, so we default to debug purple
         color = glm::vec4(1.f, 0.f, 1.f, 1.f);
@@ -321,43 +327,45 @@ std::unordered_map<std::string, BlockType> Block::blockTypeMap = {
     {"ICE", ICE},
     {"WOOD", WOOD},
     {"LEAF", LEAF},
+    {"GWOOD", GWOOD},
+    {"GLEAF", GLEAF},
     {"COBBLESTONE", COBBLESTONE},
     {"GLASS", GLASS},
     {"BRICK", BRICK},
     {"SAND", SAND},
     {"DIAMOND", DIAMOND},
     {"TNT", TNT},
-     {"SHEEPHEAD", SHEEPHEAD},
-     {"SHEEPBODY", SHEEPBODY},
-     {"SHEEPLIMB", SHEEPLIMB},
-     {"STEVEHEAD", STEVEHEAD},
-     {"STEVEBODY", STEVEBODY},
-     {"STEVELUL", STEVELUL},
-     {"STEVERUL", STEVERUL},
-     {"STEVELLL", STEVELLL},
-     {"STEVERLL", STEVERLL},
-     {"ZDHEAD", ZDHEAD},
-     {"ZDBODY", ZDBODY},
-     {"ZDLBODY", ZDLBODY},
-     {"ZDTAIL", ZDTAIL},
-     {"ZDLCW", ZDLCW},
-     {"ZDLOW", ZDLOW},
-     {"ZDRCW", ZDRCW},
-     {"ZDROW", ZDROW},
-     {"LAMAHEAD", LAMAHEAD},
-     {"LAMANOSE", LAMANOSE},
-     {"LAMAEAR", LAMAEAR},
-     {"LAMABODY", LAMABODY},
-     {"LAMALIMB", LAMALIMB}}
+    {"SHEEPHEAD", SHEEPHEAD},
+    {"SHEEPBODY", SHEEPBODY},
+    {"SHEEPLIMB", SHEEPLIMB},
+    {"STEVEHEAD", STEVEHEAD},
+    {"STEVEBODY", STEVEBODY},
+    {"STEVELUL", STEVELUL},
+    {"STEVERUL", STEVERUL},
+    {"STEVELLL", STEVELLL},
+    {"STEVERLL", STEVERLL},
+    {"ZDHEAD", ZDHEAD},
+    {"ZDBODY", ZDBODY},
+    {"ZDLBODY", ZDLBODY},
+    {"ZDTAIL", ZDTAIL},
+    {"ZDLCW", ZDLCW},
+    {"ZDLOW", ZDLOW},
+    {"ZDRCW", ZDRCW},
+    {"ZDROW", ZDROW},
+    {"LAMAHEAD", LAMAHEAD},
+    {"LAMANOSE", LAMANOSE},
+    {"LAMAEAR", LAMAEAR},
+    {"LAMABODY", LAMABODY},
+    {"LAMALIMB", LAMALIMB}}
+};
+
+std::unordered_set<BlockType> Block::transparentBlockTypes = {
+    EMPTY, WATER, ICE, GWOOD, GLEAF
 };
 
 std::unordered_map<BlockType, BlockType> Block::blockTransformationMap = {
     {{GRASS, DIRT},
      {STONE, COBBLESTONE}}
-};
-
-std::unordered_set<BlockType> Block::transparentBlockTypes = {
-    EMPTY, WATER, ICE, GLASS
 };
 
 std::unordered_set<BlockType> Block::animatableBlockTypes = {

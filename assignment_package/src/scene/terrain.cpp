@@ -314,7 +314,7 @@ void Terrain::draw(float playerX, float playerZ, int halfGridSize, ShaderProgram
                     minZ,
                     maxZ);
 
-    // use the origianl terrain::draw
+    // use the original terrain::draw
     draw(minX, maxX, minZ, maxZ, shaderProgram, drawType);
 
 }
@@ -670,7 +670,6 @@ void Terrain::CreateTestGrassScene()
     }
 }
 
-
 /**
  * @brief Terrain::spawnFillBlocksWorker
  * @param xCorner : int, the xCorner of a zone
@@ -734,6 +733,7 @@ FillBlocksWorker::FillBlocksWorker(int x,
 {}
 
 void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height){
+
     if( height < 136){
         //chunk->setBlockAt(x, height, z, WATER);
         for(int y_dirt=128; y_dirt<136; y_dirt++){
@@ -756,6 +756,92 @@ void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height)
         chunk->setBlockAt(x, height, z, STONE);
         for(int y_dirt=128; y_dirt<height; y_dirt++){
             chunk->setBlockAt(x, y_dirt, z, DIRT);
+        }
+    }
+}
+
+void Terrain::drawErdtree(const glm::ivec2 pos){
+
+    if(hasChunkAt(pos[0], pos[1])) {
+
+        int rootHeight = 128;
+
+        Tree tree = Tree(glm::vec2(0.5f, 0.5f), 3.0f);
+        Tree *tr = &tree;
+
+        tr->generatePath(2, "FX");
+        tr->populateOps();
+
+        // draw the tree trunk
+        int height = 45 + (int)(4.0f * (static_cast <float> (rand()) / static_cast <float> (RAND_MAX)));
+
+        int thickness = 4;
+
+        for(int x=pos[0]-thickness; x<=pos[0]+thickness; x++){
+            for(int z=pos[1]-thickness; z<=pos[1]+thickness; z++){
+                for(int i = 1; i <= height; ++i){
+                    setBlockAt(x, rootHeight + i, z, GWOOD);
+                }
+            }
+        }
+
+        glm::vec2 turtlePos;
+        int yPos;
+
+        //std::cerr<<"\nTree Path: "<<(tr->path).toStdString()<<std::endl;
+
+        // loop over LSystem string path
+        for(int i = 0; i < tr->path.length(); ++i){
+
+            // dereference function pointer mapped to path character
+            (tr->*(tr->charToDrawingOperation[tr->path[i]]))();
+
+            // if turtle moves forward, draw a leaf block
+            if (tr->path[i] == 'F'){
+
+                turtlePos           = tr->activeTurtle.position;
+                yPos                = floor(turtlePos[1]);
+                glm::vec2 leafDir   = glm::vec2(turtlePos[0], 0.0f);
+                float angle         = 0.0f;
+
+                for(int j = 0; j < 8; ++j){
+                    angle       = 11.25f;
+                    leafDir     = glm::vec2(leafDir[0] * cosf(angle) - leafDir[1] * sinf(angle),
+                                            leafDir[0] * sinf(angle) + leafDir[1] * cosf(angle));
+
+                    int xpos    = leafDir[0] + pos[0];
+                    int ypos    = rootHeight + height - 3 + yPos;
+                    int zpos    = leafDir[1] + pos[1];
+
+                    BlockType t = getBlockAt(xpos, ypos, zpos);
+                    if (t == EMPTY){
+                        setBlockAt(xpos, ypos, zpos, GLEAF);
+                    }
+                }
+            }
+
+            else if (tr->path[i] == '+'){
+
+                turtlePos           = tr->activeTurtle.position;
+                yPos                = floor(turtlePos[1]);
+                glm::vec2 leafDir   = glm::vec2(turtlePos[0], 0.0f);
+                float angle         = 0.0f;
+
+                for(int j = 0; j < 8; ++j){
+                    angle       = 11.25f;
+                    leafDir     = glm::vec2(leafDir[0] * cosf(angle) - leafDir[1] * sinf(angle),
+                                            leafDir[0] * sinf(angle) + leafDir[1] * cosf(angle));
+
+                    int xpos    = leafDir[0] + pos[0];
+                    int ypos    = rootHeight + height + yPos;
+                    int zpos    = leafDir[1] + pos[1];
+
+                    BlockType t = getBlockAt(xpos, ypos, zpos);
+                    if (t == EMPTY || t == GLEAF){
+                        setBlockAt(xpos, ypos, zpos, GWOOD);
+                    }
+                }
+            }
         }
     }
 }
@@ -884,7 +970,6 @@ void addNPCJumpStages(Chunk *chunk, int chunkXCorner, int chunkZCorner)
     }
 }
 
-
 /**
  * @brief FillBlocksWorker::setBlocks
  *  The private helper to set all the blocks of a given chunk
@@ -932,7 +1017,7 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
         }
     }
 
-
+    //drawErdtree(chunk, glm::ivec2(1, 5));
     // explicitly for test terrain
     // 48.f, 148.f, 32.f
     // 48.f, 32.f
