@@ -1,6 +1,46 @@
 
 # Feature Implementation
 
+## NPC & Path Finding (Chun-Fu Yeh)
+
+### NPC Creation
+
+Basically, the NPC class inherits Entity & Drawable and contains a scene graph. Each scene graph consists of three types of nodes (translation, rotation, scale nodes) and some nodes in the scene graph may point to a NPCBlock, containing the information of a part of the NPC (e.g. head, body, limbs, ... etc).
+
+After the scene graph is built, the distances from the root to the six sides of the NPC must be defined, including rootToGround, rootToTop, rootToLeft, rootToRight, rootToFront, rootToBack. These would be used in determining the collisions against the blocks in the world.
+
+Moreover, the rotation nodes of the limbs would be collected and the rotation degress in those nodes would be updated based on how far the NPCs move in the world. This leads to the walking / flying movements of NPCs.
+
+### NPC Textures
+
+In order to make the NPCs, the corresponding texture maps are downloaded and the UV coordinates for each face (XPOS, XNEG, YPOS, YNEG, ZPOS and ZNEG) are maually retrieved from the maps. These coordinates are hard coded in the textures/npc_uv_coord.txt file, which we load into memory in MyGL::initializedGL().
+
+### NPCs In The World
+
+Currently, we have four types of the NPCs, including Steve, Sheep, Lama and ZombieDragon.
+
+Steve always makes plans to move closer to the player. A group of sheeps explore the world slowly.
+As for two lamas, they are being trained to jump among a set of floating stones. At last, the zombie dragon is hovering in the sky and always taking the player as the center.
+
+### NPC Movements
+
+Firstly, the collision models are modified from the models in the player. The ray origins are calculated based on the scene graph root and the distances described above (rootToGround, rootToTop, rootToLeft, rootToRight, rootToFront, rootToBack).
+
+Generally, the NPCs' mvoements are updated per tick.
+
+### Path Finding Algorithm (A* search)
+
+In order to make NPC moving toward some goals, an A* search algorithm is implemented. Here, the Euclidean distance in horizontal direction is used as the heuristics. Generally, this search algorithm starts with the NPC's current position. Each time, a potential path with lowest cost so far is popped out from the priority queue. Then, try to move 1 step further away if possible and push the new explored path to the priority queue. If there are obstacles around, it would try to jump 1 to 3 steps away and see if that is a valid move. 
+
+The size of the search space is manually defined when the NPC are created. Different NPCs might have different search space. If the goal of each NPC is unable to achieve in any of the explored paths, a random path from top 10 lowest cost is sampled as the current path for the NPC.
+
+### NPCs with Path Finder
+
+With the path finding algorithm defined above, each NPC can now make the plans to the goals. Each tick, the NPC would check whether the goal is achieved or not. Then, it will check whether an action in the plan is done or not. If all the actions in a path are done, it will activate the path finder again to get a new path toward the goals.
+
+Basically, there are only two movements, walk and jump, for the NPCs. If any NPC is stuck, the NPCs would be restarted. Some stuck conditions like penetrating the blocks or being stuck in a place for more than 15 seconds.
+
+
 ## Inventory (Meng-Chuan Chang)
 
 ### Abstract
