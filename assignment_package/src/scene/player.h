@@ -59,6 +59,14 @@ private:
     // convert the index format from container widget to inventory
     int covertIdxFromContainerToInventory(int overallIdxInContainer);
 
+    float hp;
+    float hp_max;
+    glm::vec2 hp_top_left_pos;
+    float hp_text_height = 0.5;
+    void computePlayerState(InputBundle &input);
+    void hpChange(float amount);
+    void drawPlayerState();
+
 public:
     // Readonly public reference to our camera
     // for easy access from MyGL
@@ -156,6 +164,9 @@ public:
 
     // fill all available blocks in inventory
     void fillAllBlocks();
+
+    // set and draw the state of the player (e.g. HP)
+    void stateOperation(InputBundle &input);
 
 };
 

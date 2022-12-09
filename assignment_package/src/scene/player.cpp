@@ -8,7 +8,7 @@ Player::Player(glm::vec3 pos, Terrain &terrain)
       flight_velocity_max(15.f), non_flight_velocity_max(10.f), m_velocity_val(flight_velocity_max),
       m_acceleration_val(40.f), cameraBlockDist(3.f), flightMode(true), containerMode(false),
       destroyBufferTime(0.f), creationBufferTime(0.f), minWaitTime(0.5f),
-      selectedBlockOnHandPtr(0), mcr_camera(m_camera)
+      selectedBlockOnHandPtr(0), hp(100.f), hp_max(100.f), mcr_camera(m_camera), hp_top_left_pos(glm::vec2(-0.85, 0.85))
 {}
 
 Player::~Player()
@@ -20,6 +20,7 @@ void Player::tick(float dT, InputBundle &input) {
     destroyBlock(input, mcr_terrain);
     placeBlock(input, mcr_terrain);
     widgetInteraction();
+    stateOperation(input);
     selectBlockOnHand(input);
     drawInventoryItem();
     processInputs(input);
@@ -109,6 +110,9 @@ void Player::computePhysics(float dT, const Terrain &terrain, InputBundle &input
         m_velocity[2] = 0.f;
     }
     if (!checkYCollision(terrain)) {
+        if (m_velocity[1] <= -9.5) {
+            hpChange(-30);
+        }
         m_velocity[1] = 0.f;
     }
 
@@ -974,4 +978,25 @@ glm::vec3 Player::getCurrRight() const
 bool Player::isFlightMode() const
 {
     return flightMode;
+}
+
+void Player::stateOperation(InputBundle &input) {
+    computePlayerState(input);
+    drawPlayerState();
+}
+
+void Player::computePlayerState(InputBundle &input) {
+    if (isUnderLava(mcr_terrain, input)) {
+        hpChange(-0.2);
+    }
+}
+
+void Player::hpChange(float amount) {
+    hp += amount;
+    hp = fmax(hp, 0);
+    hp = fmin(hp, hp_max);
+}
+void Player::drawPlayerState() {
+    int hpShown = (int)hp;
+    textOnScreen->addText(std::to_string(hpShown), hp_top_left_pos, hp_text_height);
 }
