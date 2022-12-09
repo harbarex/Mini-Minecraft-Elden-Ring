@@ -760,7 +760,6 @@ void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height)
     }
 }
 
-<<<<<<< HEAD
 void Terrain::drawErdtree(const glm::ivec2 pos){
 
     if(hasChunkAt(pos[0], pos[1])) {
@@ -847,7 +846,6 @@ void Terrain::drawErdtree(const glm::ivec2 pos){
     }
 }
 
-=======
 
 /**
  * @brief addNPCJumpStages
@@ -972,8 +970,6 @@ void addNPCJumpStages(Chunk *chunk, int chunkXCorner, int chunkZCorner)
     }
 }
 
-
->>>>>>> master
 /**
  * @brief FillBlocksWorker::setBlocks
  *  The private helper to set all the blocks of a given chunk
@@ -1021,15 +1017,11 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
         }
     }
 
-
-<<<<<<< HEAD
     //drawErdtree(chunk, glm::ivec2(1, 5));
-=======
     // explicitly for test terrain
     // 48.f, 148.f, 32.f
     // 48.f, 32.f
     addNPCJumpStages(chunk, chunkXCorner, chunkZCorner);
->>>>>>> master
 
 }
 
