@@ -162,6 +162,8 @@ private:
     // Golden tree
     Tree erdTree;
     glm::ivec2 erdTreeRootChunk;
+    bool hasChunksForErdTree();
+    bool erdTreeCreated;
     void setErdTreeBlocks();
 
 public:

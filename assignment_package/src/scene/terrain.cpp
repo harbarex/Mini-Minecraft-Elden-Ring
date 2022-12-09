@@ -734,6 +734,7 @@ FillBlocksWorker::FillBlocksWorker(int x,
       chunks(chunks),
       completedChunks(completedChunks), completedChunksLock(completedChunksLock),
       erdTree(Tree(glm::vec2(0.5f, 0.5f), 3.f)),
+      erdTreeCreated(false),
       erdTreeRootChunk(glm::ivec2(32, 48))
 {}
 
@@ -765,11 +766,31 @@ void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height)
     }
 }
 
+
+bool FillBlocksWorker::hasChunksForErdTree()
+{
+    // origin at erdTreeRootChunk
+    int radius = 8;
+    int originChunkX = erdTreeRootChunk[0] - radius * 16;
+    int originChunkZ = erdTreeRootChunk[1] - radius * 16;
+    bool allExist = true;
+    for (int i = 0; i < 2 * radius + 1; i++)
+    {
+        for (int j = 0; j < 2 * radius + 1; j++)
+        {
+            allExist &= mcr_terrain->hasChunkAt(originChunkX + i * 16, originChunkZ + j * 16);
+        }
+    }
+    return allExist;
+}
+
 void FillBlocksWorker::setErdTreeBlocks()
 {
     glm::ivec2 pos = erdTreeRootChunk;
 
-    if(mcr_terrain->hasChunkAt(pos[0], pos[1])) {
+    // set the tree when all the neighboring chunks around erdTreeRootChunk exist
+
+    if((!erdTreeCreated) && hasChunksForErdTree()) {
 
         int rootHeight = 128;
 
@@ -822,7 +843,7 @@ void FillBlocksWorker::setErdTreeBlocks()
 
                     BlockType t = mcr_terrain->getBlockAt(xpos, ypos, zpos);
                     if (t == EMPTY){
-                        mcr_terrain->setBlockAt(xpos, ypos, zpos, GLEAF);
+                    mcr_terrain->setBlockAt(xpos, ypos, zpos, GLEAF);
                     }
                 }
             }
@@ -845,11 +866,12 @@ void FillBlocksWorker::setErdTreeBlocks()
 
                     BlockType t = mcr_terrain->getBlockAt(xpos, ypos, zpos);
                     if (t == EMPTY || t == GLEAF){
-                        mcr_terrain->setBlockAt(xpos, ypos, zpos, GWOOD);
+                    mcr_terrain->setBlockAt(xpos, ypos, zpos, GWOOD);
                     }
                 }
             }
         }
+        erdTreeCreated = true;
     }
 }
 
