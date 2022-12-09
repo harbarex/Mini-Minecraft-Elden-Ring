@@ -690,7 +690,8 @@ void Terrain::spawnFillBlocksWorker(int xCorner, int zCorner)
     FillBlocksWorker *worker = new FillBlocksWorker(xCorner, zCorner,
                                                     chunks,
                                                     &m_chunksWithBlocks,
-                                                    &m_chunksWithBlocksLock);
+                                                    &m_chunksWithBlocksLock,
+                                                    (*this));
     QThreadPool::globalInstance()->start(worker);
 }
 
@@ -726,10 +727,14 @@ FillBlocksWorker::FillBlocksWorker(int x,
                                    int z,
                                    std::unordered_map<int64_t, Chunk*> chunks,
                                    std::unordered_set<Chunk*> *completedChunks,
-                                   QMutex *completedChunksLock)
-    : xCorner(x), zCorner(z),
+                                   QMutex *completedChunksLock,
+                                   Terrain &terrain)
+    : mcr_terrain(&terrain),
+      xCorner(x), zCorner(z),
       chunks(chunks),
-      completedChunks(completedChunks), completedChunksLock(completedChunksLock)
+      completedChunks(completedChunks), completedChunksLock(completedChunksLock),
+      erdTree(Tree(glm::vec2(0.5f, 0.5f), 3.f)),
+      erdTreeRootChunk(glm::ivec2(32, 48))
 {}
 
 void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height){
@@ -760,9 +765,11 @@ void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height)
     }
 }
 
-void Terrain::drawErdtree(const glm::ivec2 pos){
+void FillBlocksWorker::setErdTreeBlocks()
+{
+    glm::ivec2 pos = erdTreeRootChunk;
 
-    if(hasChunkAt(pos[0], pos[1])) {
+    if(mcr_terrain->hasChunkAt(pos[0], pos[1])) {
 
         int rootHeight = 128;
 
@@ -780,7 +787,7 @@ void Terrain::drawErdtree(const glm::ivec2 pos){
         for(int x=pos[0]-thickness; x<=pos[0]+thickness; x++){
             for(int z=pos[1]-thickness; z<=pos[1]+thickness; z++){
                 for(int i = 1; i <= height; ++i){
-                    setBlockAt(x, rootHeight + i, z, GWOOD);
+                    mcr_terrain->setBlockAt(x, rootHeight + i, z, GWOOD);
                 }
             }
         }
@@ -813,9 +820,9 @@ void Terrain::drawErdtree(const glm::ivec2 pos){
                     int ypos    = rootHeight + height - 3 + yPos;
                     int zpos    = leafDir[1] + pos[1];
 
-                    BlockType t = getBlockAt(xpos, ypos, zpos);
+                    BlockType t = mcr_terrain->getBlockAt(xpos, ypos, zpos);
                     if (t == EMPTY){
-                        setBlockAt(xpos, ypos, zpos, GLEAF);
+                        mcr_terrain->setBlockAt(xpos, ypos, zpos, GLEAF);
                     }
                 }
             }
@@ -836,9 +843,9 @@ void Terrain::drawErdtree(const glm::ivec2 pos){
                     int ypos    = rootHeight + height + yPos;
                     int zpos    = leafDir[1] + pos[1];
 
-                    BlockType t = getBlockAt(xpos, ypos, zpos);
+                    BlockType t = mcr_terrain->getBlockAt(xpos, ypos, zpos);
                     if (t == EMPTY || t == GLEAF){
-                        setBlockAt(xpos, ypos, zpos, GWOOD);
+                        mcr_terrain->setBlockAt(xpos, ypos, zpos, GWOOD);
                     }
                 }
             }
@@ -1016,6 +1023,8 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
 
         }
     }
+
+    setErdTreeBlocks();
 
     //drawErdtree(chunk, glm::ivec2(1, 5));
     // explicitly for test terrain

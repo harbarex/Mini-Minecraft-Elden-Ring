@@ -282,7 +282,6 @@ void MyGL::paintGL() {
 
     m_progFlat.setModelMatrix(glm::mat4());
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
-    //m_progFlat.draw(m_worldAxes);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -292,11 +291,6 @@ void MyGL::paintGL() {
     // render NPCs
     renderNPCs();
     glDisable(GL_BLEND);
-
-    // Draw Golden Tree (s)
-    m_terrain.drawErdtree(glm::ivec2(32, 48));
-
-
 
     glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
     glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());

@@ -142,9 +142,13 @@ public:
 class FillBlocksWorker : public QRunnable
 {
 private:
+
     // TODO: other biome attrubites can be added here
     // TODO: zone attributes
     // TODO: wrap the height mapping logic in setBlocks
+    // add a pointer to the terrain here
+    // for efficiently accessing to the blocks
+    Terrain *mcr_terrain;
     int xCorner;
     int zCorner;
     std::unordered_map<int64_t, Chunk*> chunks;
@@ -155,6 +159,11 @@ private:
     void setSurfaceTerrain(Chunk *chunk, int x, int z, int height);
     void setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorner);
 
+    // Golden tree
+    Tree erdTree;
+    glm::ivec2 erdTreeRootChunk;
+    void setErdTreeBlocks();
+
 public:
     // constructor
     // Note: completedChunks == m_chunksWithBlocks (in terrain)
@@ -162,7 +171,8 @@ public:
                      int z,
                      std::unordered_map<int64_t, Chunk*> chunks,
                      std::unordered_set<Chunk*> *completedChunks,
-                     QMutex *completedChunksLock);
+                     QMutex *completedChunksLock,
+                     Terrain &terrain);
 
     // run()
     void run() override;
