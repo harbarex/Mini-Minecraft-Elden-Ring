@@ -2,6 +2,10 @@
 #include "entity.h"
 #include "camera.h"
 #include "terrain.h"
+#include "inventory.h"
+#include "widget.h"
+#include "blockinwidget.h"
+#include "text.h"
 #include <iostream>
 #include <set>
 
@@ -16,7 +20,8 @@ private:
     float flight_velocity_max, non_flight_velocity_max;
     float m_velocity_val, m_acceleration_val; // length of the vector
     float cameraBlockDist; // max distance from the camera while using ray tracing
-    bool flightMode; // determine the current mode
+    bool flightMode; // determine the current moving mode
+    bool containerMode; // determine if the player opens the container or not
     double destroyBufferTime; // compute the passing time (s) starting from last destroy
     double creationBufferTime; // compute the passing time (s) starting from last block creation
     double minWaitTime; // the minimum waiting time (s) to destroy the next block
@@ -24,15 +29,35 @@ private:
     void processInputs(InputBundle &inputs);
     void computePhysics(float dT, const Terrain &terrain, InputBundle &inputs);
 
+    int selectedBlockOnHandPtr;
+    Inventory inventory;
+    Widget *inventoryWidgetOnHand;
+    Widget *inventoryWidgetInContainer;
+    BlockInWidget *inventoryItemOnHand;
+    BlockInWidget *inventoryItemInContainer;
+    Text* textOnScreen;
+
     bool checkXZCollision(int idx, const Terrain &terrain); // determine if current movement collide in X or Z axis (with idx 0 and 2)
     bool checkYCollision(const Terrain &terrain); // determine if current movement collide in Y axis (specifically for the ground)
     void implementJumping(const Terrain &terrain, InputBundle &inputs);
     void destroyBlock(InputBundle &inputs, Terrain &terrain); // destroy the block within 3 unit from camera pos when left mouse button is pressed
-    void placeNewBlock(InputBundle &inputs, Terrain &terrain);
-    void placeBlock(InputBundle &inputs, Terrain &terrain, BlockType blockType);
+    void placeBlock(InputBundle &inputs, Terrain &terrain);
 
-    std::vector<BlockType> blocksHold;
-    int selectedBlockPtr;
+    // interaction in widget in container
+    // the state indicating if the player is grabbing item or not
+    bool isGrabbingItem;
+    // the overall index in inventory of the grabbed item
+    int grabItemOverallIdx;
+    // the type of grabbed item
+    BlockType grabItemType;
+    // the count of grabbed item
+    int grabItemCount;
+
+    // draw the grab item
+    void widgetInteraction();
+
+    // convert the index format from container widget to inventory
+    int covertIdxFromContainerToInventory(int overallIdxInContainer);
 
 public:
     // Readonly public reference to our camera
@@ -96,12 +121,41 @@ public:
     bool gridMarchPrevBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terrain, glm::ivec3 *out_prevBlock, glm::ivec3 *out_blockHit);
 
     void setBlocksHold();
-    void selectNextBlock(InputBundle &inputs);
 
     // helper method to determine the current facing of the player
     glm::vec3 getCurrUp() const;
     glm::vec3 getCurrForward() const;
     glm::vec3 getCurrRight() const;
     bool isFlightMode() const;
+
+    void selectNextBlockOnHand(InputBundle &inputs);
+    void selectBlockOnHand(InputBundle &inputs);
+
+    void setupWidget(std::vector<Widget*> widgets);
+    void setupText(Text* text);
+
+    void drawInventoryItem();
+    void drawInventoryItemOnHand();
+    void drawInventoryItemInContainer();
+
+    bool isOpenContainer();
+    bool setContainerMode(bool state);
+    bool toggleContainerMode();
+
+    // check if the player is grabbing item
+    bool isGrabbing();
+    // set up the grab position in player object
+    // called from MyGL
+    bool setGrabItemPos(float posX, float posY);
+
+    // release the grab to given position in player object
+    // called from MyGL
+    void releaseGrabItem(float posX, float posY);
+
+    BlockType getGrabbedItemType();
+
+    // fill all available blocks in inventory
+    void fillAllBlocks();
+
 };
 

@@ -1,6 +1,64 @@
 
 # Feature Implementation
 
+## Inventory (Meng-Chuan Chang)
+
+### Abstract
+
+The player can store the blocks into the inventory and access the blocks from the inventory.
+
+### Window
+
+There are two windows. 
+
+#### On-Hand Window
+
+The first window is always shown on the bottom of the screen. The player can place the blocks that store in the first window
+
+#### In-Container Window
+
+The player can open and close the second window via pressing key "I", and it can switch the place of stored items.
+The bottom row of container window is on hand window. The player can move the blocks from container to hand or vice versa via dragging with the mouse.
+
+### Block Accessibility
+
+#### Place the block
+
+When the player clicks right mouse key button, it would place the block stored in selected frame in on-hand window and subtract the count of the block by one.
+If there is no block in selected frame. The player would not place any block.
+
+#### Destroy the block
+
+When the player clicks left mouse key button, the block that the player points to would be destroyed. 
+During the destroy process, the destroyed block would be automatically stored to the inventory.
+Some of the blocks would be transformed after the player destroys it (e.g. stone would be transformed to cobbleblock)
+
+#### Debug mode
+
+Once the user press key "P", all available blocks would be filled in the inventory.
+
+### Block movement
+
+#### Selected frame and place the block
+
+In on-hand window, the player would place the block in the selected frame.
+The player can change the selected frame via pressing number 1 to 9 on the keyboard.
+
+#### Mouse dragging in container windows
+
+While the player opens the container window. The player can move the block via the following steps
+
+1. Move the mouse to the block you want to move
+2. Press left mouse key button
+3. Drag the mouse to the destination
+4. Release the left mouse key button
+
+If the destination does not have the position. The block would be moved back to original position
+
+### Count
+
+The maximum capacity of each position in the widget is 64. Once the block is full, the same type of block would be stored in the new position until there is no empty position in inventory.
+
 ## Texturing and Texture Animation (Meng-Chuan Chang)
 
 ### Load Texture

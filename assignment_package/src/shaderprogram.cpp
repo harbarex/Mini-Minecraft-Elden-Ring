@@ -417,6 +417,37 @@ void ShaderProgram::drawOverlay(Drawable &d) {
     context->printGLErrorLog();
 }
 
+// simply draw the item with texture map
+// passing variable: pos, uv, u_Texture
+void ShaderProgram::drawTexture(Drawable &d) {
+    useMe();
+
+    if(d.elemCount() < 0) {
+        throw std::out_of_range("Attempting to draw a drawable with m_count of " + std::to_string(d.elemCount()) + "!");
+    }
+
+    if (attrPos != -1 && d.bindPos()) {
+        context->glEnableVertexAttribArray(attrPos);
+        context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 0, NULL);
+    }
+
+    if (attrUV != -1 && d.bindUV()) {
+        context->glEnableVertexAttribArray(attrUV);
+        context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, 0, NULL);
+    }
+
+    // Bind the index buffer and then draw shapes from it.
+    // This invokes the shader program, which accesses the vertex buffers.
+    d.bindIdx();
+    context->glDrawElements(d.drawMode(), d.elemCount(), GL_UNSIGNED_INT, 0);
+
+    if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
+    if (attrUV != -1) context->glDisableVertexAttribArray(attrUV);
+
+    context->printGLErrorLog();
+
+}
+
 char* ShaderProgram::textFileRead(const char* fileName) {
     char* text;
 
@@ -490,14 +521,6 @@ void ShaderProgram::printLinkInfoLog(int prog)
         context->glGetProgramInfoLog(prog, infoLogLen, &charsWritten, infoLog);
         qDebug() << "LinkInfoLog:" << "\n" << infoLog << "\n";
         delete [] infoLog;
-    }
-}
-
-void ShaderProgram::setTexture() {
-    useMe();
-
-    if (unifTexture != -1) {
-        context->glUniform1i(unifTexture, 0);
     }
 }
 

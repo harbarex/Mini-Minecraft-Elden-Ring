@@ -1,0 +1,27 @@
+# The text file is for setup widget info
+# Every data is written in one line, and x and y are separated by the space " "
+# the program would ignore empty line and line that starts with #
+
+# 1. shift distance of the item in this region
+# mapping range from (-1, -1) to (1, 1)
+# 2. size of the region
+# 3. top-left screen coordinate of the first item in this region
+# 4. bottom right screen coordinate of the first item in this region
+# mapping range from (-1, -1) to (1, 1)
+regionInfo
+0.0945 0.130
+9 3
+-0.4136 -0.015
+-0.3406 -0.115
+
+# 1. shift distance of the item in this region
+# mapping range from (-1, -1) to (1, 1)
+# 2. size of the region
+# 3. top-left screen coordinate of the first item in this region
+# 4. bottom right screen coordinate of the first item in this region
+# mapping range from (-1, -1) to (1, 1)
+regionInfo
+0.0945 0.130
+9 1
+-0.4136 -0.4285
+-0.3406 -0.53611

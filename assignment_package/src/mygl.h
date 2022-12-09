@@ -10,11 +10,14 @@
 #include "scene/player.h"
 #include "scene/block.h"
 #include "scene/npc.h"
-
+#include "scene/widget.h"
+#include "scene/blockinwidget.h"
+#include "scene/text.h"
 #include "texture.h"
 
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
+#include <QApplication>
 #include <smartpointerhelp.h>
 
 
@@ -30,7 +33,20 @@ private:
     ShaderProgram m_progUnderwater;
     ShaderProgram m_progLava;
     ShaderProgram m_progNoOp;
+    ShaderProgram m_progInventoryWidgetOnHand;
+    ShaderProgram m_progInventoryItemOnHand;
+    ShaderProgram m_progInventoryWidgetInContainer;
+    ShaderProgram m_progInventoryItemInContainer;
+    ShaderProgram m_progGrabbedItem;
+    ShaderProgram m_progText;
     Quad m_quad;
+    Widget* inventoryWidgetOnHand;
+    Widget* inventoryWidgetInContainer;
+    BlockInWidget* inventoryItemsOnHand;
+    BlockInWidget* inventoryItemsInContainer;
+    BlockInWidget* grabbedItem;
+    std::vector<uPtr<Widget>> widgets;
+    uPtr<Text> textOnScreen;
 
     // NPC
     ShaderProgram m_progNPC;
@@ -38,7 +54,7 @@ private:
     FrameBuffer m_frameBuffer;
 
     GLuint vao; // A handle for our vertex array object. This will store the VBOs created in our geometry classes.
-                // Don't worry too much about this. Just know it is necessary in order to render geometry.
+                // Don't worry to o much about this. Just know it is necessary in order to render geometry.
 
     Terrain m_terrain; // All of the Chunks that currently comprise the world.
     Player m_player; // The entity controlled by the user. Contains a camera to display what it sees as well.
@@ -54,7 +70,12 @@ private:
     int prevMouseX;
     int prevMouseY;
 
+    bool mouseCursorMode; // Mouse cursor can move or not
+
     Texture textureAll;
+    Texture inventoryWidgetOnHandTexture;
+    Texture inventoryWidgetInContainerTexture;
+    Texture textureFont;
 
     std::unordered_map<NPCTexture, Texture> npcTextures;
 
@@ -64,19 +85,29 @@ private:
 
     void sendPlayerDataToGUI() const;
 
-    void createTexture();
-    void createNPCTextures();
 
-    void loadTextureUVCoord();
+    void createNPCTextures();
     void loadNPCTextureUVCoord();
 
-    void bindTexture();
+    void createTexture(Texture& texture, const char* img_path, int slot);
+    void initWidget();
+    void initText();
+    void bindTexture(Texture& texture, ShaderProgram& shaderProgram, int slot);
+
+    void toggleMouseCursorMode();
 
     void setupNPCs();
     void renderNPCs();
 
 
     long long prevExpandTime;
+
+    glm::vec2 convertPosToNormalizedPos(glm::vec2 pixelPos);
+    glm::vec2 convertPosToNormalizedPos(QMouseEvent *e);
+
+    BlockType grabbedItemType;
+    std::array<glm::vec2, 4> grabbedItemUVCoords;
+    void drawGrabbedItem();
 
 
 public:
@@ -97,6 +128,12 @@ public:
     // Called from paintGL().
     // Calls Terrain::draw().
     void renderTerrain(TerrainDrawType drawType);
+
+    // Called from paintGL()
+    // Render the shader program with simple texture map
+    void renderTexture(Texture& texture, ShaderProgram& shaderProgram, int slot, Drawable* d);
+
+
 
 protected:
     // Automatically invoked when the user
