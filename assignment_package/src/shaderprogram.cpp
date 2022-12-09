@@ -4,6 +4,7 @@
 #include <QTextStream>
 #include <QDebug>
 #include <stdexcept>
+#include <iostream>
 
 
 ShaderProgram::ShaderProgram(OpenGLContext *context)
@@ -210,7 +211,7 @@ void ShaderProgram::drawInterleaved(Drawable &d)
     // meaning that glVertexAttribPointer associates vs_Pos
     // (referred to by attrPos) with that VBO
 
-    int size = 3 * sizeof(glm::vec4) + 2 * sizeof(glm::vec2);
+    int size = 2 * sizeof(glm::vec4) + 2 * sizeof(glm::vec2);
 
     if (attrPos != -1 && d.bindPos()) {
         context->glEnableVertexAttribArray(attrPos);
@@ -222,19 +223,15 @@ void ShaderProgram::drawInterleaved(Drawable &d)
         context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, size, (void*)sizeof(glm::vec4));
     }
 
-    if (attrCol != -1 && d.bindPos()) {
-        context->glEnableVertexAttribArray(attrCol);
-        context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, size, (void*)(2 * sizeof(glm::vec4)));
-    }
 
     if (attrUV  != -1 && d.bindPos())  {
         context->glEnableVertexAttribArray(attrUV);
-        context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, size, (void*)(3 * sizeof(glm::vec4)));
+        context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, size, (void*)(2 * sizeof(glm::vec4)));
     }
 
     if (attrAnimatableFlag != -1 && d.bindPos()) {
         context->glEnableVertexAttribArray(attrAnimatableFlag);
-        context->glVertexAttribPointer(attrAnimatableFlag, 2, GL_FLOAT, false, size, (void*)(3 * sizeof(glm::vec4) + sizeof(glm::vec2)));
+        context->glVertexAttribPointer(attrAnimatableFlag, 2, GL_FLOAT, false, size, (void*)(2 * sizeof(glm::vec4) + sizeof(glm::vec2)));
     }
 
     // Bind the index buffer and then draw shapes from it.
@@ -244,7 +241,6 @@ void ShaderProgram::drawInterleaved(Drawable &d)
 
     if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
     if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
-    if (attrCol != -1) context->glDisableVertexAttribArray(attrCol);
     if (attrUV != -1) context->glDisableVertexAttribArray(attrUV);
     if (attrAnimatableFlag != -1) context->glDisableVertexAttribArray(attrAnimatableFlag);
 
@@ -421,6 +417,37 @@ void ShaderProgram::drawOverlay(Drawable &d) {
     context->printGLErrorLog();
 }
 
+// simply draw the item with texture map
+// passing variable: pos, uv, u_Texture
+void ShaderProgram::drawTexture(Drawable &d) {
+    useMe();
+
+    if(d.elemCount() < 0) {
+        throw std::out_of_range("Attempting to draw a drawable with m_count of " + std::to_string(d.elemCount()) + "!");
+    }
+
+    if (attrPos != -1 && d.bindPos()) {
+        context->glEnableVertexAttribArray(attrPos);
+        context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 0, NULL);
+    }
+
+    if (attrUV != -1 && d.bindUV()) {
+        context->glEnableVertexAttribArray(attrUV);
+        context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, 0, NULL);
+    }
+
+    // Bind the index buffer and then draw shapes from it.
+    // This invokes the shader program, which accesses the vertex buffers.
+    d.bindIdx();
+    context->glDrawElements(d.drawMode(), d.elemCount(), GL_UNSIGNED_INT, 0);
+
+    if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
+    if (attrUV != -1) context->glDisableVertexAttribArray(attrUV);
+
+    context->printGLErrorLog();
+
+}
+
 char* ShaderProgram::textFileRead(const char* fileName) {
     char* text;
 
@@ -494,14 +521,6 @@ void ShaderProgram::printLinkInfoLog(int prog)
         context->glGetProgramInfoLog(prog, infoLogLen, &charsWritten, infoLog);
         qDebug() << "LinkInfoLog:" << "\n" << infoLog << "\n";
         delete [] infoLog;
-    }
-}
-
-void ShaderProgram::setTexture() {
-    useMe();
-
-    if (unifTexture != -1) {
-        context->glUniform1i(unifTexture, 0);
     }
 }
 

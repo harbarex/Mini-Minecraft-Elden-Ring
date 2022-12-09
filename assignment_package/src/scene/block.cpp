@@ -50,6 +50,49 @@ std::array<BlockFace, 6> Block::createBlockFaces(std::array<glm::vec2, 6> uvOffs
 };
 
 
+/**
+ * @brief Block::createBlockFaces
+ *  for NPC block faces.
+ *  the left-bottom corner & right-upper corner must be specified.
+ * @param uvs
+ * @return
+ */
+std::array<BlockFace, 6> Block::createBlockFaces(std::array<glm::vec4, 6> uvs)
+{
+    return {
+        BlockFace(XPOS, glm::vec4( 1,  0,  0, 0),
+                  VertexData(glm::vec4(1, 0, 1, 1), glm::vec2(uvs[0][0], uvs[0][1])),
+                  VertexData(glm::vec4(1, 0, 0, 1), glm::vec2(uvs[0][2], uvs[0][1])),
+                  VertexData(glm::vec4(1, 1, 0, 1), glm::vec2(uvs[0][2], uvs[0][3])),
+                  VertexData(glm::vec4(1, 1, 1, 1), glm::vec2(uvs[0][0], uvs[0][3]))),
+        BlockFace(XNEG, glm::vec4(-1,  0,  0, 0),
+                  VertexData(glm::vec4(0, 0, 0, 1), glm::vec2(uvs[1][0], uvs[1][1])),
+                  VertexData(glm::vec4(0, 0, 1, 1), glm::vec2(uvs[1][2], uvs[1][1])),
+                  VertexData(glm::vec4(0, 1, 1, 1), glm::vec2(uvs[1][2], uvs[1][3])),
+                  VertexData(glm::vec4(0, 1, 0, 1), glm::vec2(uvs[1][0], uvs[1][3]))),
+        BlockFace(YPOS, glm::vec4( 0,  1,  0, 0),
+                  VertexData(glm::vec4(0, 1, 1, 1), glm::vec2(uvs[2][0], uvs[2][1])),
+                  VertexData(glm::vec4(1, 1, 1, 1), glm::vec2(uvs[2][2], uvs[2][1])),
+                  VertexData(glm::vec4(1, 1, 0, 1), glm::vec2(uvs[2][2], uvs[2][3])),
+                  VertexData(glm::vec4(0, 1, 0, 1), glm::vec2(uvs[2][0], uvs[2][3]))),
+        BlockFace(YNEG, glm::vec4( 0, -1,  0, 0),
+                  VertexData(glm::vec4(0, 0, 0, 1), glm::vec2(uvs[3][0], uvs[3][1])),
+                  VertexData(glm::vec4(1, 0, 0, 1), glm::vec2(uvs[3][2], uvs[3][1])),
+                  VertexData(glm::vec4(1, 0, 1, 1), glm::vec2(uvs[3][2], uvs[3][3])),
+                  VertexData(glm::vec4(0, 0, 1, 1), glm::vec2(uvs[3][0], uvs[3][3]))),
+        BlockFace(ZPOS, glm::vec4( 0,  0,  1, 0),
+                  VertexData(glm::vec4(0, 0, 1, 1), glm::vec2(uvs[4][0], uvs[4][1])),
+                  VertexData(glm::vec4(1, 0, 1, 1), glm::vec2(uvs[4][2], uvs[4][1])),
+                  VertexData(glm::vec4(1, 1, 1, 1), glm::vec2(uvs[4][2], uvs[4][3])),
+                  VertexData(glm::vec4(0, 1, 1, 1), glm::vec2(uvs[4][0], uvs[4][3]))),
+        BlockFace(ZNEG, glm::vec4( 0,  0, -1, 0),
+                  VertexData(glm::vec4(1, 0, 0, 1), glm::vec2(uvs[5][0], uvs[5][1])),
+                  VertexData(glm::vec4(0, 0, 0, 1), glm::vec2(uvs[5][2], uvs[5][1])),
+                  VertexData(glm::vec4(0, 1, 0, 1), glm::vec2(uvs[5][2], uvs[5][3])),
+                  VertexData(glm::vec4(1, 1, 0, 1), glm::vec2(uvs[5][0], uvs[5][3])))
+    };
+};
+
 
 /**
  * @brief createBlockFaces
@@ -173,6 +216,85 @@ void Block::insertNewUVCoord(BlockType blockType, std::array<glm::vec2, 6> uv) {
 }
 
 
+void Block::insertNewUVCoord(BlockType blockType, std::array<glm::vec4, 6> uv) {
+    BlockCollection[blockType] = Block::createBlockFaces(uv);
+}
+
+/**
+ * @brief Block::loadUVCoordFromText
+ *   Load uv coordinates of 6 faces of all blocktypes from given text file
+ * @param text_path : path to text file (also need to add path to qrc file)
+ */
+void Block::loadUVCoordFromText(const char* text_path) {
+    // read text file
+    QFile f(text_path);
+    f.open(QIODevice::ReadOnly);
+    QTextStream s(&f);
+    QString line;
+    bool readCoord = false;
+    int coordCount = 0;
+    std::array<glm::vec2, 6> uvOffsets;
+    BlockType currBlockType;
+
+    while (!s.atEnd()) {
+        line = s.readLine();
+        if (line.size() == 0 || line.startsWith("#")) {
+            // skip empty line and line starts with #
+            continue;
+        }
+
+        if (readCoord) {
+            // store uv coordinate into temp array
+            uvOffsets[coordCount] = glm::vec2(line.split(" ")[0].toDouble(), line.split(" ")[1].toDouble());
+            coordCount += 1;
+        } else if (blockTypeMap.find(line.toStdString()) != blockTypeMap.end()) {
+            // identify which block
+            currBlockType = blockTypeMap[line.toStdString()];
+            readCoord = true;
+        }
+
+        if (coordCount == 6) {
+            // store 6 uv coordinates into BlockCollection
+
+            insertNewUVCoord(currBlockType, uvOffsets);
+            uvOffsets.empty();
+            coordCount = 0;
+            readCoord = false;
+        }
+    }
+}
+
+/**
+ * @brief Block::loadUVCoordFromText
+ *   Load uv coordinates of 6 faces of all blocktypes from given text file
+ * @param blocktype : which block of the uv coordinates we need
+ * @param dir : the direction of the block face (6 directions)
+ * @return uvCoords : array of 4 uv coordinates given the block type and the direction of the face
+ *          (order: bottom-left, bottom-right, top-right, top-left
+ */
+void Block::getUVCoords(BlockType blockType, std::array<glm::vec2, 4>* uvCoords, Direction dir) {
+    std::array<BlockFace, 6> faces = BlockCollection[blockType];
+    BlockFace targetFace;
+    for (auto& face : faces) {
+        if (face.dir == dir) {
+            targetFace = face;
+            break;
+        }
+    }
+    for (int i=0; i<4; ++i) {
+        (*uvCoords)[i] = targetFace.vertices[i].uv;
+    }
+    return;
+}
+
+BlockType Block::getDestroyedBlockType(BlockType blockType) {
+    if (blockTransformationMap.find(blockType) == blockTransformationMap.end()) {
+        return blockType;
+    }
+
+    return blockTransformationMap[blockType];
+};
+
 /**
  * Instantiate various kinds of blocks here.
  * TODO: Update uvs for each block.
@@ -192,11 +314,44 @@ std::unordered_map<std::string, BlockType> Block::blockTypeMap = {
     {"BEDROCK", BEDROCK},
     {"ICE", ICE},
     {"WOOD", WOOD},
-    {"LEAF", LEAF}}
+    {"LEAF", LEAF},
+    {"COBBLESTONE", COBBLESTONE},
+    {"GLASS", GLASS},
+    {"BRICK", BRICK},
+    {"SAND", SAND},
+    {"DIAMOND", DIAMOND},
+    {"TNT", TNT},
+     {"SHEEPHEAD", SHEEPHEAD},
+     {"SHEEPBODY", SHEEPBODY},
+     {"SHEEPLIMB", SHEEPLIMB},
+     {"STEVEHEAD", STEVEHEAD},
+     {"STEVEBODY", STEVEBODY},
+     {"STEVELUL", STEVELUL},
+     {"STEVERUL", STEVERUL},
+     {"STEVELLL", STEVELLL},
+     {"STEVERLL", STEVERLL},
+     {"ZDHEAD", ZDHEAD},
+     {"ZDBODY", ZDBODY},
+     {"ZDLBODY", ZDLBODY},
+     {"ZDTAIL", ZDTAIL},
+     {"ZDLCW", ZDLCW},
+     {"ZDLOW", ZDLOW},
+     {"ZDRCW", ZDRCW},
+     {"ZDROW", ZDROW},
+     {"LAMAHEAD", LAMAHEAD},
+     {"LAMANOSE", LAMANOSE},
+     {"LAMAEAR", LAMAEAR},
+     {"LAMABODY", LAMABODY},
+     {"LAMALIMB", LAMALIMB}}
+};
+
+std::unordered_map<BlockType, BlockType> Block::blockTransformationMap = {
+    {{GRASS, DIRT},
+     {STONE, COBBLESTONE}}
 };
 
 std::unordered_set<BlockType> Block::transparentBlockTypes = {
-    EMPTY, WATER, ICE
+    EMPTY, WATER, ICE, GLASS
 };
 
 std::unordered_set<BlockType> Block::animatableBlockTypes = {

@@ -99,6 +99,9 @@ public:
     // given type.
     void setBlockAt(int x, int y, int z, BlockType t);
 
+    // add additional helper to check whether the block exist or not
+    bool hasBlockAt(glm::vec3 p) const;
+
     // Draws every Chunk that falls within the bounding box
     // described by the min and max coords, using the provided
     // ShaderProgram

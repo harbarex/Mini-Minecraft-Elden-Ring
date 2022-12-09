@@ -6,9 +6,20 @@ SOURCES += \
     $$PWD/main.cpp \
     $$PWD/mainwindow.cpp \
     $$PWD/mygl.cpp \
+    $$PWD/scene/blockinwidget.cpp \
+    $$PWD/scene/inventory.cpp \
     $$PWD/scene/noise.cpp \
     $$PWD/scene/block.cpp \
+    $$PWD/scene/npc.cpp \
+    $$PWD/scene/npcs/lama.cpp \
+    $$PWD/scene/npcs/sheep.cpp \
+    $$PWD/scene/node.cpp \
+    $$PWD/scene/npcs/steve.cpp \
+    $$PWD/scene/npcs/zombiedragon.cpp \
+    $$PWD/scene/pathfinder.cpp \
     $$PWD/scene/quad.cpp \
+    $$PWD/scene/text.cpp \
+    $$PWD/scene/widget.cpp \
     $$PWD/shaderprogram.cpp \
     $$PWD/drawable.cpp \
     $$PWD/cameracontrolshelp.cpp \
@@ -28,9 +39,20 @@ HEADERS += \
     $$PWD/la.h \
     $$PWD/mainwindow.h \
     $$PWD/mygl.h \
+    $$PWD/scene/blockinwidget.h \
+    $$PWD/scene/inventory.h \
     $$PWD/scene/noise.h \
     $$PWD/scene/block.h \
+    $$PWD/scene/npc.h \
+    $$PWD/scene/node.h \
+    $$PWD/scene/npcs/lama.h \
+    $$PWD/scene/npcs/sheep.h \
+    $$PWD/scene/npcs/steve.h \
+    $$PWD/scene/npcs/zombiedragon.h \
+    $$PWD/scene/pathfinder.h \
     $$PWD/scene/quad.h \
+    $$PWD/scene/text.h \
+    $$PWD/scene/widget.h \
     $$PWD/shaderprogram.h \
     $$PWD/drawable.h \
     $$PWD/cameracontrolshelp.h \

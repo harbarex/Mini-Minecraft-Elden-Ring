@@ -61,6 +61,8 @@ public:
     void drawInterleavedTerrainDrawType(Drawable &d, TerrainDrawType drawType);
     // Draw Overlay
     void drawOverlay(Drawable &d);
+    // Draw Texture
+    void drawTexture(Drawable &d);
     // Utility function used in create()
     char* textFileRead(const char*);
     // Utility function that prints any shader compilation errors to the console

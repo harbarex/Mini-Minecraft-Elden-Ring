@@ -205,6 +205,25 @@ BlockType Terrain::getBlockAt(glm::vec3 p) const {
     return getBlockAt(p.x, p.y, p.z);
 }
 
+/**
+ * @brief Terrain::hasBlockAt
+ *  Catch the error and return false if not exist
+ * @param p
+ * @return
+ */
+bool Terrain::hasBlockAt(glm::vec3 p) const
+{
+    try
+    {
+        getBlockAt(p);
+    }
+    catch (...)
+    {
+        return false;
+    }
+    return true;
+}
+
 bool Terrain::hasChunkAt(int x, int z) const {
     // Map x and z to their nearest Chunk corner
     // By flooring x and z, then multiplying by 16,
@@ -741,6 +760,131 @@ void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height)
     }
 }
 
+
+/**
+ * @brief addNPCJumpStages
+ *  Helper to hard code the jump stages for fornite lama(s)
+ * @param chunk
+ * @param chunkXCorner
+ * @param chunkZCorner
+ */
+void addNPCJumpStages(Chunk *chunk, int chunkXCorner, int chunkZCorner)
+{
+    if (chunkXCorner == 32 && chunkZCorner == 32)
+    {
+
+        for (int x = 0; x < 6; x++)
+        {
+            for (int z = 0; z < 6; z++)
+            {
+
+                chunk->setBlockAt(x, 145, z, STONE);
+            }
+        }
+
+        chunk->setBlockAt(1, 146, 1, WOOD);
+
+        for (int x = 2; x < 4; x++)
+        {
+            for (int z = 2; z < 4; z++)
+            {
+                chunk->setBlockAt(x, 145, z, EMPTY);
+            }
+        }
+
+        for (int x = 8; x < 16; x++)
+        {
+            for (int z = 4; z < 12; z++)
+            {
+                chunk->setBlockAt(x, 146, z, STONE);
+            }
+        }
+        for (int x = 10; x < 14; x++)
+        {
+            for (int z = 6; z < 10; z++)
+            {
+                chunk->setBlockAt(x, 146, z, EMPTY);
+            }
+        }
+
+        for (int x = 13; x < 16; x++)
+        {
+            for (int z = 13; z < 16; z++)
+            {
+                chunk->setBlockAt(x, 147, z, STONE);
+            }
+        }
+
+    }
+
+    if (chunkXCorner == 48 && chunkZCorner == 32)
+    {
+        // x = 0
+        for (int z = 11; z < 16; z++)
+        {
+            chunk->setBlockAt(0, 147, z, STONE);
+            chunk->setBlockAt(1, 147, z, STONE);
+            chunk->setBlockAt(2, 147, z, STONE);
+        }
+    }
+
+    if (chunkXCorner == 48 && chunkZCorner == 48)
+    {
+        for (int x = 1; x < 6; x++)
+        {
+            for (int z = 1; z < 6; z++)
+            {
+
+                chunk->setBlockAt(x, 149, z, STONE);
+            }
+        }
+        for (int x = 2; x < 4; x++)
+        {
+            for (int z = 2; z < 4; z++)
+            {
+                chunk->setBlockAt(x, 149, z, EMPTY);
+            }
+        }
+
+        int start = 7;
+        for (int i = 0; i < 8; i++)
+        {
+            chunk->setBlockAt(start + i, 150, start + i, STONE);
+            chunk->setBlockAt(start + i + 1, 150, start + i, STONE);
+        }
+    }
+
+    if (chunkXCorner == 64 && chunkZCorner == 64)
+    {
+        for (int x = 0; x < 6; x++)
+        {
+            for (int z = 0; z < 6; z++)
+            {
+
+                chunk->setBlockAt(x, 151, z, STONE);
+            }
+        }
+        for (int x = 2; x < 4; x++)
+        {
+            for (int z = 2; z < 4; z++)
+            {
+                chunk->setBlockAt(x, 151, z, EMPTY);
+            }
+        }
+
+        for (int x = 8; x < 16; x++)
+        {
+            for (int z = 4; z < 12; z++)
+            {
+                chunk->setBlockAt(x, 151, z, STONE);
+            }
+        }
+
+        chunk->setBlockAt(12, 152, 8, WOOD);
+    }
+}
+
+
 /**
  * @brief FillBlocksWorker::setBlocks
  *  The private helper to set all the blocks of a given chunk
@@ -752,6 +896,7 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
 {
 
     Noise terrainHeightMap;
+
 
     for (int x = 0; x < 16; x++) {
         for (int z = 0; z < 16; z++) {
@@ -786,6 +931,12 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
 
         }
     }
+
+
+    // explicitly for test terrain
+    // 48.f, 148.f, 32.f
+    // 48.f, 32.f
+    addNPCJumpStages(chunk, chunkXCorner, chunkZCorner);
 
 }
 
