@@ -3,6 +3,7 @@
 
 #include "framebuffer.h"
 #include "openglcontext.h"
+#include "qsoundeffect.h"
 #include "scene/quad.h"
 #include "scene/worldaxes.h"
 #include "scene/camera.h"
@@ -109,6 +110,9 @@ private:
     std::array<glm::vec2, 4> grabbedItemUVCoords;
     void drawGrabbedItem();
 
+    QSoundEffect mainTheme;
+    QSoundEffect waterEffect;
+    QSoundEffect lavaEffect;
 
 public:
     explicit MyGL(QWidget *parent = nullptr);

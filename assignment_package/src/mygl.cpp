@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <random>
 
+// Library effective with Linux
+#include <unistd.h>
 
 
 MyGL::MyGL(QWidget *parent)
@@ -20,8 +22,8 @@ MyGL::MyGL(QWidget *parent)
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
       m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventoryWidgetOnHand(this), m_progInventoryItemOnHand(this), m_progInventoryWidgetInContainer(this),
-      m_progInventoryItemInContainer(this), m_progNPC(this), m_progGrabbedItem(this),
-      m_progText(this), m_quad(this), m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
+      m_progInventoryItemInContainer(this), m_progGrabbedItem(this), m_progText(this),
+      m_quad(this), m_progNPC(this), m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
       m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), frameCount(0),
       prevFrameTime(QDateTime::currentMSecsSinceEpoch()), mouseCursorMode(false), textureAll(this), inventoryWidgetOnHandTexture(this), inventoryWidgetInContainerTexture(this),
       textureFont(this), prevExpandTime(QDateTime::currentMSecsSinceEpoch())
@@ -39,6 +41,21 @@ MyGL::MyGL(QWidget *parent)
     prevMouseY = height() / 2;
 
     setupNPCs();
+
+    // Setup Sounds
+    mainTheme.setSource(QUrl::fromLocalFile(":/sounds/elden.wav"));
+    mainTheme.setLoopCount(QSoundEffect::Infinite);
+    mainTheme.setVolume(1.f);
+    //std::cerr<<"\nMain Theme Status: "<<mainTheme.status()<<std::endl;
+    mainTheme.play();
+
+    waterEffect.setSource(QUrl::fromLocalFile(":/sounds/under_water.wav"));
+    waterEffect.setLoopCount(QSoundEffect::Infinite);
+    waterEffect.setVolume(0.5f);
+
+    lavaEffect.setSource(QUrl::fromLocalFile(":/sounds/lava.wav"));
+    lavaEffect.setLoopCount(QSoundEffect::Infinite);
+    lavaEffect.setVolume(0.5f);
 
     initWidget();
     initText();
@@ -260,6 +277,7 @@ void MyGL::sendPlayerDataToGUI() const {
 // MyGL's constructor links update() to a timer that fires 60 times per second,
 // so paintGL() called at a rate of 60 frames per second.
 void MyGL::paintGL() {
+
     // Clear the screen so that we only see newly drawn images
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -307,14 +325,19 @@ void MyGL::paintGL() {
 
     // Post-process Shaders
     if(m_player.isUnderWater(m_terrain, m_inputs)){
+        if(!waterEffect.isPlaying()) waterEffect.play();
         m_progUnderwater.setTexture(m_frameBuffer.getTextureSlot());
         m_progUnderwater.drawOverlay(m_quad);
     }
     else if(m_player.isUnderLava(m_terrain, m_inputs)){
+        if(!lavaEffect.isPlaying()) lavaEffect.play();
         m_progLava.setTexture(m_frameBuffer.getTextureSlot());
         m_progLava.drawOverlay(m_quad);
     }
     else{
+        if(waterEffect.isPlaying()) waterEffect.stop();
+        if(lavaEffect.isPlaying()) lavaEffect.stop();
+
         m_progNoOp.setTexture(m_frameBuffer.getTextureSlot());
         m_progNoOp.drawOverlay(m_quad);
     }

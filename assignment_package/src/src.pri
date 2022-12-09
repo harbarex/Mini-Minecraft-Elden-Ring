@@ -71,3 +71,5 @@ HEADERS += \
     $$PWD/scene/chunk.h \
     $$PWD/texture.h \
     $$PWD/utils.h
+
+RESOURCES +=

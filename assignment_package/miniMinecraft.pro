@@ -25,6 +25,7 @@ FORMS += forms/mainwindow.ui \
     forms/playerinfo.ui
 
 RESOURCES += glsl.qrc \
+    sounds.qrc \
     texture.qrc
 
 *-clang*|*-g++* {

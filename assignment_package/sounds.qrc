@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>sounds/lava.wav</file>
+        <file>sounds/under_water.wav</file>
+        <file>sounds/elden.wav</file>
+    </qresource>
+</RCC>

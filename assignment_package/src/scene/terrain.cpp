@@ -634,15 +634,10 @@ FillBlocksWorker::FillBlocksWorker(int x,
 
 void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height){
 
-    if( height < 132){
+    if( height < 136){
         //chunk->setBlockAt(x, height, z, WATER);
-        for(int y_dirt=128; y_dirt<132; y_dirt++){
+        for(int y_dirt=128; y_dirt<136; y_dirt++){
             chunk->setBlockAt(x, y_dirt, z, WATER);
-        }
-    }
-    else if( height < 136){
-        for(int y_dirt=128; y_dirt<height; y_dirt++){
-            chunk->setBlockAt(x, y_dirt, z, SAND);
         }
     }
     else if( height < 142){
