@@ -153,6 +153,7 @@ public:
     // get the uv coordinates of given blocktype and direction
     // order (bottom-left, bottom-right, top-right, top-left)
     static void getUVCoords(BlockType blockType, std::array<glm::vec2, 4>* uvCoords, Direction dir=XPOS);
+    static void getUVCoords(BlockType blockType, std::array<std::array<glm::vec2, 4>, 3>* uvCoords);
 
     static BlockType getDestroyedBlockType(BlockType blockType);
 

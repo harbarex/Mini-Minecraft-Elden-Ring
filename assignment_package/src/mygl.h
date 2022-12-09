@@ -106,7 +106,7 @@ private:
     glm::vec2 convertPosToNormalizedPos(QMouseEvent *e);
 
     BlockType grabbedItemType;
-    std::array<glm::vec2, 4> grabbedItemUVCoords;
+    std::array<std::array<glm::vec2, 4>, 3> grabbedItemUVCoords;
     void drawGrabbedItem();
 
 

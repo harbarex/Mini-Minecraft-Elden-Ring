@@ -784,7 +784,7 @@ void Player::drawInventoryItemOnHand() {
         if (Block::isEmpty(blocksInInventory[i].first)) {
             continue;
         }
-        std::array<glm::vec2, 4> uvCoords;
+        std::array<std::array<glm::vec2, 4>, 3> uvCoords;
         Block::getUVCoords(blocksInInventory[i].first, &uvCoords);
         // draw the items in widget
         inventoryItemOnHand->addItem(i, uvCoords);
@@ -813,7 +813,7 @@ void Player::drawInventoryItemInContainer() {
         if (i < inventory.getBlocksOnHandSize()) {
             index += inventory.getBlocksInInventorySize();
         }
-        std::array<glm::vec2, 4> uvCoords;
+        std::array<std::array<glm::vec2, 4>, 3> uvCoords;
         Block::getUVCoords(blocksInInventory[i].first, &uvCoords);
         inventoryItemInContainer->addItem(index, uvCoords);
         glm::vec2 top_left_pos;

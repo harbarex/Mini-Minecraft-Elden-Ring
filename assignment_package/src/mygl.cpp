@@ -19,8 +19,8 @@ MyGL::MyGL(QWidget *parent)
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this),
       m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventoryWidgetOnHand(this), m_progInventoryItemOnHand(this), m_progInventoryWidgetInContainer(this),
-      m_progInventoryItemInContainer(this), m_progNPC(this), m_progGrabbedItem(this),
-      m_progText(this), m_quad(this), m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
+      m_progInventoryItemInContainer(this), m_progGrabbedItem(this), m_progText(this),
+      m_quad(this), m_progNPC(this), m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
       m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), frameCount(0),
       prevFrameTime(QDateTime::currentMSecsSinceEpoch()), mouseCursorMode(false), textureAll(this), inventoryWidgetOnHandTexture(this), inventoryWidgetInContainerTexture(this),
       textureFont(this), prevExpandTime(QDateTime::currentMSecsSinceEpoch())
@@ -33,7 +33,8 @@ MyGL::MyGL(QWidget *parent)
     setFocusPolicy(Qt::ClickFocus);
     m_inputs = InputBundle();
     setMouseTracking(true); // MyGL will track the mouse's movements even if a mouse button is not pressed
-    setCursor(Qt::BlankCursor); // Make the cursor invisible
+//    setCursor(Qt::BlankCursor); // Make the cursor invisible
+    setCursor(Qt::CrossCursor);
     prevMouseX = width() / 2;
     prevMouseY = height() / 2;
 
@@ -662,10 +663,8 @@ void MyGL::initText() {
 void MyGL::toggleMouseCursorMode() {
     if (mouseCursorMode) {
         mouseCursorMode = false;
-        setCursor(Qt::BlankCursor);
     } else {
         mouseCursorMode = true;
-        setCursor(Qt::CrossCursor);
     }
 }
 

@@ -287,6 +287,12 @@ void Block::getUVCoords(BlockType blockType, std::array<glm::vec2, 4>* uvCoords,
     return;
 }
 
+void Block::getUVCoords(BlockType blockType, std::array<std::array<glm::vec2, 4>, 3>* uvCoords) {
+    getUVCoords(blockType, &(*uvCoords)[0], XPOS);
+    getUVCoords(blockType, &(*uvCoords)[1], YPOS);
+    getUVCoords(blockType, &(*uvCoords)[2], ZPOS);
+}
+
 BlockType Block::getDestroyedBlockType(BlockType blockType) {
     if (blockTransformationMap.find(blockType) == blockTransformationMap.end()) {
         return blockType;
