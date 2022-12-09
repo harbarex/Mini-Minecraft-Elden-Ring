@@ -36,7 +36,8 @@ MyGL::MyGL(QWidget *parent)
     setFocusPolicy(Qt::ClickFocus);
     m_inputs = InputBundle();
     setMouseTracking(true); // MyGL will track the mouse's movements even if a mouse button is not pressed
-    setCursor(Qt::BlankCursor); // Make the cursor invisible
+//    setCursor(Qt::BlankCursor); // Make the cursor invisible
+    setCursor(Qt::CrossCursor);
     prevMouseX = width() / 2;
     prevMouseY = height() / 2;
 
@@ -694,10 +695,8 @@ void MyGL::initText() {
 void MyGL::toggleMouseCursorMode() {
     if (mouseCursorMode) {
         mouseCursorMode = false;
-        setCursor(Qt::BlankCursor);
     } else {
         mouseCursorMode = true;
-        setCursor(Qt::CrossCursor);
     }
 }
 
