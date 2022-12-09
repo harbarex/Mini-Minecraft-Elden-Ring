@@ -734,7 +734,6 @@ FillBlocksWorker::FillBlocksWorker(int x,
       chunks(chunks),
       completedChunks(completedChunks), completedChunksLock(completedChunksLock),
       erdTree(Tree(glm::vec2(0.5f, 0.5f), 3.f)),
-      erdTreeCreated(false),
       erdTreeRootChunk(glm::ivec2(32, 48))
 {}
 
@@ -789,13 +788,12 @@ void FillBlocksWorker::setErdTreeBlocks()
     glm::ivec2 pos = erdTreeRootChunk;
 
     // set the tree when all the neighboring chunks around erdTreeRootChunk exist
-
-    if((!erdTreeCreated) && hasChunksForErdTree()) {
+    if(hasChunksForErdTree()) {
 
         int rootHeight = 128;
 
         Tree tree = Tree(glm::vec2(0.5f, 0.5f), 3.0f);
-        Tree *tr = &tree;
+        Tree *tr = &tree; //&erdTree;
 
         tr->generatePath(2, "FX");
         tr->populateOps();
@@ -871,7 +869,6 @@ void FillBlocksWorker::setErdTreeBlocks()
                 }
             }
         }
-        erdTreeCreated = true;
     }
 }
 
