@@ -72,7 +72,9 @@ private:
 
     void bindTexture();
 
+    void setupNPCs();
     void renderNPCs();
+
 
     long long prevExpandTime;
 

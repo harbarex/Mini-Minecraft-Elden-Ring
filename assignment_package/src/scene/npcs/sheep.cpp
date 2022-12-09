@@ -5,13 +5,21 @@ Sheep::Sheep(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &pl
     std::vector<glm::vec3> goals,
     glm::vec3 initialVelocity,
     float toleranceOfGoal,
-    float toleranceOfStep)
-         : NPC(context, pos, terrain, player, npcTexture, goals, initialVelocity, toleranceOfGoal, toleranceOfStep),
+    float toleranceOfStep,
+    int halfGridSize)
+         : NPC(context, pos, terrain, player, npcTexture, goals, initialVelocity, toleranceOfGoal, toleranceOfStep, halfGridSize),
          head(context, SHEEPHEAD),
          body(context, SHEEPBODY),
          limb(context, SHEEPLIMB)
 {}
 
+Sheep::Sheep(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+    std::vector<glm::vec3> goals,
+    glm::vec3 initialVelocity,
+    float toleranceOfGoal,
+    float toleranceOfStep)
+         : Sheep(context, pos, terrain, player, npcTexture, goals, initialVelocity, toleranceOfGoal, toleranceOfStep, 5)
+{}
 
 Sheep::Sheep(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
     glm::vec3 initialVelocity, float toleranceOfGoal, float toleranceOfStep)

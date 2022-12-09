@@ -9,6 +9,10 @@
 #include <QKeyEvent>
 #include <QDateTime>
 #include <QFile>
+#include <algorithm>
+#include <random>
+
+
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
@@ -35,33 +39,7 @@ MyGL::MyGL(QWidget *parent)
 
     m_player.setBlocksHold();
 
-    // the initial set of NPCs
-    // for jumping
-    std::vector<glm::vec3> jumpGoals1 = {glm::vec3(33.f, 146.f, 33.f),
-                                        glm::vec3(76.f, 152.f, 72.f)};
-    std::vector<glm::vec3> jumpGoals2 = {glm::vec3(76.f, 152.f, 72.f),
-                                         glm::vec3(33.f, 146.f, 33.f)};
-    m_npcs.push_back(mkU<Lama>(this, glm::vec3(32.f, 148.f, 33.f),
-                               m_terrain, m_player, GLAMA,
-                               jumpGoals1,
-                               glm::vec3(3.f, 0.f, 3.f),
-                               1.5f, 1.f));
-    m_npcs.push_back(mkU<Lama>(this, glm::vec3(73.f, 155.f, 73.f),
-                               m_terrain, m_player, WLAMA,
-                               jumpGoals2,
-                               glm::vec3(2.5f, 0.f, 2.5f),
-                               1.5f, 1.f));
-
-//    m_npcs.push_back(mkU<Lama>(this, glm::vec3(34.f, 148.f, 35.f), m_terrain, m_player, BLAMA));
-//    m_npcs[2]->setupGoals(jumpGoals);
-
-    m_npcs.push_back(mkU<Steve>(this, glm::vec3(60.f, 145.f, 35.f),
-                                m_terrain, m_player, STEVE,
-                                glm::vec3(2.5f, 0.f, 2.5f),
-                                1.5f, 1.5f));
-
-//    // flying around
-//    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(65.f, 170.f, 32.f), m_terrain, m_player, ZDRAGON));
+    setupNPCs();
 }
 
 MyGL::~MyGL() {
@@ -206,10 +184,12 @@ void MyGL::tick() {
     // TODO: pass delta-time to NPC's tick as well
     if (frameCount > 15.f * 60.f)
     {
+        std::cout << "tick npc"  << std::endl;
         for (const uPtr<NPC> &npc : m_npcs)
         {
             npc->tick(deltaTime);
         }
+        std::cout << "finish npc tick" << std::endl;
     }
 
 }
@@ -579,4 +559,79 @@ void MyGL::renderNPCs()
         m_progNPC.setTexture(npcTextures[npc->npcTexture].getSlot());
         npc->draw(&m_progNPC);
     }
+}
+
+/**
+ * @brief MyGL::setupNPCs
+ *  This helper contains the initial setup of all NPCs in this world.
+ *  -------------
+ *  General Steps to setup a NPC:
+ *  0. (Before instantiate a NPC here)
+ *      - add NPCTexture in texture.h if it's a new NPC
+ *      - create the corresponding NPC's texture in MyGL::createNPCTextures()
+ *  1. Instantiate an NPC entity (set up parameters)
+ *      - params
+ *          - initial position
+ *          - (a series of) goals to achieve
+ *          - initial movement speed (in x & z)
+ *          - tolerance of distance to determine the achievement of a goal
+ *          - tolerance of distance to determine the completion of a step
+ *          - the search grid (halfGridSize) of the path finder (A* search)
+ *      - other needed params (m_terrain, m_player)
+ *  2. Push into the m_npcs list
+ */
+void MyGL::setupNPCs()
+{
+    // two fornite lamas on the jump training stadium
+    // moving back & forth between two targets
+    std::vector<glm::vec3> jump1To2 = {glm::vec3(33.f, 146.f, 33.f),
+                                       glm::vec3(76.f, 152.f, 72.f)};
+    std::vector<glm::vec3> jump2To1 = {glm::vec3(76.f, 152.f, 72.f),
+                                       glm::vec3(33.f, 146.f, 33.f)};
+    m_npcs.push_back(mkU<Lama>(this, glm::vec3(32.f, 148.f, 33.f),
+                               m_terrain, m_player, GLAMA,
+                               jump1To2,
+                               glm::vec3(3.f, 0.f, 3.f),
+                               2.f, 1.f,
+                               7));
+    m_npcs.push_back(mkU<Lama>(this, glm::vec3(73.f, 155.f, 73.f),
+                               m_terrain, m_player, WLAMA,
+                               jump2To1,
+                               glm::vec3(3.f, 0.f, 3.f),
+                               2.f, 1.f,
+                               7));
+
+    // one zombie dragon flying around the player
+    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(65.f, 160.f, 32.f), m_terrain, m_player, ZDRAGON));
+
+    // sheep on the grounds
+    // moving around
+    int nSheeps = 6;
+    std::vector<glm::vec3> sheepGoals = {glm::vec3(-145, 137, -227),
+                                         glm::vec3(-72, 148, -294),
+                                         glm::vec3(0, 139, -48),
+                                         glm::vec3(32, 138, 32)};
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    auto rng = std::default_random_engine(seed);
+
+    for (int i = 0; i < nSheeps; i++)
+    {
+        std::shuffle(sheepGoals.begin(), sheepGoals.end(), rng);
+        m_npcs.push_back(mkU<Sheep>(this, glm::vec3(50.f + ((float) i) * 1.5f, 144.f, 32.f),
+                                    m_terrain, m_player, SHEEP,
+                                    sheepGoals,
+                                    glm::vec3(1.f, 0.f, 1.f),
+                                    2.f, 2.f,
+                                    5));
+    }
+
+
+    // Steve exploring the world
+    m_npcs.push_back(mkU<Steve>(this, glm::vec3(60.f, 145.f, 35.f),
+                                m_terrain, m_player, STEVE,
+                                std::vector<glm::vec3>(),
+                                glm::vec3(2.f, 0.f, 2.f),
+                                2.f, 2.f,
+                                25));
 }

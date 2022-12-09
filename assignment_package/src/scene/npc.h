@@ -37,6 +37,10 @@ protected:
     void replanIfNeeded(glm::vec3 goal);
     void npcRestart();
 
+    // especially for stuck
+    glm::vec3 stuckPos;
+    float stuckTimer;
+
     // tolerance of goals & steps (destinations)
     float toleranceOfGoal;
     float toleranceOfStep;
@@ -87,8 +91,10 @@ public:
 
     // constructors
     NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture);
+
     NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
         glm::vec3 initialVelocity);
+
     NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
         glm::vec3 initialVelocity, float toleranceOfGoal, float toleranceOfStep);
 
@@ -97,6 +103,13 @@ public:
         glm::vec3 initialVelocity,
         float toleranceOfGoal,
         float toleranceOfStep);
+
+    NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+        std::vector<glm::vec3> goals,
+        glm::vec3 initialVelocity,
+        float toleranceOfGoal,
+        float toleranceOfStep,
+        int halfGridSize);
 
     // NPC's Texture ID
     NPCTexture npcTexture;

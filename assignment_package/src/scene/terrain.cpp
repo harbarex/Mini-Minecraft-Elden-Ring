@@ -205,6 +205,25 @@ BlockType Terrain::getBlockAt(glm::vec3 p) const {
     return getBlockAt(p.x, p.y, p.z);
 }
 
+/**
+ * @brief Terrain::hasBlockAt
+ *  Catch the error and return false if not exist
+ * @param p
+ * @return
+ */
+bool Terrain::hasBlockAt(glm::vec3 p) const
+{
+    try
+    {
+        getBlockAt(p);
+    }
+    catch (...)
+    {
+        return false;
+    }
+    return true;
+}
+
 bool Terrain::hasChunkAt(int x, int z) const {
     // Map x and z to their nearest Chunk corner
     // By flooring x and z, then multiplying by 16,
@@ -762,6 +781,8 @@ void addNPCJumpStages(Chunk *chunk, int chunkXCorner, int chunkZCorner)
                 chunk->setBlockAt(x, 145, z, STONE);
             }
         }
+
+        chunk->setBlockAt(1, 146, 1, WOOD);
 
         for (int x = 2; x < 4; x++)
         {

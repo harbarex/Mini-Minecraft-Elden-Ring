@@ -5,9 +5,10 @@ extern void pushVec2ToBuffer(std::vector<float> &buf, const glm::vec2 &vec);
 
 NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
          std::vector<glm::vec3> goals,
-         glm::vec3 initialVecloity,
+         glm::vec3 initialVelocity,
          float toleranceOfGoal,
-         float toleranceOfStep):
+         float toleranceOfStep,
+         int halfGridSize):
     Drawable(context),
     Entity(pos),
     initPos(pos),
@@ -15,17 +16,19 @@ NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player
     goals(goals),
     goalPtr(0),
     goalDir(1),
-    pathFinder(25, terrain),
+    pathFinder(halfGridSize, terrain),
     actions(),
     actionTimer(0.f),
     actionTimeout(3.f),
     nToDoActions(0),
+    stuckPos(pos),
+    stuckTimer(0.f),
     toleranceOfGoal(toleranceOfGoal),
     toleranceOfStep(toleranceOfStep),
     m_acceleration(0.f, 0.f, 0.f),
-    m_velocity(initialVecloity),
+    m_velocity(initialVelocity),
     m_gravity(0.f, -12.f, 0.f),
-    m_default_velocity(initialVecloity),
+    m_default_velocity(initialVelocity),
     prev_m_position(pos),
     maxFallingSpeed(-10.f),
     onGround(false),
@@ -43,6 +46,15 @@ NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player
     rootToRight(0.5f),
     player(&player),
     npcTexture(npcTexture)
+{}
+
+
+NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+         std::vector<glm::vec3> goals,
+         glm::vec3 initialVelocity,
+         float toleranceOfGoal,
+         float toleranceOfStep)
+    : NPC(context, pos, terrain, player, npcTexture, {}, initialVelocity, toleranceOfGoal, toleranceOfStep, 5)
 {}
 
 NPC::NPC(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
@@ -124,18 +136,27 @@ glm::vec3 NPC::getCurrentGoal()
     // if reached, use the next goal depending on the ptr direction
     if (glm::length(currGoal - currBottom) <= toleranceOfGoal)
     {
-        // meet the current goal
-        if (goalPtr == (goals.size() - 1))
+        if (!goals.empty())
         {
-            goalDir = -1;
-        }
-        else if (goalPtr == 0)
-        {
-            goalDir = 1;
-        }
+            // meet the current goal
+            if (goalPtr == (goals.size() - 1))
+            {
+                goalDir = -1;
+            }
 
-        goalPtr += goalDir;
-        currGoal = goals[goalPtr];
+            else if (goalPtr == 0)
+            {
+                goalDir = 1;
+            }
+
+            goalPtr += goalDir;
+
+            // min max
+            goalPtr = std::max(0, goalPtr);
+            goalPtr = std::min((int)goals.size() - 1, goalPtr);
+
+            currGoal = goals[goalPtr];
+        }
 
         // reset timer
         actionTimer = 0.f;
@@ -159,7 +180,6 @@ void NPC::checkActionIsDone()
             nToDoActions -= 1;
         }
     }
-
 }
 
 
@@ -181,6 +201,23 @@ bool NPC::isStuck()
     glm::vec3 top = blockPos;
     top[1] += 1.f;
 
+    if (stuckTimer >= 15.f)
+    {
+        stuckTimer = 0.f;
+        if (glm::length(stuckPos - m_position) <= 1.f)
+        {
+            // stuck
+            stuckPos = m_position;
+            return true;
+        }
+        stuckPos = m_position;
+    }
+
+    if (!mcr_terrain->hasBlockAt(blockPos))
+    {
+        return false;
+    }
+
     if (mcr_terrain->getBlockAt(blockPos) == EMPTY && mcr_terrain->getBlockAt(top) == EMPTY)
     {
         stuck = false;
@@ -194,6 +231,7 @@ void NPC::replanIfNeeded(glm::vec3 goal)
     // either timeout or stuck
     if ((actionTimer >= actionTimeout) && (actions.size() == nToDoActions))
     {
+        std::cout << "Replan ..." << std::endl;
         actions = pathFinder.searchPathToward(m_position,
                                               goal);
         nToDoActions = actions.size();
@@ -224,9 +262,6 @@ void NPC::npcRestart()
  */
 void NPC::tick(float dT)
 {
-    // check if previous action is finished
-    glm::vec3 currBottom = getBottomCenter();
-
     // check goals
     glm::vec3 currGoal = getCurrentGoal();
 
@@ -256,16 +291,13 @@ void NPC::tick(float dT)
             {
                 case WALK:
                     tryMoveToward(dT, actions.front().dest);
-                    // std::cout << "Try walk" << std::endl;
                     break;
                 case JUMP:
                     tryJumpToward(dT, actions.front().dest);
-                    // std::cout << "Try jump" << std::endl;
                     break;
                 default:
                     break;
             }
-            // std::cout << "From " << glm::to_string(currBottom) << " to " << glm::to_string(actions.front().dest) << std::endl;
         }
 
         // replan if needed
@@ -278,7 +310,6 @@ void NPC::tick(float dT)
     {
         // continue the jump
         // finish the jump until it gets back to the ground
-        // faceToward(actions.front().dest);
         tryJumpToward(dT, actions.front().dest);
         actionTimer += dT;
     }
@@ -292,12 +323,12 @@ void NPC::tick(float dT)
     // do limb rotations
     updateLimbRotations();
 
+    stuckTimer += dT;
     // restart if stuck
     if (isStuck())
     {
         npcRestart();
     }
-
 }
 
 
@@ -804,6 +835,13 @@ bool NPC::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &
         currCell = glm::ivec3(glm::floor(rayOrigin)) + offset;
         // If currCell contains something other than EMPTY, return
         // curr_t
+        if (!terrain.hasBlockAt(glm::vec3(currCell.x, currCell.y, currCell.z)))
+        {
+            // no block here => treat as hit
+            *out_blockHit = currCell;
+            *out_dist = glm::min(maxLen, curr_t);
+            return true;
+        }
         BlockType cellType = terrain.getBlockAt(currCell.x, currCell.y, currCell.z);
         if(cellType != EMPTY) {
             *out_blockHit = currCell;

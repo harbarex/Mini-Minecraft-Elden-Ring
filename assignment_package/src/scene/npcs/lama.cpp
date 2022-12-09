@@ -4,8 +4,9 @@ Lama::Lama(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &play
     std::vector<glm::vec3> goals,
     glm::vec3 initialVelocity,
     float toleranceOfGoal,
-    float toleranceOfStep)
-         : NPC(context, pos, terrain, player, npcTexture, goals, initialVelocity, toleranceOfGoal, toleranceOfStep),
+    float toleranceOfStep,
+    int halfGridSize)
+         : NPC(context, pos, terrain, player, npcTexture, goals, initialVelocity, toleranceOfGoal, toleranceOfStep, halfGridSize),
          head(context, LAMAHEAD),
          nose(context, LAMANOSE),
          ear(context, LAMAEAR),
@@ -13,6 +14,13 @@ Lama::Lama(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &play
          limb(context, LAMALIMB)
 {}
 
+Lama::Lama(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+    std::vector<glm::vec3> goals,
+    glm::vec3 initialVelocity,
+    float toleranceOfGoal,
+    float toleranceOfStep)
+    : Lama(context, pos, terrain, player, npcTexture, goals, initialVelocity, toleranceOfGoal, toleranceOfStep, 5)
+{}
 
 Lama::Lama(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
     glm::vec3 initialVelocity, float toleranceOfGoal, float toleranceOfStep)
@@ -22,8 +30,8 @@ Lama::Lama(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &play
 Lama::Lama(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
     glm::vec3 initialVelocity)
     : Lama(context, pos, terrain, player, npcTexture, {}, initialVelocity, 1.5f, 1.3f)
-
 {}
+
 /**
  * @brief Lama::Lama
  * @param context

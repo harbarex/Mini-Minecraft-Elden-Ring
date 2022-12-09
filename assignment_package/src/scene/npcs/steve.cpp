@@ -1,11 +1,13 @@
 #include "steve.h"
 
+
 Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
     std::vector<glm::vec3> goals,
     glm::vec3 initialVelocity,
     float toleranceOfGoal,
-    float toleranceOfStep)
-         : NPC(context, pos, terrain, player, npcTexture, goals, initialVelocity, toleranceOfGoal, toleranceOfStep),
+    float toleranceOfStep,
+    int halfGridSize)
+         : NPC(context, pos, terrain, player, npcTexture, goals, initialVelocity, toleranceOfGoal, toleranceOfStep, halfGridSize),
          head(context, STEVEHEAD),
          body(context, STEVEBODY),
          lULimb(context, STEVELUL),
@@ -16,15 +18,23 @@ Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &pl
 
 
 Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
+    std::vector<glm::vec3> goals,
+    glm::vec3 initialVelocity,
+    float toleranceOfGoal,
+    float toleranceOfStep)
+         : Steve(context, pos, terrain, player, npcTexture, goals, initialVelocity, toleranceOfGoal, toleranceOfStep, 5)
+{}
+
+Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
     glm::vec3 initialVelocity, float toleranceOfGoal, float toleranceOfStep)
-    : Steve(context, pos, terrain, player, npcTexture, {}, initialVelocity, toleranceOfGoal, toleranceOfStep)
+    : Steve(context, pos, terrain, player, npcTexture, {}, initialVelocity, toleranceOfGoal, toleranceOfStep, 5)
 {}
 
 Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
     glm::vec3 initialVelocity)
-    : Steve(context, pos, terrain, player, npcTexture, {}, initialVelocity, 1.5f, 1.3f)
-
+    : Steve(context, pos, terrain, player, npcTexture, {}, initialVelocity, 1.5f, 1.3f, 5)
 {}
+
 /**
  * @brief Steve::Steve
  * @param context

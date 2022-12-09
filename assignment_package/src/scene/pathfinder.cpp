@@ -42,7 +42,12 @@ glm::vec3 PathFinder::getBlockTopAt(glm::vec3 pos)
 glm::vec3 PathFinder::getBlockRightBelow(glm::vec3 pos)
 {
     glm::vec3 blockPos = getBlockAt(pos);
-    while (mcr_terrain->getBlockAt(blockPos) == EMPTY)
+    if (!mcr_terrain->hasBlockAt(blockPos))
+    {
+        blockPos[1] -= 1.f;
+        return blockPos;
+    }
+    while (blockPos[1] >= 128.f && mcr_terrain->getBlockAt(blockPos) == EMPTY)
     {
         blockPos[1] -= 1.f;
     }
@@ -124,8 +129,8 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
     startPos = getStableStartPoint(startPos);
     targetPos = getBlockRightBelow(targetPos);
 
-    std::cout << "Start from: " << glm::to_string(startPos) << std::endl;
-    std::cout << "Target to: " << glm::to_string(targetPos) << std::endl;
+    // std::cout << "Start from: " << glm::to_string(startPos) << std::endl;
+    // std::cout << "Target to: " << glm::to_string(targetPos) << std::endl;
 
     // define the search limits based on the radius
     int xMin, xMax, yMin, yMax, zMin, zMax;
@@ -143,7 +148,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
 
     // heap (costSoFar, pos)
     std::priority_queue<Path, std::vector<Path>, CompareStep> pathsToExplore;
-    Path initialPath = Path({NPCAction(startPos, REST)}, 0.f, estimate(startPos, targetPos), 0, 0, 0);
+    Path initialPath = Path({NPCAction(startPos, REST)}, 0.f, getHorizontalDistance(startPos, targetPos), 0, 0, 0);
     pathsToExplore.push(initialPath);
 
     bool foundDestination = false;
@@ -151,7 +156,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
 
     // keep top 10 paths for random sampling (if no destination is found)
     std::priority_queue<Path, std::vector<Path>, CompareStepMaxHeap> minCostPathHeap;
-    int nToKeep = 5;
+    int nToKeep = 10;
 
     // assume only walk & each walk takes 1 block
     // able to explore 8 directions with y (+-1)
@@ -161,7 +166,6 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
     {
         // get the top
         Path currPath = pathsToExplore.top();
-
         // pop the top
         pathsToExplore.pop();
 
@@ -220,6 +224,12 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
 
                     glm::vec3 nextDestTop = glm::vec3(nextDest.x, nextDest.y + 1.f, nextDest.z);
 
+                    if (!mcr_terrain->hasBlockAt(nextDest))
+                    {
+                        // no block here
+                        continue;
+                    }
+
                     if (mcr_terrain->getBlockAt(nextDestTop) != EMPTY)
                     {
                         continue;
@@ -232,7 +242,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
 
                     int nextNSteps = currPath.nStepsSoFar + 1;
 
-                    float nextCost = estimate(nextDest, targetPos) + (float) nextNSteps;
+                    float nextCost = getHorizontalDistance(nextDest, targetPos) + (float) nextNSteps;
 
                     std::vector<NPCAction> nextActions = currPath.actions;
 
@@ -262,6 +272,13 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
                     continue;
                 }
                 glm::vec3 neighbor = currPath.dest + glm::vec3(dx, 0, dz);
+
+                if (!mcr_terrain->hasBlockAt(neighbor))
+                {
+                    // no such block
+                    continue;
+                }
+
                 glm::vec3 neighborTop = glm::vec3(neighbor.x, neighbor.y + 1.f, neighbor.z);
                 if (mcr_terrain->getBlockAt(neighborTop) != EMPTY)
                 {
@@ -324,6 +341,12 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
                         // explore this action
                         glm::vec3 nextDest = currPath.dest + glm::vec3(dx, dy, dz);
 
+                        if (!mcr_terrain->hasBlockAt(nextDest))
+                        {
+                            // no such block
+                            continue;
+                        }
+
                         glm::vec3 nextDestTop = glm::vec3(nextDest.x, nextDest.y + 1.f, nextDest.z);
 
                         if (mcr_terrain->getBlockAt(nextDestTop) != EMPTY)
@@ -340,7 +363,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
                         int nextNSteps = currPath.nStepsSoFar + 1;
 
                         // additional cost for farther jump
-                        float nextCost = estimate(nextDest, targetPos) + (float) nextNSteps + (float)(maxD);
+                        float nextCost = getHorizontalDistance(nextDest, targetPos) + (float) nextNSteps + (float)(maxD);
 
                         std::vector<NPCAction> nextActions = currPath.actions;
 
