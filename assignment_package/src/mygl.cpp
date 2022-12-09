@@ -9,6 +9,7 @@
 #include <QKeyEvent>
 #include <QDateTime>
 #include <QFile>
+#include <QSoundEffect>
 #include <algorithm>
 #include <random>
 

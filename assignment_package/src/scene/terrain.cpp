@@ -570,106 +570,6 @@ void Terrain::placeBlockAt(int x, int y, int z, BlockType t)
 
 }
 
-
-void Terrain::CreateTestScene()
-{
-
-    int size = 64;
-    // Create the Chunks that will
-    // store the blocks for our
-    // initial world space
-    for(int x = 0; x < size; x += 16) {
-        for(int z = 0; z < size; z += 16) {
-            instantiateChunkAt(x, z);
-        }
-    }
-    // Tell our existing terrain set that
-    // the "generated terrain zone" at (0,0)
-    // now exists.
-    m_generatedTerrain.insert(toKey(0, 0));
-
-    // Create the basic terrain floor
-    for(int x = 0; x < size; ++x) {
-        for(int z = 0; z < size; ++z) {
-            if((x + z) % 2 == 0) {
-                setBlockAt(x, 128, z, STONE);
-            }
-            else {
-                setBlockAt(x, 128, z, DIRT);
-            }
-        }
-    }
-    // Add "walls" for collision testing
-    for(int x = 0; x < size; ++x) {
-        setBlockAt(x, 129, 0, GRASS);
-        setBlockAt(x, 130, 0, GRASS);
-        setBlockAt(x, 129, 63, GRASS);
-        setBlockAt(0, 130, x, GRASS);
-    }
-    // Add a central column
-    for(int y = 129; y < 140; ++y) {
-        setBlockAt(32, y, 32, GRASS);
-    }
-}
-
-void Terrain::CreateTestGrassScene()
-{
-    Noise terrainHeightMap;
-
-    int xMax = 128;
-    int zMax = 128;
-
-    // Create the Chunks that will store the blocks for our initial world space
-    for(int x = 0; x < xMax; x += 16) {
-        for(int z = 0; z < zMax; z += 16) {
-            instantiateChunkAt(x, z);
-        }
-    }
-    // Tell our existing terrain set that the "generated terrain zone" at (0,0) now exists.
-    m_generatedTerrain.insert(toKey(0, 0));
-
-    // Create the basic terrain floor
-    for(int x = 0; x < xMax; ++x) {
-        for(int z = 0; z < zMax; ++z) {
-
-            double y = terrainHeightMap.getHeight(x,z);
-            y = std::max(128.0, y);
-
-            if( y < 136){
-                setBlockAt(x, y, z, WATER);
-                for(int y_dirt=128; y_dirt<y; y_dirt++){
-                    setBlockAt(x, y_dirt, z, WATER);
-                }
-            }
-
-            else if( y < 142){
-                setBlockAt(x, y, z, GRASS);
-                for(int y_dirt=128; y_dirt<y; y_dirt++){
-                    setBlockAt(x, y_dirt, z, DIRT);
-                }
-            }
-            else if (y > 190){
-                setBlockAt(x, y, z, SNOW);
-                for(int y_stone=128; y_stone<y; y_stone++){
-                    setBlockAt(x, y_stone, z, STONE);
-                }
-            }
-            else{
-                setBlockAt(x, y, z, STONE);
-                for(int y_dirt=128; y_dirt<y; y_dirt++){
-                    setBlockAt(x, y_dirt, z, DIRT);
-                }
-            }
-
-            // Set DIRT from 0-128 height values
-            for(int y_underground=0; y_underground<128;y_underground++){
-                setBlockAt(x, y_underground, z, DIRT);
-            }
-
-        }
-    }
-}
-
 /**
  * @brief Terrain::spawnFillBlocksWorker
  * @param xCorner : int, the xCorner of a zone
@@ -734,10 +634,15 @@ FillBlocksWorker::FillBlocksWorker(int x,
 
 void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height){
 
-    if( height < 136){
+    if( height < 132){
         //chunk->setBlockAt(x, height, z, WATER);
-        for(int y_dirt=128; y_dirt<136; y_dirt++){
+        for(int y_dirt=128; y_dirt<132; y_dirt++){
             chunk->setBlockAt(x, y_dirt, z, WATER);
+        }
+    }
+    else if( height < 136){
+        for(int y_dirt=128; y_dirt<height; y_dirt++){
+            chunk->setBlockAt(x, y_dirt, z, SAND);
         }
     }
     else if( height < 142){
