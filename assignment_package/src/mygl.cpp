@@ -236,7 +236,7 @@ void MyGL::tick() {
     // pass delta-time to Player::tick
     m_player.tick(deltaTime, m_inputs);
     // steve model
-    m_player_model.tick(deltaTime);
+    m_player_model.tick(deltaTime, m_inputs);
 
     // TODO: pass delta-time to NPC's tick as well
     if (frameCount > 15.f * 60.f)

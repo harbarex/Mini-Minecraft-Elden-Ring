@@ -13,7 +13,9 @@ Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &pl
          lULimb(context, STEVELUL),
          rULimb(context, STEVERUL),
          lLLimb(context, STEVELLL),
-         rLLimb(context, STEVERLL)
+         rLLimb(context, STEVERLL),
+         maxRULDeg(75.f),
+         rULRotCycle(0.f)
 {
     // force onGround to be true
     onGround = true;
@@ -79,6 +81,7 @@ void Steve::initSceneGraph()
                                       0.f);
     Node &bodyToLF = root->addChild(mkU<TranslateNode>(nullptr,  lFTranslate));
     Node &rotLF = bodyToLF.addChild(mkU<RotateNode>(nullptr, glm::vec3(1.f, 0.f, 0.f), 5.f));
+    rULRotNode = dynamic_cast<RotateNode *>(&rotLF);
     Node &transLF = rotLF.addChild(mkU<TranslateNode>(nullptr, rcTranslate));
     transLF.addChild(mkU<ScaleNode>(&lULimb, limbScale));
     limbRotNodes.push_back(&rotLF);
@@ -89,6 +92,7 @@ void Steve::initSceneGraph()
                                       0.f);
     Node &bodyToRF = root->addChild(mkU<TranslateNode>(nullptr, rFTranslate));
     Node &rotRF = bodyToRF.addChild(mkU<RotateNode>(nullptr, glm::vec3(-1.f, 0.f, 0.f), 5.f));
+
     Node &transRF = rotRF.addChild((mkU<TranslateNode>(nullptr, rcTranslate)));
     transRF.addChild(mkU<ScaleNode>(&rULimb, limbScale));
     limbRotNodes.push_back(&rotRF);
@@ -122,12 +126,10 @@ void Steve::initSceneGraph()
     rootToRight = bodyScale.x / 2.f + limbScale.x;
 }
 
-
-/**
- * @brief Steve::tick
- * @param dT
- */
 void Steve::tick(float dT)
+{}
+
+void Steve::tick(float dT, InputBundle &inputs)
 {
     // note: Steve is the player
     // align with the player
@@ -139,6 +141,26 @@ void Steve::tick(float dT)
 
     // update limb rotations
     updateLimbRotations();
+
+    // arm movement when mouse pressed
+    if (inputs.leftMouseButtonPressed || inputs.rightMouseButtonPressed)
+    {
+        // try move right upper limb
+        rULRotCycle += dT;
+        rotateRUL();
+    }
+    else
+    {
+        // reset
+        rULRotCycle = 0.f;
+    }
+}
+
+
+void Steve::rotateRUL()
+{
+    float deg = -glm::abs(glm::sin(rULRotCycle * 20.f) * maxRULDeg);
+    rULRotNode->setDeg(deg);
 }
 
 /**
