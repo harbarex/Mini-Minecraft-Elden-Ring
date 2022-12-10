@@ -3,5 +3,8 @@
         <file>sounds/lava.wav</file>
         <file>sounds/under_water.wav</file>
         <file>sounds/elden.wav</file>
+        <file>sounds/grass.wav</file>
+        <file>sounds/rock.wav</file>
+        <file>sounds/sand.wav</file>
     </qresource>
 </RCC>
