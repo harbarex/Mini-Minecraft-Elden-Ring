@@ -828,17 +828,17 @@ void MyGL::setupNPCs()
 {
     // two fornite lamas on the jump training stadium
     // moving back & forth between two targets
-    std::vector<glm::vec3> jump1To2 = {glm::vec3(33.f, 146.f, 33.f),
-                                       glm::vec3(76.f, 152.f, 72.f)};
-    std::vector<glm::vec3> jump2To1 = {glm::vec3(76.f, 152.f, 72.f),
-                                       glm::vec3(33.f, 146.f, 33.f)};
-    m_npcs.push_back(mkU<Lama>(this, glm::vec3(32.f, 148.f, 33.f),
+    std::vector<glm::vec3> jump1To2 = {glm::vec3(34.f, 146.f, 78.f),
+                                       glm::vec3(76.f, 152.f, 40.f)};
+    std::vector<glm::vec3> jump2To1 = {glm::vec3(76.f, 152.f, 40.f),
+                                       glm::vec3(34.f, 146.f, 78.f)};
+    m_npcs.push_back(mkU<Lama>(this, glm::vec3(33.f, 148.f, 77.f),
                                m_terrain, m_player, GLAMA,
                                jump1To2,
                                glm::vec3(3.f, 0.f, 3.f),
                                2.f, 1.f,
                                7));
-    m_npcs.push_back(mkU<Lama>(this, glm::vec3(73.f, 155.f, 73.f),
+    m_npcs.push_back(mkU<Lama>(this, glm::vec3(76.f, 155.f, 41.f),
                                m_terrain, m_player, WLAMA,
                                jump2To1,
                                glm::vec3(3.f, 0.f, 3.f),
