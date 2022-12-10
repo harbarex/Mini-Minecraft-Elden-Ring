@@ -32,3 +32,23 @@ public:
     // get current camera position
     glm::vec3 getCurrentPos();
 };
+
+// Polar Spherical Camera
+class PSCamera : public Camera
+{
+private:
+
+    // use these three params to set up forward, right & up vector
+    float zoom, phi, theta;
+
+    glm::vec3 worldUpDir;
+
+public:
+
+    PSCamera(glm::vec3 pos, float zoom, float phi, float theta);
+    PSCamera(glm::vec3 pos);
+
+    // update the PSCamera based on the spherical center
+    // currently, this must be the player camera's position
+    void update(glm::vec3 pos);
+};

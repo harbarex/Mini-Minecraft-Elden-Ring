@@ -774,7 +774,10 @@ void Terrain::drawErdtree(const glm::ivec2 pos){
  */
 void addNPCJumpStages(Chunk *chunk, int chunkXCorner, int chunkZCorner)
 {
-    if (chunkXCorner == 32 && chunkZCorner == 32)
+    // a large platform
+    // (16, 32
+
+    if (chunkXCorner == 32 && chunkZCorner == 64)
     {
 
         for (int x = 0; x < 6; x++)
@@ -782,17 +785,17 @@ void addNPCJumpStages(Chunk *chunk, int chunkXCorner, int chunkZCorner)
             for (int z = 0; z < 6; z++)
             {
 
-                chunk->setBlockAt(x, 145, z, STONE);
+                chunk->setBlockAt(x, 145, 15 - z, GWOOD);
             }
         }
 
-        chunk->setBlockAt(1, 146, 1, WOOD);
+        chunk->setBlockAt(1, 146, 14, WOOD);
 
         for (int x = 2; x < 4; x++)
         {
             for (int z = 2; z < 4; z++)
             {
-                chunk->setBlockAt(x, 145, z, EMPTY);
+                chunk->setBlockAt(x, 145, 15 - z, EMPTY);
             }
         }
 
@@ -800,14 +803,14 @@ void addNPCJumpStages(Chunk *chunk, int chunkXCorner, int chunkZCorner)
         {
             for (int z = 4; z < 12; z++)
             {
-                chunk->setBlockAt(x, 146, z, STONE);
+                chunk->setBlockAt(x, 146, 15 - z, GWOOD);
             }
         }
         for (int x = 10; x < 14; x++)
         {
             for (int z = 6; z < 10; z++)
             {
-                chunk->setBlockAt(x, 146, z, EMPTY);
+                chunk->setBlockAt(x, 146, 15 - z, EMPTY);
             }
         }
 
@@ -815,20 +818,20 @@ void addNPCJumpStages(Chunk *chunk, int chunkXCorner, int chunkZCorner)
         {
             for (int z = 13; z < 16; z++)
             {
-                chunk->setBlockAt(x, 147, z, STONE);
+                chunk->setBlockAt(x, 147, 15 - z, GWOOD);
             }
         }
 
     }
 
-    if (chunkXCorner == 48 && chunkZCorner == 32)
+    if (chunkXCorner == 48 && chunkZCorner == 64)
     {
         // x = 0
         for (int z = 11; z < 16; z++)
         {
-            chunk->setBlockAt(0, 147, z, STONE);
-            chunk->setBlockAt(1, 147, z, STONE);
-            chunk->setBlockAt(2, 147, z, STONE);
+            chunk->setBlockAt(0, 147, 15 - z, GWOOD);
+            chunk->setBlockAt(1, 147, 15 - z, GWOOD);
+            chunk->setBlockAt(2, 147, 15 - z, GWOOD);
         }
     }
 
@@ -839,40 +842,54 @@ void addNPCJumpStages(Chunk *chunk, int chunkXCorner, int chunkZCorner)
             for (int z = 1; z < 6; z++)
             {
 
-                chunk->setBlockAt(x, 149, z, STONE);
+                chunk->setBlockAt(x, 149, 15 - z, GWOOD);
             }
         }
+
         for (int x = 2; x < 4; x++)
         {
             for (int z = 2; z < 4; z++)
             {
-                chunk->setBlockAt(x, 149, z, EMPTY);
+                chunk->setBlockAt(x, 149, 15 - z, EMPTY);
             }
         }
 
-        int start = 7;
-        for (int i = 0; i < 8; i++)
+        for (int x = 8; x < 11; x++)
         {
-            chunk->setBlockAt(start + i, 150, start + i, STONE);
-            chunk->setBlockAt(start + i + 1, 150, start + i, STONE);
+            for (int z = 8; z < 11; z++)
+            {
+
+                chunk->setBlockAt(x, 150, 15 - z, GWOOD);
+            }
         }
+
+
+        for (int x = 12; x < 15; x++)
+        {
+            for (int z = 12; z < 15; z++)
+            {
+
+                chunk->setBlockAt(x, 151, 15 - z, GWOOD);
+            }
+        }
+
     }
 
-    if (chunkXCorner == 64 && chunkZCorner == 64)
+    if (chunkXCorner == 64 && chunkZCorner == 32)
     {
         for (int x = 0; x < 6; x++)
         {
             for (int z = 0; z < 6; z++)
             {
 
-                chunk->setBlockAt(x, 151, z, STONE);
+                chunk->setBlockAt(x, 151, 15 - z, GWOOD);
             }
         }
         for (int x = 2; x < 4; x++)
         {
             for (int z = 2; z < 4; z++)
             {
-                chunk->setBlockAt(x, 151, z, EMPTY);
+                chunk->setBlockAt(x, 151, 15 - z, EMPTY);
             }
         }
 
@@ -880,7 +897,7 @@ void addNPCJumpStages(Chunk *chunk, int chunkXCorner, int chunkZCorner)
         {
             for (int z = 4; z < 12; z++)
             {
-                chunk->setBlockAt(x, 151, z, STONE);
+                chunk->setBlockAt(x, 151, 15 - z, GWOOD);
             }
         }
 

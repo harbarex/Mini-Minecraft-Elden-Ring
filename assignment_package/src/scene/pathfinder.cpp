@@ -1,6 +1,6 @@
 #include "pathfinder.h"
 
-std::unordered_set<BlockType> PathFinder::validBlocks = {GRASS, DIRT, STONE, SNOW};
+std::unordered_set<BlockType> PathFinder::validBlocks = {GRASS, DIRT, STONE, SNOW, GWOOD, WOOD};
 
 PathFinder::PathFinder(int radius, Terrain &terrain)
     : radius(radius), mcr_terrain(&terrain)
@@ -136,7 +136,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
     int xMin, xMax, yMin, yMax, zMin, zMax;
     xMin = -radius;
     xMax = radius + 1;
-    yMin = -2;
+    yMin = -3;
     yMax = 3;
     zMin = -radius;
     zMax = radius + 1;
@@ -210,7 +210,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
                     }
 
                     // y from [-2, 2)
-                    int id = (y + 2) * 5 * ((x + radius) * sideLen + (z + radius));
+                    int id = (y + 3) * 5 * ((x + radius) * sideLen + (z + radius));
 
                     if (walkVisited.find(id) != walkVisited.end())
                     {
@@ -306,11 +306,11 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
         if (hasObstacles)
         {
             // explore jump
-            for (int dx : {-3, -2, -1, 0, 1, 2, 3})
+            for (int dx : {-4, -3, -2, -1, 0, 1, 2, 3, 4})
             {
-                for (int dy : {-2, -1, 0, 1, 2})
+                for (int dy : {-3, -2, -1, 0, 1, 2, 3})
                 {
-                    for (int dz : {-3, -2, -1, 0, 1, 2, 3})
+                    for (int dz : {-4, -3, -2, -1, 0, 1, 2, 3, 4})
                     {
                         if (dx == 0 && dy == 0 && dz == 0)
                         {
@@ -323,7 +323,7 @@ std::queue<NPCAction> PathFinder::searchPathToward(glm::vec3 startPos,
                         int z = currPath.currZ + dz;
 
                         // y from [-2, 2)
-                        int id = (y + 2) * 5 * ((x + radius) * sideLen + (z + radius));
+                        int id = (y + 3) * 5 * ((x + radius) * sideLen + (z + radius));
 
                         // out of search grid
                         if (x < xMin || x >= xMax || y < yMin || y >= yMax || z < zMin || z >= zMax )
