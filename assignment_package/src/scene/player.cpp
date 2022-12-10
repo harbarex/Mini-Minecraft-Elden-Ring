@@ -396,6 +396,7 @@ bool Player::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrai
         // curr_t
         BlockType cellType = terrain.getBlockAt(currCell.x, currCell.y, currCell.z);
         if(cellType != EMPTY) {
+            blockTouchingPlayer = cellType;
             *out_blockHit = currCell;
             *out_dist = glm::min(maxLen, curr_t);
             return true;
@@ -459,6 +460,7 @@ bool Player::gridMarchPrevBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, con
         // curr_t
         BlockType cellType = terrain.getBlockAt(currCell.x, currCell.y, currCell.z);
         if(cellType != EMPTY) {
+            blockTouchingPlayer = cellType;
             *out_blockHit = currCell;
             *out_prevBlock = currCell - prevOffset;
             BlockType prevCellType = terrain.getBlockAt((*out_prevBlock).x, (*out_prevBlock).y, (*out_prevBlock).z);
@@ -468,6 +470,14 @@ bool Player::gridMarchPrevBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, con
     return false;
 
 }
+
+bool Player::isWalking(){
+    if(m_velocity.x > 0 || m_velocity.y > 0)
+        return true;
+    else
+        return false;
+}
+
 
 /**
  * @brief Player::checkXZCollision

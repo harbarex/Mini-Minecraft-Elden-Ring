@@ -78,6 +78,8 @@ public:
     const Camera& mcr_camera;
     const PSCamera& mcr_tpv_camera;
 
+    BlockType blockTouchingPlayer;
+
     Player(glm::vec3 pos, Terrain &terrain);
     virtual ~Player() override;
 
@@ -178,5 +180,8 @@ public:
 
     // switch between player's view third-person view
     void switchCameraView();
+
+    // Check if the player is walking
+    bool isWalking();
 };
 

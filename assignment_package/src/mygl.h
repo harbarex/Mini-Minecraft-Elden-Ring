@@ -116,6 +116,9 @@ private:
     QSoundEffect mainTheme;
     QSoundEffect waterEffect;
     QSoundEffect lavaEffect;
+    QSoundEffect rockWalkingEffect;
+    QSoundEffect grassWalkingEffect;
+    QSoundEffect sandWalkingEffect;
 
 public:
     explicit MyGL(QWidget *parent = nullptr);
@@ -140,7 +143,8 @@ public:
     // Render the shader program with simple texture map
     void renderTexture(Texture& texture, ShaderProgram& shaderProgram, int slot, Drawable* d);
 
-
+    void stopWalkingSounds();
+    void playWalkingSounds();
 
 protected:
     // Automatically invoked when the user

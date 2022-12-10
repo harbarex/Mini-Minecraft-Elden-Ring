@@ -47,7 +47,7 @@ MyGL::MyGL(QWidget *parent)
     // Setup Sounds
     mainTheme.setSource(QUrl::fromLocalFile(":/sounds/elden.wav"));
     //mainTheme.setLoopCount(QSoundEffect::Infinite);
-    mainTheme.setVolume(1.f);
+    mainTheme.setVolume(0.25f);
     mainTheme.play();
 
     waterEffect.setSource(QUrl::fromLocalFile(":/sounds/under_water.wav"));
@@ -57,6 +57,18 @@ MyGL::MyGL(QWidget *parent)
     lavaEffect.setSource(QUrl::fromLocalFile(":/sounds/lava.wav"));
     lavaEffect.setLoopCount(QSoundEffect::Infinite);
     lavaEffect.setVolume(0.5f);
+
+    grassWalkingEffect.setSource(QUrl::fromLocalFile(":/sounds/grass.wav"));
+    grassWalkingEffect.setLoopCount(QSoundEffect::Infinite);
+    grassWalkingEffect.setVolume(0.5f);
+
+    rockWalkingEffect.setSource(QUrl::fromLocalFile(":/sounds/rock.wav"));
+    rockWalkingEffect.setLoopCount(QSoundEffect::Infinite);
+    rockWalkingEffect.setVolume(0.5f);
+
+    sandWalkingEffect.setSource(QUrl::fromLocalFile(":/sounds/sand.wav"));
+    sandWalkingEffect.setLoopCount(QSoundEffect::Infinite);
+    sandWalkingEffect.setVolume(0.5f);
 
     initWidget();
     initText();
@@ -278,6 +290,46 @@ void MyGL::sendPlayerDataToGUI() const {
     emit sig_sendPlayerTerrainZone(QString::fromStdString("( " + std::to_string(zone.x) + ", " + std::to_string(zone.y) + " )"));
 }
 
+void MyGL::stopWalkingSounds(){
+    if(sandWalkingEffect.isPlaying()) sandWalkingEffect.stop();
+    if(grassWalkingEffect.isPlaying()) grassWalkingEffect.stop();
+    if(rockWalkingEffect.isPlaying()) rockWalkingEffect.stop();
+
+}
+
+void MyGL::playWalkingSounds(){
+    if(m_player.blockTouchingPlayer == GRASS){
+        if(rockWalkingEffect.isPlaying()) rockWalkingEffect.stop();
+        if(sandWalkingEffect.isPlaying()) sandWalkingEffect.stop();
+        if(m_player.isWalking()){
+            if(!grassWalkingEffect.isPlaying()) grassWalkingEffect.play();
+        }
+        else {
+            grassWalkingEffect.stop();
+        }
+    }
+    else if(m_player.blockTouchingPlayer == STONE || m_player.blockTouchingPlayer == DIRT){
+        if(sandWalkingEffect.isPlaying()) sandWalkingEffect.stop();
+        if(grassWalkingEffect.isPlaying()) grassWalkingEffect.stop();
+        if(m_player.isWalking()){
+            if(!rockWalkingEffect.isPlaying()) rockWalkingEffect.play();
+        }
+        else {
+            rockWalkingEffect.stop();
+        }
+    }
+    else if(m_player.blockTouchingPlayer == SAND){
+        if(grassWalkingEffect.isPlaying()) grassWalkingEffect.stop();
+        if(rockWalkingEffect.isPlaying()) rockWalkingEffect.stop();
+        if(m_player.isWalking()){
+            if(!sandWalkingEffect.isPlaying()) sandWalkingEffect.play();
+        }
+        else {
+            sandWalkingEffect.stop();
+        }
+    }
+}
+
 // This function is called whenever update() is called.
 // MyGL's constructor links update() to a timer that fires 60 times per second,
 // so paintGL() called at a rate of 60 frames per second.
@@ -323,8 +375,6 @@ void MyGL::paintGL() {
     // Draw Golden Tree (s)
     m_terrain.drawErdtree(glm::ivec2(32, 48));
 
-
-
     glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
     glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -333,11 +383,13 @@ void MyGL::paintGL() {
 
     // Post-process Shaders
     if(m_player.isUnderWater(m_terrain, m_inputs)){
+        stopWalkingSounds();
         if(!waterEffect.isPlaying()) waterEffect.play();
         m_progUnderwater.setTexture(m_frameBuffer.getTextureSlot());
         m_progUnderwater.drawOverlay(m_quad);
     }
     else if(m_player.isUnderLava(m_terrain, m_inputs)){
+        stopWalkingSounds();
         if(!lavaEffect.isPlaying()) lavaEffect.play();
         m_progLava.setTexture(m_frameBuffer.getTextureSlot());
         m_progLava.drawOverlay(m_quad);
@@ -345,6 +397,8 @@ void MyGL::paintGL() {
     else{
         if(waterEffect.isPlaying()) waterEffect.stop();
         if(lavaEffect.isPlaying()) lavaEffect.stop();
+
+        playWalkingSounds();
 
         m_progNoOp.setTexture(m_frameBuffer.getTextureSlot());
         m_progNoOp.drawOverlay(m_quad);
