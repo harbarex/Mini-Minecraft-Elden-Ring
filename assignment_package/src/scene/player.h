@@ -15,6 +15,8 @@ class Player : public Entity {
 private:
     glm::vec3 m_velocity, m_acceleration;
     Camera m_camera;
+    // the third-person view camera (implemented as a spherical camera)
+    PSCamera m_tpv_camera;
     Terrain &mcr_terrain;
 
     float flight_velocity_max, non_flight_velocity_max;
@@ -67,15 +69,20 @@ private:
     void hpChange(float amount);
     void drawPlayerState();
 
+    // third person view
+    bool tpv;
+
 public:
     // Readonly public reference to our camera
     // for easy access from MyGL
     const Camera& mcr_camera;
+    const PSCamera& mcr_tpv_camera;
 
     Player(glm::vec3 pos, Terrain &terrain);
     virtual ~Player() override;
 
     void setCameraWidthHeight(unsigned int w, unsigned int h);
+    glm::mat4 getCameraViewProj() const;
 
     void tick(float dT, InputBundle &input) override;
 
@@ -169,5 +176,7 @@ public:
     // set and draw the state of the player (e.g. HP)
     void stateOperation(InputBundle &input);
 
+    // switch between player's view third-person view
+    void switchCameraView();
 };
 

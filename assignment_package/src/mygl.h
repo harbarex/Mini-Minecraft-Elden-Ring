@@ -13,6 +13,7 @@
 #include "scene/widget.h"
 #include "scene/blockinwidget.h"
 #include "scene/text.h"
+#include "scene/npcs/steve.h"
 #include "texture.h"
 
 #include <QOpenGLVertexArrayObject>
@@ -59,6 +60,7 @@ private:
     Terrain m_terrain; // All of the Chunks that currently comprise the world.
     Player m_player; // The entity controlled by the user. Contains a camera to display what it sees as well.
     InputBundle m_inputs; // A collection of variables to be updated in keyPressEvent, mouseMoveEvent, mousePressEvent, etc.
+    Steve m_player_model;
 
     std::vector<uPtr<NPC>> m_npcs; // A collection of npcs
 
@@ -98,6 +100,7 @@ private:
 
     void setupNPCs();
     void renderNPCs();
+    void renderPlayerModel();
 
 
     long long prevExpandTime;

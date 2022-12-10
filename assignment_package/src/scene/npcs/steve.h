@@ -37,8 +37,9 @@ public:
     // for Drawable
     virtual void createVBOdata() override;
     virtual void initSceneGraph() override;
-
-    // void tick(float dT);
+    virtual void draw(ShaderProgram *shader) override;
+    // override tick
+    virtual void tick(float dT) override;
 
     virtual ~Steve();
 };

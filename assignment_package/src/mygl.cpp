@@ -1,6 +1,6 @@
 #include "mygl.h"
 #include "scene/npcs/sheep.h"
-#include "scene/npcs/steve.h"
+
 #include "scene/npcs/zombiedragon.h"
 #include "scene/npcs/lama.h"
 #include <glm_includes.h>
@@ -21,7 +21,8 @@ MyGL::MyGL(QWidget *parent)
       m_progUnderwater(this), m_progLava(this), m_progNoOp(this), m_progInventoryWidgetOnHand(this), m_progInventoryItemOnHand(this), m_progInventoryWidgetInContainer(this),
       m_progInventoryItemInContainer(this), m_progGrabbedItem(this), m_progText(this),
       m_quad(this), m_progNPC(this), m_frameBuffer(this, this->width(), this->height(), this->devicePixelRatio()),
-      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain), frameCount(0),
+      m_terrain(this), m_player(glm::vec3(48.f, 200.f, 48.f), m_terrain),
+      m_player_model(this, glm::vec3(60.f, 145.f, 35.f), m_terrain, m_player, STEVE), frameCount(0),
       prevFrameTime(QDateTime::currentMSecsSinceEpoch()), mouseCursorMode(false), textureAll(this), inventoryWidgetOnHandTexture(this), inventoryWidgetInContainerTexture(this),
       textureFont(this), prevExpandTime(QDateTime::currentMSecsSinceEpoch())
 {
@@ -116,6 +117,10 @@ void MyGL::initializeGL()
 
     createNPCTextures();
 
+    // initialize Steve
+    m_player_model.createVBOdata();
+    m_player_model.initSceneGraph();
+
     // create NPC's VBO and initialize NPC scene graph
     for (const uPtr<NPC> &npc : m_npcs)
     {
@@ -151,8 +156,6 @@ void MyGL::initializeGL()
 
     ////////////////////////////////////////////////////////////////////////////////////
 
-
-
     // Set a color with which to draw geometry.
     // This will ultimately not be used when you change
     // your program to render Chunks with vertex colors
@@ -172,7 +175,7 @@ void MyGL::resizeGL(int w, int h) {
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
     m_player.setCameraWidthHeight(static_cast<unsigned int>(w), static_cast<unsigned int>(h));
-    glm::mat4 viewproj = m_player.mcr_camera.getViewProj();
+    glm::mat4 viewproj = m_player.getCameraViewProj();
 
     // Upload the view-projection matrix to our shaders (i.e. onto the graphics card)
 
@@ -232,6 +235,8 @@ void MyGL::tick() {
 
     // pass delta-time to Player::tick
     m_player.tick(deltaTime, m_inputs);
+    // steve model
+    m_player_model.tick(deltaTime);
 
     // TODO: pass delta-time to NPC's tick as well
     if (frameCount > 15.f * 60.f)
@@ -268,9 +273,9 @@ void MyGL::paintGL() {
     glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
-    m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
-    m_progNPC.setViewProjMatrix(m_player.mcr_camera.getViewProj());
+    m_progFlat.setViewProjMatrix(m_player.getCameraViewProj());
+    m_progLambert.setViewProjMatrix(m_player.getCameraViewProj());
+    m_progNPC.setViewProjMatrix(m_player.getCameraViewProj());
 
     m_progLambert.setTime(frameCount);
     m_progLava.setTime(frameCount);
@@ -282,7 +287,8 @@ void MyGL::paintGL() {
     glDisable(GL_DEPTH_TEST);
 
     m_progFlat.setModelMatrix(glm::mat4());
-    m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
+    m_progFlat.setViewProjMatrix(m_player.getCameraViewProj());
+
     //m_progFlat.draw(m_worldAxes);
 
     glEnable(GL_DEPTH_TEST);
@@ -290,6 +296,8 @@ void MyGL::paintGL() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     renderTerrain(TerrainDrawType::transparent);
+    // render steve
+    renderPlayerModel();
     // render NPCs
     renderNPCs();
     glDisable(GL_BLEND);
@@ -429,6 +437,8 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
         m_inputs.numberPressed[9] = true;
     } else if (e->key() == Qt::Key_I) {
         m_inputs.iPressed = true;
+    } else if (e->key() == Qt::Key_C) {
+        m_player.switchCameraView();
     }
 }
 
@@ -782,6 +792,20 @@ void MyGL::renderNPCs()
 }
 
 /**
+ * @brief MyGL::renderPlayerModel
+ *  Render Steve
+ */
+void MyGL::renderPlayerModel()
+{
+    if (npcTextures.find(m_player_model.npcTexture) != npcTextures.end())
+    {
+        npcTextures[m_player_model.npcTexture].bind(npcTextures[m_player_model.npcTexture].getSlot());
+        m_progNPC.setTexture(npcTextures[m_player_model.npcTexture].getSlot());
+        m_player_model.draw(&m_progNPC);
+    }
+}
+
+/**
  * @brief MyGL::setupNPCs
  *  This helper contains the initial setup of all NPCs in this world.
  *  -------------
@@ -847,11 +871,11 @@ void MyGL::setupNPCs()
     }
 
 
-    // Steve exploring the world
-    m_npcs.push_back(mkU<Steve>(this, glm::vec3(60.f, 145.f, 35.f),
-                                m_terrain, m_player, STEVE,
-                                std::vector<glm::vec3>(),
-                                glm::vec3(2.f, 0.f, 2.f),
-                                2.f, 2.f,
-                                25));
+//    // Steve exploring the world
+//    m_npcs.push_back(mkU<Steve>(this, glm::vec3(60.f, 145.f, 35.f),
+//                                m_terrain, m_player, STEVE,
+//                                std::vector<glm::vec3>(),
+//                                glm::vec3(2.f, 0.f, 2.f),
+//                                2.f, 2.f,
+//                                25));
 }
