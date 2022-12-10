@@ -31,7 +31,8 @@ int Noise::getHeight(int x, int z) {
     float waterSmoothPerlin = glm::smoothstep(0.8, 0.85, (double) waterPerlin);
 
     //return glm::clamp(glm::mix(glm::mix(grass, mtn_rock, smoothPerlin), water, waterSmoothPerlin), 128.f, 255.f);
-    return glm::clamp(glm::mix(glm::mix(grass, water, waterSmoothPerlin), mtn_rock, smoothPerlin), 128.f, 255.f);
+    //return glm::clamp(glm::mix(glm::mix(grass, water, waterSmoothPerlin), mtn_rock, smoothPerlin), 128.f, 255.f);
+    return glm::clamp(glm::mix(glm::mix(water, mtn_rock, smoothPerlin), grass, waterSmoothPerlin), 128.f, 255.f);
 }
 
 float Noise::getCaveHeight(int x, int y, int z){

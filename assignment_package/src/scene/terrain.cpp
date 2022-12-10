@@ -640,10 +640,10 @@ void FillBlocksWorker::setFloatingTerrain(Chunk *chunk, int chunkCornerX, int x,
     if(xBound >= 200 & zBound >= 250){
         for(int y=height; y<=height+10; y++){
             if (y > height + 4){
-                chunk->setBlockAt(x, y, z, GLASS);
+                chunk->setBlockAt(x, y, z, DIAMOND);
             }
             else{
-                 chunk->setBlockAt(x, y, z, DIAMOND);
+                chunk->setBlockAt(x, y, z, COBBLESTONE);
             }
         }
     }
@@ -653,7 +653,6 @@ void FillBlocksWorker::setFloatingTerrain(Chunk *chunk, int chunkCornerX, int x,
 void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height){
 
     if( height < 136){
-        //chunk->setBlockAt(x, height, z, WATER);
         for(int y_dirt=128; y_dirt<136; y_dirt++){
             chunk->setBlockAt(x, y_dirt, z, WATER);
         }

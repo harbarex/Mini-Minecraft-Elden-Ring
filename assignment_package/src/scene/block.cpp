@@ -335,6 +335,8 @@ std::unordered_map<std::string, BlockType> Block::blockTypeMap = {
     {"SAND", SAND},
     {"DIAMOND", DIAMOND},
     {"TNT", TNT},
+    {"ROT", ROT},
+    {"ACID", ACID},
     {"SHEEPHEAD", SHEEPHEAD},
     {"SHEEPBODY", SHEEPBODY},
     {"SHEEPLIMB", SHEEPLIMB},
@@ -360,7 +362,7 @@ std::unordered_map<std::string, BlockType> Block::blockTypeMap = {
 };
 
 std::unordered_set<BlockType> Block::transparentBlockTypes = {
-    EMPTY, WATER, ICE, GWOOD, GLEAF, GLASS
+    EMPTY, WATER, ICE, GWOOD, GLEAF, GLASS, ROT, ACID
 };
 
 std::unordered_map<BlockType, BlockType> Block::blockTransformationMap = {
@@ -369,9 +371,9 @@ std::unordered_map<BlockType, BlockType> Block::blockTransformationMap = {
 };
 
 std::unordered_set<BlockType> Block::animatableBlockTypes = {
-    WATER, LAVA
+    WATER, LAVA, ROT, ACID
 };
 
 std::unordered_set<BlockType> Block::liquidBlockTypes = {
-    WATER, LAVA
+    WATER, LAVA, ROT, ACID
 };

@@ -49,7 +49,7 @@ void main()
 
     if (vs_AnimatableFlag.x > 0.f) {
         // apply uv offset to animatable block (move to right)
-        fs_UV = vec2(vs_UV.x + float(mod(u_Time, 100.f) / 100.f) * 0.0925f, vs_UV.y);
+        fs_UV = vec2(vs_UV.x + float(mod(u_Time, 100.f) / 100.f) * 0.0625f, vs_UV.y);
     } else {
         fs_UV = vs_UV;
     }
