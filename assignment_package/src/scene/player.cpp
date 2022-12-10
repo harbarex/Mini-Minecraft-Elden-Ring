@@ -8,7 +8,7 @@ Player::Player(glm::vec3 pos, Terrain &terrain)
       flight_velocity_max(15.f), non_flight_velocity_max(10.f), m_velocity_val(flight_velocity_max),
       m_acceleration_val(40.f), cameraBlockDist(3.f), flightMode(true), containerMode(false),
       destroyBufferTime(0.f), creationBufferTime(0.f), minWaitTime(0.5f),
-      selectedBlockOnHandPtr(0), hp(100.f), hp_max(100.f), hp_top_left_pos(glm::vec2(-0.85, 0.85)), mcr_camera(m_camera)
+      selectedBlockOnHandPtr(0), hp(100.f), hp_max(100.f), mcr_camera(m_camera), hp_top_left_pos(glm::vec2(-0.85, 0.85))
 {}
 
 Player::~Player()
