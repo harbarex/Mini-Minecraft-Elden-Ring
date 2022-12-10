@@ -13,8 +13,14 @@ Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &pl
          lULimb(context, STEVELUL),
          rULimb(context, STEVERUL),
          lLLimb(context, STEVELLL),
-         rLLimb(context, STEVERLL)
-{}
+         rLLimb(context, STEVERLL),
+         maxRULDeg(75.f),
+         rULRotCycle(0.f)
+{
+    // force onGround to be true
+    onGround = true;
+    limbRotationSpeedOnGround = 2.f;
+}
 
 
 Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture,
@@ -45,24 +51,26 @@ Steve::Steve(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &pl
     : Steve(context, pos, terrain, player, npcTexture, {}, glm::vec3(2.f, 0.f, 2.f), 1.5f, 1.3f)
 {}
 
+
+
 /**
  * @brief Steve::initSceneGraph
  */
 void Steve::initSceneGraph()
 {
     // body as the center
-    glm::vec3 bodyScale = glm::vec3(0.8f, 1.15f, 0.3f);
+    glm::vec3 bodyScale = glm::vec3(0.8f, 1.15f, 0.3f) * 0.667f;
     root = mkU<TranslateNode>(nullptr, glm::vec3(0.f));
     root->addChild(mkU<ScaleNode>(&body, bodyScale));
 
     // connect to head
-    glm::vec3 headScale = glm::vec3(0.7f, 0.7f, 0.7f);
+    glm::vec3 headScale = glm::vec3(0.7f, 0.7f, 0.7f) * 0.667f;
     glm::vec3 headTranslate = glm::vec3(0.f, (bodyScale.y / 2.f) + headScale.y / 2.f, 0.f);
     Node &bodyToHead = root->addChild(mkU<TranslateNode>(nullptr, headTranslate));
     bodyToHead.addChild(mkU<ScaleNode>(&head, headScale));
 
     // limbs
-    glm::vec3 limbScale = glm::vec3(0.4f, 1.15f, 0.3f);
+    glm::vec3 limbScale = glm::vec3(0.4f, 1.15f, 0.3f) * 0.667f;
 
     // translate rotation center (half y of the limb)
     glm::vec3 rcTranslate = glm::vec3(0.f, -(limbScale.y / 2.f), 0.f);
@@ -73,6 +81,7 @@ void Steve::initSceneGraph()
                                       0.f);
     Node &bodyToLF = root->addChild(mkU<TranslateNode>(nullptr,  lFTranslate));
     Node &rotLF = bodyToLF.addChild(mkU<RotateNode>(nullptr, glm::vec3(1.f, 0.f, 0.f), 5.f));
+    rULRotNode = dynamic_cast<RotateNode *>(&rotLF);
     Node &transLF = rotLF.addChild(mkU<TranslateNode>(nullptr, rcTranslate));
     transLF.addChild(mkU<ScaleNode>(&lULimb, limbScale));
     limbRotNodes.push_back(&rotLF);
@@ -83,6 +92,7 @@ void Steve::initSceneGraph()
                                       0.f);
     Node &bodyToRF = root->addChild(mkU<TranslateNode>(nullptr, rFTranslate));
     Node &rotRF = bodyToRF.addChild(mkU<RotateNode>(nullptr, glm::vec3(-1.f, 0.f, 0.f), 5.f));
+
     Node &transRF = rotRF.addChild((mkU<TranslateNode>(nullptr, rcTranslate)));
     transRF.addChild(mkU<ScaleNode>(&rULimb, limbScale));
     limbRotNodes.push_back(&rotRF);
@@ -116,6 +126,62 @@ void Steve::initSceneGraph()
     rootToRight = bodyScale.x / 2.f + limbScale.x;
 }
 
+void Steve::tick(float dT)
+{}
+
+void Steve::tick(float dT, InputBundle &inputs)
+{
+    // note: Steve is the player
+    // align with the player
+    m_position = player->mcr_position;
+    m_up = glm::vec3(0.f, 1.f, 0.f);
+    m_right = player->getCurrRight();
+    // use cross product to get forward direction
+    m_forward = glm::cross(m_up, m_right);
+
+    // update limb rotations
+    updateLimbRotations();
+
+    // arm movement when mouse pressed
+    if (inputs.leftMouseButtonPressed || inputs.rightMouseButtonPressed)
+    {
+        // try move right upper limb
+        rULRotCycle += dT;
+        rotateRUL();
+    }
+    else
+    {
+        // reset
+        rULRotCycle = 0.f;
+    }
+}
+
+
+void Steve::rotateRUL()
+{
+    float deg = -glm::abs(glm::sin(rULRotCycle * 20.f) * maxRULDeg);
+    rULRotNode->setDeg(deg);
+}
+
+/**
+ * @brief Steve::draw
+ * @param shader
+ */
+void Steve::draw(ShaderProgram *shader)
+{
+    // based on player's position
+    glm::vec3 rootPos = m_position;
+    rootPos[1] += rootToGround;
+
+    rootPos -= rootToFront * m_forward;
+
+    // up vector always (0.f, 1.f, 0.f)
+    glm::mat4 transform = glm::mat4(glm::vec4(m_right, 0.f),
+                                    glm::vec4(m_up, 0.f),
+                                    glm::vec4(m_forward, 0.f),
+                                    glm::vec4(rootPos, 1));
+    traverseSceneGraph(shader, root, transform);
+}
 
 /**
  * @brief Steve::createVBOdata

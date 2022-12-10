@@ -4,11 +4,13 @@
 
 Player::Player(glm::vec3 pos, Terrain &terrain)
     : Entity(pos), m_velocity(0,0,0), m_acceleration(0,0,0),
-      m_camera(pos + glm::vec3(0, 1.5f, 0)), mcr_terrain(terrain),
+      m_camera(pos + glm::vec3(0, 1.5f, 0)), m_tpv_camera(pos + glm::vec3(0, 1.5f, 0), -8.f, 30.f, 190.f),
+      mcr_terrain(terrain),
       flight_velocity_max(15.f), non_flight_velocity_max(10.f), m_velocity_val(flight_velocity_max),
       m_acceleration_val(40.f), cameraBlockDist(3.f), flightMode(true), containerMode(false),
       destroyBufferTime(0.f), creationBufferTime(0.f), minWaitTime(0.5f),
-      selectedBlockOnHandPtr(0), hp(100.f), hp_max(100.f), mcr_camera(m_camera), hp_top_left_pos(glm::vec2(-0.85, 0.85))
+      selectedBlockOnHandPtr(0), hp(100.f), hp_max(100.f), mcr_camera(m_camera), mcr_tpv_camera(m_tpv_camera), hp_top_left_pos(glm::vec2(-0.85, 0.85)),
+      tpv(false)
 {}
 
 Player::~Player()
@@ -131,59 +133,69 @@ void Player::computePhysics(float dT, const Terrain &terrain, InputBundle &input
 
 void Player::setCameraWidthHeight(unsigned int w, unsigned int h) {
     m_camera.setWidthHeight(w, h);
+    m_tpv_camera.setWidthHeight(w, h);
 }
 
 void Player::moveAlongVector(glm::vec3 dir) {
     Entity::moveAlongVector(dir);
     m_camera.moveAlongVector(dir);
+    m_tpv_camera.update(m_camera.mcr_position);
 }
 void Player::moveForwardLocal(float amount) {
     Entity::moveForwardLocal(amount);
     m_camera.moveForwardLocal(amount);
+    m_tpv_camera.update(m_camera.mcr_position);
 }
 void Player::moveRightLocal(float amount) {
     Entity::moveRightLocal(amount);
     m_camera.moveRightLocal(amount);
+    m_tpv_camera.update(m_camera.mcr_position);
 }
 void Player::moveUpLocal(float amount) {
     Entity::moveUpLocal(amount);
     m_camera.moveUpLocal(amount);
+    m_tpv_camera.update(m_camera.mcr_position);
 }
 void Player::moveForwardGlobal(float amount) {
     Entity::moveForwardGlobal(amount);
     m_camera.moveForwardGlobal(amount);
+    m_tpv_camera.update(m_camera.mcr_position);
 }
 void Player::moveRightGlobal(float amount) {
     Entity::moveRightGlobal(amount);
     m_camera.moveRightGlobal(amount);
+    m_tpv_camera.update(m_camera.mcr_position);
 }
 void Player::moveUpGlobal(float amount) {
     Entity::moveUpGlobal(amount);
-    m_camera.moveUpGlobal(amount);
+    m_tpv_camera.update(m_camera.mcr_position);
 }
 void Player::rotateOnForwardLocal(float degrees) {
     Entity::rotateOnForwardLocal(degrees);
-    m_camera.rotateOnForwardLocal(degrees);
+    (!tpv) ? m_camera.rotateOnForwardLocal(degrees) : m_tpv_camera.update(m_camera.mcr_position);
 }
 void Player::rotateOnRightLocal(float degrees) {
     Entity::rotateOnRightLocal(degrees);
-    m_camera.rotateOnRightLocal(degrees);
+    (!tpv) ? m_camera.rotateOnRightLocal(degrees) : m_tpv_camera.update(m_camera.mcr_position);
 }
 void Player::rotateOnUpLocal(float degrees) {
     Entity::rotateOnUpLocal(degrees);
-    m_camera.rotateOnUpLocal(degrees);
+    (!tpv) ? m_camera.rotateOnUpLocal(degrees) : m_tpv_camera.update(m_camera.mcr_position);
 }
 void Player::rotateOnForwardGlobal(float degrees) {
     Entity::rotateOnForwardGlobal(degrees);
     m_camera.rotateOnForwardGlobal(degrees);
+    m_tpv_camera.update(m_camera.mcr_position);
 }
 void Player::rotateOnRightGlobal(float degrees) {
     Entity::rotateOnRightGlobal(degrees);
     m_camera.rotateOnRightGlobal(degrees);
+    m_tpv_camera.update(m_camera.mcr_position);
 }
 void Player::rotateOnUpGlobal(float degrees) {
     Entity::rotateOnUpGlobal(degrees);
     m_camera.rotateOnUpGlobal(degrees);
+    m_tpv_camera.update(m_camera.mcr_position);
 }
 
 QString Player::posAsQString() const {
@@ -999,4 +1011,25 @@ void Player::hpChange(float amount) {
 void Player::drawPlayerState() {
     int hpShown = (int)hp;
     textOnScreen->addText(std::to_string(hpShown), hp_top_left_pos, hp_text_height);
+}
+
+
+/**
+ * @brief Player::switchCameraView
+ *  Set tpv to either true or false
+ */
+void Player::switchCameraView()
+{
+    tpv = tpv ? false : true;
+}
+
+/**
+ * @brief Player::getCameraViewProj
+ *  Return the camera view projection matrix
+ *  based on the current status of tpv
+ * @return
+ */
+glm::mat4 Player::getCameraViewProj() const
+{
+    return tpv ? m_tpv_camera.getViewProj() : m_camera.getViewProj();
 }

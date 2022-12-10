@@ -55,3 +55,32 @@ glm::vec2 Camera::getScreenCenterPos() {
 glm::vec3 Camera::getCurrentPos() {
     return m_position;
 }
+
+
+//---------------------------------------------
+// Polar Spherical Camera Implementations
+//---------------------------------------------
+
+PSCamera::PSCamera(glm::vec3 pos, float zoom, float phi, float theta)
+    : Camera(pos), zoom(zoom), phi(phi), theta(theta), worldUpDir(0.f, 1.f, 0.f)
+{}
+
+PSCamera::PSCamera(glm::vec3 pos)
+    : PSCamera(pos, -8.f, 30.f, 190.f)
+{}
+
+void PSCamera::update(glm::vec3 pos)
+{
+    glm::mat4 rotTheta = glm::rotate(glm::mat4(1.f), glm::radians(theta), worldUpDir);
+    glm::mat4 rotPhi = glm::rotate(glm::mat4(1.f), glm::radians(phi), glm::vec3(1.f, 0.f, 0.f));
+    glm::mat4 translation = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, zoom));
+
+    // update this camera's forward, up, right vector
+    m_forward = glm::normalize(glm::vec3(rotTheta * rotPhi * translation * glm::vec4(0, 0, 1, 0)));
+    m_right = glm::normalize(glm::vec3(rotTheta * rotPhi * translation * glm::vec4(1, 0, 0, 0)));
+    m_up = glm::normalize(glm::vec3(rotTheta * rotPhi * translation * glm::vec4(0, 1, 0, 0)));
+
+    // update this camera's position
+    m_position = glm::vec3(rotTheta * rotPhi * translation * glm::vec4(glm::vec3(0.f), 1)) + pos;
+
+}
