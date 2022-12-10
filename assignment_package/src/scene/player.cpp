@@ -140,7 +140,6 @@ void Player::moveAlongVector(glm::vec3 dir) {
     Entity::moveAlongVector(dir);
     m_camera.moveAlongVector(dir);
     m_tpv_camera.update(m_camera.mcr_position);
-    //m_tpv_camera.moveAlongVector(dir);
 }
 void Player::moveForwardLocal(float amount) {
     Entity::moveForwardLocal(amount);
