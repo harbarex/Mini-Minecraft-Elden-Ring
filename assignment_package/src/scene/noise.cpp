@@ -60,6 +60,16 @@ float Noise::getMountainousRockHeight(float x, float z) {
     return mountainMin + (mountainMax - mountainMin) * glm::abs(FBM2D(x, z, 0.92, "perlin", 1));
 }
 
+float Noise::getFloatingRockHeight(float x, float z) {
+    x /= 1600;
+    z /= 1600;
+
+    int floatIslandMin = 200;
+    int floatIslandMax = 235;
+
+    return floatIslandMin + (floatIslandMax - floatIslandMin) * (1 - glm::abs(FBM2D(x, z, 0.92, "perlin", 1)));
+}
+
 float Noise::getWaterHeight(float x, float z){
     x /= 1024;
     z /= 1024;

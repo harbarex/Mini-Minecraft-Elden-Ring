@@ -632,6 +632,24 @@ FillBlocksWorker::FillBlocksWorker(int x,
       completedChunks(completedChunks), completedChunksLock(completedChunksLock)
 {}
 
+void FillBlocksWorker::setFloatingTerrain(Chunk *chunk, int chunkCornerX, int x, int chunkCornerZ, int z, int height){
+
+    int xBound = chunkCornerX + x;
+    int zBound = chunkCornerZ + z;
+
+    if(xBound >= 200 & zBound >= 250){
+        for(int y=height; y<=height+10; y++){
+            if (y > height + 4){
+                chunk->setBlockAt(x, y, z, GLASS);
+            }
+            else{
+                 chunk->setBlockAt(x, y, z, DIAMOND);
+            }
+        }
+    }
+}
+
+
 void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height){
 
     if( height < 136){
@@ -889,6 +907,13 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
             // Make Surface Terrain
             double y = terrainHeightMap.getHeight(chunkXCorner + x , chunkZCorner + z);
             setSurfaceTerrain(chunk, x, z, y);
+
+            if(y < 136){
+                // Make Floating Terrain if above water
+                int floatIslandHeight = terrainHeightMap.getFloatingRockHeight(chunkXCorner + x , chunkZCorner + z);
+                setFloatingTerrain(chunk, chunkXCorner, x, chunkZCorner, z, floatIslandHeight);
+
+            }
 
             for(int y_underground=125; y_underground<128; y_underground++){
                 chunk->setBlockAt(x, y_underground, z, DIRT);

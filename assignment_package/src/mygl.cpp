@@ -45,9 +45,8 @@ MyGL::MyGL(QWidget *parent)
 
     // Setup Sounds
     mainTheme.setSource(QUrl::fromLocalFile(":/sounds/elden.wav"));
-    mainTheme.setLoopCount(QSoundEffect::Infinite);
+    //mainTheme.setLoopCount(QSoundEffect::Infinite);
     mainTheme.setVolume(1.f);
-    //std::cerr<<"\nMain Theme Status: "<<mainTheme.status()<<std::endl;
     mainTheme.play();
 
     waterEffect.setSource(QUrl::fromLocalFile(":/sounds/under_water.wav"));
