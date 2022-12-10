@@ -172,18 +172,15 @@ void Player::moveUpGlobal(float amount) {
 }
 void Player::rotateOnForwardLocal(float degrees) {
     Entity::rotateOnForwardLocal(degrees);
-    m_camera.rotateOnForwardLocal(degrees);
-    m_tpv_camera.update(m_camera.mcr_position);
+    (!tpv) ? m_camera.rotateOnForwardLocal(degrees) : m_tpv_camera.update(m_camera.mcr_position);
 }
 void Player::rotateOnRightLocal(float degrees) {
     Entity::rotateOnRightLocal(degrees);
-    m_camera.rotateOnRightLocal(degrees);
-    m_tpv_camera.update(m_camera.mcr_position);
+    (!tpv) ? m_camera.rotateOnRightLocal(degrees) : m_tpv_camera.update(m_camera.mcr_position);
 }
 void Player::rotateOnUpLocal(float degrees) {
     Entity::rotateOnUpLocal(degrees);
-    m_camera.rotateOnUpLocal(degrees);
-    m_tpv_camera.update(m_camera.mcr_position);
+    (!tpv) ? m_camera.rotateOnUpLocal(degrees) : m_tpv_camera.update(m_camera.mcr_position);
 }
 void Player::rotateOnForwardGlobal(float degrees) {
     Entity::rotateOnForwardGlobal(degrees);
