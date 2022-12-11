@@ -1,5 +1,9 @@
 
-# Feature Implementation
+# Mini-Minecraft - Elden Ring Edition
+
+**Team: TheGoldenOrder - Ankit Billa, Chun-Fu Yeh, Meng-Chuan Chang**
+
+This Mini-Minecraft project was implemented as a requirement for the final project of CIS 460/560, under Professor Mally, University of Pennsylvania, School of Engineering and Applied Sciences. The overall theme of the world is inspired from [Elden Ring](https://en.bandainamcoent.eu/elden-ring/elden-ring), with player & NPC skins, themed assets & soundtracks added to fit the setting.
 
 ## NPC & Path Finding (Chun-Fu Yeh)
 
