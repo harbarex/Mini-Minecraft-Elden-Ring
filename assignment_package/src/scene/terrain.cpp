@@ -650,19 +650,22 @@ void FillBlocksWorker::setFloatingTerrain(Chunk *chunk, int chunkCornerX, int x,
 }
 
 
-void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int x, int z, int height){
+void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int chunkCornerX, int x, int chunkCornerZ,int z, int height){
 
     if( height < 136){
         for(int y_dirt=128; y_dirt<136; y_dirt++){
             chunk->setBlockAt(x, y_dirt, z, WATER);
         }
+
     }
+
     else if( height < 142){
         chunk->setBlockAt(x, height, z, GRASS);
         for(int y_dirt=128; y_dirt<height; y_dirt++){
             chunk->setBlockAt(x, y_dirt, z, DIRT);
         }
     }
+
     else if (height > 190){
         chunk->setBlockAt(x, height, z, SNOW);
         for(int y_stone=128; y_stone<height; y_stone++){
@@ -761,6 +764,95 @@ void Terrain::drawErdtree(const glm::ivec2 pos){
             }
         }
     }
+}
+
+void FillBlocksWorker::drawTree(Chunk* chunk, const glm::ivec2 pos){
+
+        int rootHeight = 130;
+
+        BlockType baseblock = chunk->getBlockAt(pos[0], rootHeight, pos[1]);
+        std::cerr<<"\nBaseBlock: "<<baseblock<<std::endl;
+        if(baseblock != DIRT){
+            return;
+        }
+
+        Tree tree = Tree(glm::vec2(0.5f, 0.5f), 3.0f);
+        Tree *tr = &tree;
+
+        tr->generatePath(2, "FX");
+        tr->populateOps();
+
+        // draw the tree trunk
+        int height = 50 + (int)(4.0f * (static_cast <float> (rand()) / static_cast <float> (RAND_MAX)));
+
+        int thickness = 2;
+
+        for(int x=pos[0]-thickness; x<=pos[0]+thickness; x++){
+            for(int z=pos[1]-thickness; z<=pos[1]+thickness; z++){
+                for(int i = 1; i <= height; ++i){
+                    chunk->setBlockAt(x, rootHeight + i, z, WOOD);
+                }
+            }
+        }
+
+        glm::vec2 turtlePos;
+        int yPos;
+
+        //std::cerr<<"\nTree Path: "<<(tr->path).toStdString()<<std::endl;
+
+        // loop over LSystem string path
+        for(int i = 0; i < tr->path.length(); ++i){
+
+            // dereference function pointer mapped to path character
+            (tr->*(tr->charToDrawingOperation[tr->path[i]]))();
+
+            // if turtle moves forward, draw a leaf block
+            if (tr->path[i] == 'F'){
+
+                turtlePos           = tr->activeTurtle.position;
+                yPos                = floor(turtlePos[1]);
+                glm::vec2 leafDir   = glm::vec2(turtlePos[0], 0.0f);
+                float angle         = 0.0f;
+
+                for(int j = 0; j < 8; ++j){
+                    angle       = 11.25f;
+                    leafDir     = glm::vec2(leafDir[0] * cosf(angle) - leafDir[1] * sinf(angle),
+                                            leafDir[0] * sinf(angle) + leafDir[1] * cosf(angle));
+
+                    int xpos    = leafDir[0] + pos[0];
+                    int ypos    = rootHeight + height - 3 + yPos;
+                    int zpos    = leafDir[1] + pos[1];
+
+                    BlockType t = chunk->getBlockAt(xpos, ypos, zpos);
+                    if (t == EMPTY){
+                        chunk->setBlockAt(xpos, ypos, zpos, LEAF);
+                    }
+                }
+            }
+
+            else if (tr->path[i] == '+'){
+
+                turtlePos           = tr->activeTurtle.position;
+                yPos                = floor(turtlePos[1]);
+                glm::vec2 leafDir   = glm::vec2(turtlePos[0], 0.0f);
+                float angle         = 0.0f;
+
+                for(int j = 0; j < 8; ++j){
+                    angle       = 11.25f;
+                    leafDir     = glm::vec2(leafDir[0] * cosf(angle) - leafDir[1] * sinf(angle),
+                                            leafDir[0] * sinf(angle) + leafDir[1] * cosf(angle));
+
+                    int xpos    = leafDir[0] + pos[0];
+                    int ypos    = rootHeight + height + yPos;
+                    int zpos    = leafDir[1] + pos[1];
+
+                    BlockType t = chunk->getBlockAt(xpos, ypos, zpos);
+                    if (t == EMPTY || t == LEAF){
+                        chunk->setBlockAt(xpos, ypos, zpos, WOOD);
+                    }
+                }
+            }
+        }
 }
 
 
@@ -922,7 +1014,14 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
 
             // Make Surface Terrain
             double y = terrainHeightMap.getHeight(chunkXCorner + x , chunkZCorner + z);
-            setSurfaceTerrain(chunk, x, z, y);
+
+            float treePosNoiseVal = terrainHeightMap.getTreeProbability(chunkXCorner + x , chunkZCorner + z);
+
+            if(treePosNoiseVal > 1){
+                drawTree(chunk, glm::ivec2(x, z));
+            }
+
+            setSurfaceTerrain(chunk, chunkXCorner, x, chunkZCorner, z, y);
 
             if(y < 136){
                 // Make Floating Terrain if above water

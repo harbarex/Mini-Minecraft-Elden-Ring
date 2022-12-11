@@ -152,9 +152,11 @@ private:
     QMutex *completedChunksLock;
 
     // helper to set the blocks of each chunk
-    void setSurfaceTerrain(Chunk *chunk, int x, int z, int height);
+    void setSurfaceTerrain(Chunk *chunk, int chunkCornerX, int x, int chunkCornerZ, int z, int height);
     void setFloatingTerrain(Chunk *chunk, int chunkCornerX, int x, int chunkCornerZ, int z, int height);
     void setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorner);
+
+    void drawTree(Chunk* chunk, const glm::ivec2);
 
 public:
     // constructor

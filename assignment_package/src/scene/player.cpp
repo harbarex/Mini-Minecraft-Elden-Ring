@@ -472,7 +472,7 @@ bool Player::gridMarchPrevBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, con
 }
 
 bool Player::isWalking(){
-    if(m_velocity.x > 0 || m_velocity.y > 0)
+    if(m_velocity.x != 0 || m_velocity.z != 0)
         return true;
     else
         return false;

@@ -31,6 +31,8 @@ public:
     float getSnowyRockHeight(float,float);
     float getWaterHeight(float,float);
 
+    float getTreeProbability(float x, float z);
+
 private:
 
     // Helper Functions

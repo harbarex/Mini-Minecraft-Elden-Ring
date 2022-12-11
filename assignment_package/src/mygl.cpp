@@ -46,7 +46,7 @@ MyGL::MyGL(QWidget *parent)
 
     // Setup Sounds
     mainTheme.setSource(QUrl::fromLocalFile(":/sounds/elden.wav"));
-    //mainTheme.setLoopCount(QSoundEffect::Infinite);
+    mainTheme.setLoopCount(QSoundEffect::Infinite);
     mainTheme.setVolume(0.25f);
     mainTheme.play();
 
