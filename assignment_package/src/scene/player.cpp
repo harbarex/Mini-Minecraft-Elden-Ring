@@ -227,6 +227,7 @@ void Player::toggleFlightMode() {
     } else {
         flightMode = true;
         m_velocity_val = flight_velocity_max;
+        blockTouchingPlayer = EMPTY;
     }
 }
 
@@ -395,8 +396,8 @@ bool Player::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrai
         // If currCell contains something other than EMPTY, return
         // curr_t
         BlockType cellType = terrain.getBlockAt(currCell.x, currCell.y, currCell.z);
+//        blockTouchingPlayer = cellType;
         if(cellType != EMPTY) {
-            blockTouchingPlayer = cellType;
             *out_blockHit = currCell;
             *out_dist = glm::min(maxLen, curr_t);
             return true;
@@ -459,8 +460,8 @@ bool Player::gridMarchPrevBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, con
         // If currCell contains something other than EMPTY, return
         // curr_t
         BlockType cellType = terrain.getBlockAt(currCell.x, currCell.y, currCell.z);
+//        blockTouchingPlayer = cellType;
         if(cellType != EMPTY) {
-            blockTouchingPlayer = cellType;
             *out_blockHit = currCell;
             *out_prevBlock = currCell - prevOffset;
             BlockType prevCellType = terrain.getBlockAt((*out_prevBlock).x, (*out_prevBlock).y, (*out_prevBlock).z);
@@ -556,12 +557,14 @@ bool Player::checkYCollision(const Terrain &terrain) {
     float posYTolerance = 0.4f;
     bool playerGroundHit = gridMarch(m_position, glm::vec3(0.f, -1.f, 0.f), terrain, &out_dist_neg_y, &out_blockHit_ground);
     bool playerCeilingHit = gridMarch(m_camera.getCurrentPos(), glm::vec3(0.f, 1.f, 0.f), terrain, &out_dist_pos_y, &out_blockHit_ceiling);
+    blockTouchingPlayer = terrain.getBlockAt(out_blockHit_ground.x, out_blockHit_ground.y, out_blockHit_ground.z);
     if (playerGroundHit && out_dist_neg_y < negYTolerance && m_velocity[1] <= 0 && !isLiquid(terrain, &out_blockHit_ground)) {
         return false;
     }
     if (playerCeilingHit && out_dist_pos_y < posYTolerance && m_velocity[1] >= 0 && !isLiquid(terrain, &out_blockHit_ceiling)) {
         return false;
     }
+
     return true;
 
 }

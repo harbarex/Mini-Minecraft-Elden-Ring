@@ -328,6 +328,9 @@ void MyGL::playWalkingSounds(){
             glassWalkingEffect.stop();
         }
     }
+    else {
+        stopWalkingSounds();
+    }
 }
 
 // This function is called whenever update() is called.
