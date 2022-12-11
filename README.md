@@ -3,13 +3,16 @@
 
 **Team: TheGoldenOrder - Ankit Billa, Chun-Fu Yeh, Meng-Chuan Chang**
 
-This Mini-Minecraft project was implemented as a requirement for the final project of CIS 460/560, under Professor Mally, University of Pennsylvania, School of Engineering and Applied Sciences. The overall theme of the world is inspired from [Elden Ring](https://en.bandainamcoent.eu/elden-ring/elden-ring), with player & NPC skins, themed assets & soundtracks added to fit the setting.
+This Mini-Minecraft project was implemented as a requirement for the final project of CIS 460/560, under Professor Mally, University of Pennsylvania, School of Engineering and Applied Sciences. 
+
+The overall theme of the world is inspired from [Elden Ring](https://en.bandainamcoent.eu/elden-ring/elden-ring), with player & NPC skins, themed assets & soundtracks added to fit the setting.
+
 
 ## NPC & Path Finding (Chun-Fu Yeh)
 
 ### NPC Creation
 
-Basically, the NPC class inherits Entity & Drawable and contains a scene graph. Each scene graph consists of three types of nodes (translation, rotation, scale nodes) and some nodes in the scene graph may point to a NPCBlock, containing the information of a part of the NPC (e.g. head, body, limbs, ... etc).
+The NPC class inherits Entity & Drawable and contains a scene graph. Each scene graph consists of three types of nodes (translation, rotation, scale nodes) and some nodes in the scene graph may point to a NPCBlock, containing the information of a part of the NPC (e.g. head, body, limbs, ... etc).
 
 After the scene graph is built, the distances from the root to the six sides of the NPC must be defined, including rootToGround, rootToTop, rootToLeft, rootToRight, rootToFront, rootToBack. These would be used in determining the collisions against the blocks in the world.
 
@@ -30,7 +33,7 @@ As for two lamas, they are being trained to jump among a set of floating stones.
 
 Firstly, the collision models are modified from the models in the player. The ray origins are calculated based on the scene graph root and the distances described above (rootToGround, rootToTop, rootToLeft, rootToRight, rootToFront, rootToBack).
 
-Generally, the NPCs' mvoements are updated per tick.
+Generally, the NPCs' movements are updated per tick.
 
 ### Path Finding Algorithm (A* search)
 
@@ -66,12 +69,12 @@ The bottom row of container window is on hand window. The player can move the bl
 
 ### Block Accessibility
 
-#### Place the block
+#### Placing a block
 
 When the player clicks right mouse key button, it would place the block stored in selected frame in on-hand window and subtract the count of the block by one.
 If there is no block in selected frame. The player would not place any block.
 
-#### Destroy the block
+#### Destroying a block
 
 When the player clicks left mouse key button, the block that the player points to would be destroyed. 
 During the destroy process, the destroyed block would be automatically stored to the inventory.
@@ -145,7 +148,7 @@ For each corner, we use ray tracing to check if the corner hits the block or not
 
 We start from just two positions, the center of camera block and the bottom of player block. Then apply ray tracing only on y axis.
 
-### Distroy / Create the block
+### Destroy / Create the block
 
 We use ray tracing (gridMarch) to find out if there is any non-empty block given the player position and orientation.
 
