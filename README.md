@@ -165,7 +165,7 @@ Keep assigning velocity while pressing space and the player is in the liquid.
 
 # Milestone 3
 
-## NPC & Path Finding (Chun-Fu Yeh)
+## NPC (Chun-Fu Yeh)
 
 ### NPC Creation
 
@@ -190,23 +190,49 @@ As for two lamas, they are being trained to jump among a set of floating stones.
 
 Firstly, the collision models are modified from the models in the player. The ray origins are calculated based on the scene graph root and the distances described above (rootToGround, rootToTop, rootToLeft, rootToRight, rootToFront, rootToBack).
 
-Generally, the NPCs' movements are updated per tick.
+Generally, the NPCs' movements are updated per tick. As for the jump, in the first tick of the jump, there is a force applied to the +y direction and the velocity along y axis would be reduced (by gravity force) through time until the NPC fall to the ground (collide with some blocks in y direction).
+
+With the path finder, the NPC firstly turns to the destination of each step, moves to that destination and check to see if that step is completed or not.
+
+Moreover, the walking and jumping movement is implemented. When walking, NPCs would rotate their limbs according to the distances travelled. As for the jump, the degree of limb rotation would become larger than the degree in walking movement.
+
+
+### Elden Ring Themed Textures (Ankit Billa)
+
+Textures for NPCs were replaced with some more Elden Ring themed skins. For example, the player skin was changed from __Steve__ to a custom variation of the [Raging Wolf Set](https://eldenring.wiki.fextralife.com/Raging+Wolf+Set) implemented in Minecraft format.
+
+
+## Path Finding (Chun-Fu Yeh)
 
 ### Path Finding Algorithm (A* search)
 
-In order to make NPC moving toward some goals, an A* search algorithm is implemented. Here, the Euclidean distance in horizontal direction is used as the heuristics. Generally, this search algorithm starts with the NPC's current position. Each time, a potential path with lowest cost so far is popped out from the priority queue. Then, try to move 1 step further away if possible and push the new explored path to the priority queue. If there are obstacles around, it would try to jump 1 to 3 steps away and see if that is a valid move. 
+In order to make NPC moving toward some goals, an A* search algorithm is implemented. Here, the Euclidean distance in horizontal direction is used as the heuristics. Generally, this search algorithm starts with the NPC's current position and a bounded search grid (e.g. 15 x 6 x 15). Each time, a potential path with lowest cost so far is popped out from the priority queue. Then, try to move 1 step further away from the endpoint of the current path if possible and push the new explored path (the current path added with one new step) to the priority queue. If there are obstacles around, it would try to jump 1 to 3 steps away (in either direction x, y or z) and see if that jump is a valid move or not. If valid, it adds the newly explored path to the priority queue. 
 
-The size of the search space is manually defined when the NPC are created. Different NPCs might have different search space. If the goal of each NPC is unable to achieve in any of the explored paths, a random path from top 10 lowest cost is sampled as the current path for the NPC.
+Generally, the cost of each step of walk is 1 and the cost of each step of jump is the square of the number of blocks, this makes the NPCs only choose to jump when needed or no other better option existed.
+
+The size of the search space is manually defined when the NPC are created. Different NPCs might have different search space. If the current goal of each NPC is unable to achieve in any of the explored paths, a random path from top 10 lowest cost is sampled as the current path for the NPC.
+
 
 ### NPCs with Path Finder
 
 With the path finding algorithm defined above, each NPC can now make the plans to the goals. Each tick, the NPC would check whether the goal is achieved or not. Then, it will check whether an action in the plan is done or not. If all the actions in a path are done, it will activate the path finder again to get a new path toward the goals.
 
-Basically, there are only two movements, walk and jump, for the NPCs. If any NPC is stuck, the NPCs would be restarted. Some stuck conditions like penetrating the blocks or being stuck in a place for more than 15 seconds.
+Basically, there are only two movements, walk and jump, for the NPCs. After getting a path, the NPCs would conduct each step in the path. A tolerance of achieving a step is set up to provide some flexibility of the movement. If the NPCs are being stuck or having no movement, the NPCs make another plan (activate the A* search again). If the NPCs are accidentally stuck into any of the blocks in the world, it would be restarted.
 
-### Elden Ring Themed Textures (Ankit Billa)
 
-Textures for NPCs were replaced with some more Elden Ring themed skins. For example, the player skin was changed from __Steve__ to a custom variation of the [Raging Wolf Set](https://eldenring.wiki.fextralife.com/Raging+Wolf+Set) implemented in Minecraft format.
+## Third-Person Mode (Chun-Fu Yeh)
+
+### Third-Person Camera
+
+The other camera is attached to the player and initially placed at the back of the player with some distance (around 8 blocks away). When switched to this camera, the player would be rendered near the center of the screen. 
+
+The position of the first-person view camera is the center of the sphere for this third-person view camera. If the arrow keys are pressed or there is mouse movement, the player still changes his forward direction as usual. This simulates that the viewers can see how the player (model) explores the world.
+
+With key press "c", it can switch between the first-person view and the third-person view
+
+### Player Model 
+
+A Steve model is created and attached to the player. A player model is represented as a scene graph. Every tick, the player model would be drawn based on the player's position. The walking movement is determined by the distances the player travelled. During adding or removing a block, the player model would raise its right arm.
 
 
 ## Inventory (Meng-Chuan Chang)
@@ -300,15 +326,19 @@ Initially, using 7 iterations for the tree was too computationally expensive, an
 
 Simple forests were generated by placing multiple trees procedurally across the grasslands of the map using the same 3D L-Systems, but on a smaller scale and using `WOOD` and `LEAF` blocks.
 
-## Post-Process Overlays with Fluid Distortions
+## Post-Process Overlays with Fluid Distortions (Ankit Billa)
 
-#### Underwater
+### Underwater
 
 To simulate being underwater, a fluid distortion noise using `FBM` and `Cubic Noise` was overlayed on the screen as soon as the player goes below a water block.
 
-#### Under Lava
+### Under Lava
 
 To simulate being under lava, a fluid distortion using a combination of multi-directional flows and worley noise was overlayed on the screen when a player goes below a lava block.
+
+### Frame Buffer & Variables Setup in GLSL (Chun-Fu Yeh)
+
+Make experiments with the ways to make post-process frame buffer working in this code base. Moreover, debug for the post-process shaders, adding the needed uniform variables to those post-process shaders.
 
 
 ## Procedurally Placed Assets (Ankit Billa)
