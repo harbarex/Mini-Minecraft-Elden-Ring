@@ -15,10 +15,13 @@ class ZombieDragon : public NPC
     NPCBlock rCWing;
     NPCBlock rOWing;
 
+    glm::vec3 goal;
+
 public:
 
     // constructors
     ZombieDragon(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture);
+    ZombieDragon(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture, glm::vec3 goal);
 
     // for Drawable
     virtual void createVBOdata() override;

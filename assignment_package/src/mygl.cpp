@@ -666,18 +666,35 @@ void MyGL::createNPCTextures()
     npcTextures[ZDRAGON] = Texture(this);
     npcTextures[ZDRAGON].create(":/textures/zdragon.png");
     npcTextures[ZDRAGON].load(5);
+    npcTextures[ZDRAGON1] = Texture(this);
+    npcTextures[ZDRAGON1].create(":/textures/zdragonV1.png");
+    npcTextures[ZDRAGON1].load(6);
+    npcTextures[ZDRAGON2] = Texture(this);
+    npcTextures[ZDRAGON2].create(":/textures/zdragonV2.png");
+    npcTextures[ZDRAGON2].load(7);
+
+    npcTextures[ZDRAGON3] = Texture(this);
+    npcTextures[ZDRAGON3].create(":/textures/zdragonV3.png");
+    npcTextures[ZDRAGON3].load(8);
+    npcTextures[ZDRAGON4] = Texture(this);
+    npcTextures[ZDRAGON4].create(":/textures/zdragonV4.png");
+    npcTextures[ZDRAGON4].load(9);
 
     // Lama
     npcTextures[GLAMA] = Texture(this);
     npcTextures[GLAMA].create(":/textures/graylama.png");
-    npcTextures[GLAMA].load(6);
+    npcTextures[GLAMA].load(10);
     npcTextures[WLAMA] = Texture(this);
     npcTextures[WLAMA].create(":/textures/whitelama.png");
-    npcTextures[WLAMA].load(7);
+    npcTextures[WLAMA].load(11);
     npcTextures[BLAMA] = Texture(this);
     npcTextures[BLAMA].create(":/textures/brownlama.png");
-    npcTextures[BLAMA].load(8);
+    npcTextures[BLAMA].load(12);
 
+    // Bear
+    npcTextures[BEAR] = Texture(this);
+    npcTextures[BEAR].create(":/textures/bear.png");
+    npcTextures[BEAR].load(13);
     // TODO: others
 }
 
@@ -923,7 +940,10 @@ void MyGL::setupNPCs()
                                7));
 
     // one zombie dragon flying around the player
-    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(65.f, 160.f, 32.f), m_terrain, m_player, ZDRAGON));
+    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(260.f, 218.f, -180.f), m_terrain, m_player, ZDRAGON4, glm::vec3(274, 218, -193)));
+    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(373, 256, -337), m_terrain, m_player, ZDRAGON4, glm::vec3(383, 256, -347)));
+    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(253, 245, 636), m_terrain, m_player, ZDRAGON2, glm::vec3(263, 245, 626)));
+    m_npcs.push_back(mkU<ZombieDragon>(this, glm::vec3(72, 33, 250), m_terrain, m_player, ZDRAGON3, glm::vec3(62, 33, 270)));
 
     // sheep on the grounds
     // moving around
@@ -939,7 +959,7 @@ void MyGL::setupNPCs()
     for (int i = 0; i < nSheeps; i++)
     {
         std::shuffle(sheepGoals.begin(), sheepGoals.end(), rng);
-        m_npcs.push_back(mkU<Sheep>(this, glm::vec3(50.f + ((float) i) * 1.5f, 144.f, 32.f),
+        m_npcs.push_back(mkU<Sheep>(this, glm::vec3(50.f + ((float) i) * 1.5f, 145.f, 32.f),
                                     m_terrain, m_player, SHEEP,
                                     sheepGoals,
                                     glm::vec3(1.f, 0.f, 1.f),
@@ -947,12 +967,16 @@ void MyGL::setupNPCs()
                                     5));
     }
 
+    for (int i = 0; i < nSheeps; i++)
+    {
+        std::shuffle(sheepGoals.begin(), sheepGoals.end(), rng);
+        m_npcs.push_back(mkU<Sheep>(this, glm::vec3(50.f + ((float) i) * 1.5f, 144.f, 45.f),
+                                    m_terrain, m_player, BEAR,
+                                    sheepGoals,
+                                    glm::vec3(1.f, 0.f, 1.f),
+                                    2.f, 2.f,
+                                    5));
+    }
 
-//    // Steve exploring the world
-//    m_npcs.push_back(mkU<Steve>(this, glm::vec3(60.f, 145.f, 35.f),
-//                                m_terrain, m_player, STEVE,
-//                                std::vector<glm::vec3>(),
-//                                glm::vec3(2.f, 0.f, 2.f),
-//                                2.f, 2.f,
-//                                25));
+
 }

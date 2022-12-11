@@ -19,6 +19,10 @@
         <file>textures/inventory.png</file>
         <file>textures/widget_in_container_info.txt</file>
         <file>textures/widget_item_in_container_info.txt</file>
-
+        <file>textures/bear.png</file>
+        <file>textures/zdragonV1.png</file>
+        <file>textures/zdragonV2.png</file>
+        <file>textures/zdragonV3.png</file>
+        <file>textures/zdragonV4.png</file>
     </qresource>
 </RCC>

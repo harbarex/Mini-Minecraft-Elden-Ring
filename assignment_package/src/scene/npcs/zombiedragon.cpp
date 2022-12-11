@@ -24,6 +24,23 @@ ZombieDragon::ZombieDragon(OpenGLContext *context, glm::vec3 pos, Terrain &terra
     m_default_velocity = glm::vec3(5.f, 0.f, 5.f);
 }
 
+ZombieDragon::ZombieDragon(OpenGLContext *context, glm::vec3 pos, Terrain &terrain, Player &player, NPCTexture npcTexture, glm::vec3 goal)
+    : NPC(context, pos, terrain, player, npcTexture),
+      head(context, ZDHEAD),
+      body(context, ZDBODY),
+      lowerBody(context, ZDLBODY),
+      tail(context, ZDTAIL),
+      lCWing(context, ZDLCW),
+      lOWing(context, ZDLOW),
+      rCWing(context, ZDRCW),
+      rOWing(context, ZDROW),
+      goal(goal)
+{
+    // update m_velocity
+    m_velocity = glm::vec3(5.f, 0.f, 5.f);
+    m_default_velocity = glm::vec3(5.f, 0.f, 5.f);
+}
+
 /**
  * @brief ZombieDragon::initSceneGraph
  */
@@ -113,7 +130,7 @@ void ZombieDragon::initSceneGraph()
 void ZombieDragon::tick(float dT)
 {
     // change the facing direction
-    faceSlowlyTowardTangent(dT, player->mcr_position);
+    faceSlowlyTowardTangent(dT, goal);
 
     // move along the forward
     glm::vec3 disp = dT * m_velocity * m_forward;
