@@ -38,10 +38,10 @@ float cubicTriMix(vec3 p) {
     float ulf = random1(floor(p) + vec3(0,1,1));
     float urf = random1(floor(p) + vec3(1,1,1));
 
-    float mixLoBack = mySmoothStep(llb, lrb, pFract.x);
-    float mixHiBack = mySmoothStep(ulb, urb, pFract.x);
-    float mixLoFront = mySmoothStep(llf, lrf, pFract.x);
-    float mixHiFront = mySmoothStep(ulf, urf, pFract.x);
+    float mixLoBack     = mySmoothStep(llb, lrb, pFract.x);
+    float mixHiBack     = mySmoothStep(ulb, urb, pFract.x);
+    float mixLoFront    = mySmoothStep(llf, lrf, pFract.x);
+    float mixHiFront    = mySmoothStep(ulf, urf, pFract.x);
 
     float mixLo = mySmoothStep(mixLoBack, mixLoFront, pFract.z);
     float mixHi = mySmoothStep(mixHiBack, mixHiFront, pFract.z);
