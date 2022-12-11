@@ -119,6 +119,7 @@ private:
     QSoundEffect rockWalkingEffect;
     QSoundEffect grassWalkingEffect;
     QSoundEffect sandWalkingEffect;
+    QSoundEffect glassWalkingEffect;
 
 public:
     explicit MyGL(QWidget *parent = nullptr);

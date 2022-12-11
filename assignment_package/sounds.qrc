@@ -6,5 +6,6 @@
         <file>sounds/grass.wav</file>
         <file>sounds/rock.wav</file>
         <file>sounds/sand.wav</file>
+        <file>sounds/glass.wav</file>
     </qresource>
 </RCC>

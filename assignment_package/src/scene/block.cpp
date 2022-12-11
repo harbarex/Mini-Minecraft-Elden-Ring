@@ -362,7 +362,7 @@ std::unordered_map<std::string, BlockType> Block::blockTypeMap = {
 };
 
 std::unordered_set<BlockType> Block::transparentBlockTypes = {
-    EMPTY, WATER, ICE, GWOOD, GLEAF, GLASS, ROT, ACID
+    EMPTY, WATER, ICE, GLEAF, GLASS, ROT, ACID
 };
 
 std::unordered_map<BlockType, BlockType> Block::blockTransformationMap = {

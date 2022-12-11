@@ -57,7 +57,7 @@ public:
     LSystem(glm::vec2 pos, glm::vec2 heading, float fDistance);
     virtual ~LSystem();
 
-    virtual void generatePath(int n, QString seed); // generates path to be traversed by turtle (n branching events)
+    virtual void generatePath(int n, QString seed, int type); // generates path to be traversed by turtle (n branching events)
     virtual void populateOps();                     // populates charToDrawingOperation hash
     void printPath();                               // prints path string
     float rand01();                                 // returns a random number between 0 and 1

@@ -66,9 +66,9 @@ MyGL::MyGL(QWidget *parent)
     rockWalkingEffect.setLoopCount(QSoundEffect::Infinite);
     rockWalkingEffect.setVolume(0.5f);
 
-    sandWalkingEffect.setSource(QUrl::fromLocalFile(":/sounds/sand.wav"));
-    sandWalkingEffect.setLoopCount(QSoundEffect::Infinite);
-    sandWalkingEffect.setVolume(0.5f);
+    glassWalkingEffect.setSource(QUrl::fromLocalFile(":/sounds/glass.wav"));
+    glassWalkingEffect.setLoopCount(QSoundEffect::Infinite);
+    glassWalkingEffect.setVolume(0.5f);
 
     initWidget();
     initText();
@@ -291,16 +291,16 @@ void MyGL::sendPlayerDataToGUI() const {
 }
 
 void MyGL::stopWalkingSounds(){
-    if(sandWalkingEffect.isPlaying()) sandWalkingEffect.stop();
     if(grassWalkingEffect.isPlaying()) grassWalkingEffect.stop();
     if(rockWalkingEffect.isPlaying()) rockWalkingEffect.stop();
+    if(glassWalkingEffect.isPlaying()) glassWalkingEffect.stop();
 
 }
 
 void MyGL::playWalkingSounds(){
     if(m_player.blockTouchingPlayer == GRASS){
         if(rockWalkingEffect.isPlaying()) rockWalkingEffect.stop();
-        if(sandWalkingEffect.isPlaying()) sandWalkingEffect.stop();
+        if(glassWalkingEffect.isPlaying()) glassWalkingEffect.stop();
         if(m_player.isWalking()){
             if(!grassWalkingEffect.isPlaying()) grassWalkingEffect.play();
         }
@@ -309,7 +309,7 @@ void MyGL::playWalkingSounds(){
         }
     }
     else if(m_player.blockTouchingPlayer == STONE || m_player.blockTouchingPlayer == DIRT){
-        if(sandWalkingEffect.isPlaying()) sandWalkingEffect.stop();
+        if(glassWalkingEffect.isPlaying()) glassWalkingEffect.stop();
         if(grassWalkingEffect.isPlaying()) grassWalkingEffect.stop();
         if(m_player.isWalking()){
             if(!rockWalkingEffect.isPlaying()) rockWalkingEffect.play();
@@ -318,14 +318,14 @@ void MyGL::playWalkingSounds(){
             rockWalkingEffect.stop();
         }
     }
-    else if(m_player.blockTouchingPlayer == SAND){
+    else if(m_player.blockTouchingPlayer == DIAMOND){
         if(grassWalkingEffect.isPlaying()) grassWalkingEffect.stop();
         if(rockWalkingEffect.isPlaying()) rockWalkingEffect.stop();
         if(m_player.isWalking()){
-            if(!sandWalkingEffect.isPlaying()) sandWalkingEffect.play();
+            if(!glassWalkingEffect.isPlaying()) glassWalkingEffect.play();
         }
         else {
-            sandWalkingEffect.stop();
+            glassWalkingEffect.stop();
         }
     }
 }

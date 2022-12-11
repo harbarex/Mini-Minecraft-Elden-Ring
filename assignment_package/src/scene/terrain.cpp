@@ -479,7 +479,6 @@ void Terrain::expand(float playerX, float playerZ, int halfGridSize)
 }
 
 
-
 /**
  * @brief Terrain::instantiateChunkAndFillBlocks
  *  This helper is used to fill the blocks in the chunk
@@ -666,7 +665,7 @@ void FillBlocksWorker::setSurfaceTerrain(Chunk *chunk, int chunkCornerX, int x, 
         }
     }
 
-    else if (height > 190){
+    else if (height > 180){
         chunk->setBlockAt(x, height, z, SNOW);
         for(int y_stone=128; y_stone<height; y_stone++){
             chunk->setBlockAt(x, y_stone, z, STONE);
@@ -689,7 +688,7 @@ void Terrain::drawErdtree(const glm::ivec2 pos){
         Tree tree = Tree(glm::vec2(0.5f, 0.5f), 3.0f);
         Tree *tr = &tree;
 
-        tr->generatePath(2, "FX");
+        tr->generatePath(2, "FX", 1);
         tr->populateOps();
 
         // draw the tree trunk
@@ -707,8 +706,6 @@ void Terrain::drawErdtree(const glm::ivec2 pos){
 
         glm::vec2 turtlePos;
         int yPos;
-
-        //std::cerr<<"\nTree Path: "<<(tr->path).toStdString()<<std::endl;
 
         // loop over LSystem string path
         for(int i = 0; i < tr->path.length(); ++i){
@@ -768,37 +765,33 @@ void Terrain::drawErdtree(const glm::ivec2 pos){
 
 void FillBlocksWorker::drawTree(Chunk* chunk, const glm::ivec2 pos){
 
-        int rootHeight = 130;
-
-        BlockType baseblock = chunk->getBlockAt(pos[0], rootHeight, pos[1]);
-        std::cerr<<"\nBaseBlock: "<<baseblock<<std::endl;
-        if(baseblock != DIRT){
+        int rootHeight = 137;
+        BlockType baseBlock = chunk->getBlockAt(pos[0], rootHeight, pos[1]);
+        if (baseBlock != GRASS){
             return;
         }
 
-        Tree tree = Tree(glm::vec2(0.5f, 0.5f), 3.0f);
+        Tree tree = Tree(glm::vec2(0.5f, 0.5f), 0.3f);
         Tree *tr = &tree;
 
-        tr->generatePath(2, "FX");
+        tr->generatePath(2, "FX", 1);
         tr->populateOps();
 
         // draw the tree trunk
-        int height = 50 + (int)(4.0f * (static_cast <float> (rand()) / static_cast <float> (RAND_MAX)));
+        int height = 7 + (int)(4.0f * (static_cast <float> (rand()) / static_cast <float> (RAND_MAX)));
 
-        int thickness = 2;
+        int thickness = 0;
 
         for(int x=pos[0]-thickness; x<=pos[0]+thickness; x++){
             for(int z=pos[1]-thickness; z<=pos[1]+thickness; z++){
                 for(int i = 1; i <= height; ++i){
-                    chunk->setBlockAt(x, rootHeight + i, z, WOOD);
+                    chunk->setBlockAt(glm::max(x, 0), rootHeight + i, glm::max(z, 0), WOOD);
                 }
             }
         }
 
         glm::vec2 turtlePos;
         int yPos;
-
-        //std::cerr<<"\nTree Path: "<<(tr->path).toStdString()<<std::endl;
 
         // loop over LSystem string path
         for(int i = 0; i < tr->path.length(); ++i){
@@ -819,9 +812,9 @@ void FillBlocksWorker::drawTree(Chunk* chunk, const glm::ivec2 pos){
                     leafDir     = glm::vec2(leafDir[0] * cosf(angle) - leafDir[1] * sinf(angle),
                                             leafDir[0] * sinf(angle) + leafDir[1] * cosf(angle));
 
-                    int xpos    = leafDir[0] + pos[0];
+                    int xpos    = glm::max(leafDir[0] + pos[0], 0.f);
                     int ypos    = rootHeight + height - 3 + yPos;
-                    int zpos    = leafDir[1] + pos[1];
+                    int zpos    = glm::max(leafDir[1] + pos[1], 0.f);
 
                     BlockType t = chunk->getBlockAt(xpos, ypos, zpos);
                     if (t == EMPTY){
@@ -842,13 +835,13 @@ void FillBlocksWorker::drawTree(Chunk* chunk, const glm::ivec2 pos){
                     leafDir     = glm::vec2(leafDir[0] * cosf(angle) - leafDir[1] * sinf(angle),
                                             leafDir[0] * sinf(angle) + leafDir[1] * cosf(angle));
 
-                    int xpos    = leafDir[0] + pos[0];
+                    int xpos    = glm::max(leafDir[0] + pos[0], 0.f);
                     int ypos    = rootHeight + height + yPos;
-                    int zpos    = leafDir[1] + pos[1];
+                    int zpos    =  glm::max(leafDir[1] + pos[1], 0.f);
 
                     BlockType t = chunk->getBlockAt(xpos, ypos, zpos);
-                    if (t == EMPTY || t == LEAF){
-                        chunk->setBlockAt(xpos, ypos, zpos, WOOD);
+                    if (t == EMPTY){
+                        chunk->setBlockAt(xpos, ypos, zpos, LEAF);
                     }
                 }
             }
@@ -1015,10 +1008,13 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
             // Make Surface Terrain
             double y = terrainHeightMap.getHeight(chunkXCorner + x , chunkZCorner + z);
 
-            float treePosNoiseVal = terrainHeightMap.getTreeProbability(chunkXCorner + x , chunkZCorner + z);
-
-            if(treePosNoiseVal > 1){
-                drawTree(chunk, glm::ivec2(x, z));
+            double r = ((double) rand() / (RAND_MAX));
+            if (r > 0.5){
+                float treePosNoiseVal = terrainHeightMap.getTreeProbability(chunkXCorner + x , chunkZCorner + z);
+                if(treePosNoiseVal > 0.5 && treePosNoiseVal < 1.2){
+                    drawTree(chunk, glm::ivec2(11, 11));
+                    drawTree(chunk, glm::ivec2(5, 5));
+                }
             }
 
             setSurfaceTerrain(chunk, chunkXCorner, x, chunkZCorner, z, y);
@@ -1057,7 +1053,6 @@ void FillBlocksWorker::setBlocks(Chunk *chunk, int chunkXCorner, int chunkZCorne
         }
     }
 
-    //drawErdtree(chunk, glm::ivec2(1, 5));
     // explicitly for test terrain
     // 48.f, 148.f, 32.f
     // 48.f, 32.f

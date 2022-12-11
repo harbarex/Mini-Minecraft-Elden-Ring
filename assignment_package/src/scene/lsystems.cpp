@@ -17,10 +17,12 @@ void LSystem::addRule(QChar chr, QString str){
     ruleSet[chr] = str;
 }
 
-void LSystem::generatePath(int n, QString seed){
+void LSystem::generatePath(int n, QString seed, int type){
     // Add Generative Rules
-    //addRule('F', "F[-F]F[+F][F]");
-    addRule('F', "F[+F+F][-F-F+F]F[-F-F]F[+F+F]");
+    if(type == 1){
+        // Erdtree
+        addRule('F', "F[+F+F][-F-F+F]F[-F-F]F[+F+F]");
+    }
 
     addRule('X', "[-FX]+FX");
 
