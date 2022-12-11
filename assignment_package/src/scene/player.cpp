@@ -1019,9 +1019,19 @@ void Player::hpChange(float amount) {
     hp = fmin(hp, hp_max);
 }
 void Player::drawPlayerState() {
-    int hpShown = (int)hp;
-    string hpOnScreen = "HP:" + std::to_string(hpShown);
-    textOnScreen->addText(hpOnScreen, hp_top_left_pos, hp_text_height);
+    int full_heart_count;
+    double res = std::remquo(hp, 10.f, &full_heart_count);
+    std::string heart = "";
+
+    for (int i=0; i<full_heart_count; ++i) {
+        heart += "[";
+    }
+
+    if (res >= 5.f) {
+        heart += "]";
+    }
+
+    textOnScreen->addText(heart, hp_top_left_pos, hp_text_height);
 }
 
 
