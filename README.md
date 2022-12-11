@@ -15,7 +15,7 @@ The feature descriptions have been divided according to each milestone.
 
 ### Movement
 
-While pressing the key associated with movement (WASDQE), we assign the acceleration to the corresponding direction. Also, we set the limit of velocity. The velocity would be fixed if the length of vector combined with the acceleration exceed the limit.
+While pressing the key associated with movement `WASDQE`, we assign the acceleration to the corresponding direction. Also, we set the limit of velocity. The velocity would be fixed if the length of vector combined with the acceleration exceed the limit.
 
 ### Collision
 
@@ -37,7 +37,7 @@ We start from just two positions, the center of camera block and the bottom of p
 
 We use ray tracing (gridMarch) to find out if there is any non-empty block given the player position and orientation.
 
-For destroying block, we need to find out the location of hit block, set the block as EMPTY, and then reload VBO.
+For destroying block, we need to find out the location of hit block, set the block as `EMPTY`, and then reload VBO.
 
 For creating block, we need to find out the location of hit block and its adjacent empty block on the face of hit block we point to with the revised version of gridMarch func.
 
@@ -53,13 +53,13 @@ We treat the displacement of cursor on x and y axis on the screen as the angle c
 
 #### Issue in MacOS
 
-In MacOS, there is an issue in QCursor::setPos. It only works on Mac at the first time. Therefore, we need to manually delete MiniMinecraft.app in accessibility everytime before running the program.
+In `MacOS`, there is an issue in `QCursor::setPos`. It only works on Mac at the first time. Therefore, we need to manually delete `MiniMinecraft.app` in accessibility everytime before running the program.
 
 ## Efficient Terrain Rendering and Chunking (Chun-Fu Yeh)
 
 ### Add block.h & block.cpp
 
-To organize the needed information to render all the blocks in a given chunk, block.h and block.cpp are used to define the structs and the classes to store the information about a block, including block types, block faces, vertices, normals, colors, uvs. The rules to define a block as opaque or transparent are also kept here.
+To organize the needed information to render all the blocks in a given chunk, `block.h` and `block.cpp` are used to define the structs and the classes to store the information about a block, including block types, block faces, vertices, normals, colors, uvs. The rules to define a block as opaque or transparent are also kept here.
 
 ### Chunk as a drawable
 
@@ -67,11 +67,11 @@ The main task is to collect the vbo data of a chunk and keep vbo data in memory 
 
 ### Interleaved VBO
 
-Since there's only one buffer array in addition to the index buffer array, only generatePos() & m_bufPos is needed. Then, bind the buffer data with the m_bufPos. In the shaderprogram.cpp, a drawInterleaved(Drawable &d) method is added to draw the buffer. Inside the method, the addresses of the start of each data (pos, normal, color, uv) are specified along with the stride needed to retrieve each info correctly.
+Since there's only one buffer array in addition to the index buffer array, only `generatePos()` & `m_bufPos` are needed. Then, bind the buffer data with the `m_bufPos`. In the shaderprogram.cpp, a drawInterleaved(Drawable &d) method is added to draw the buffer. Inside the method, the addresses of the start of each data (pos, normal, color, uv) are specified along with the stride needed to retrieve each info correctly.
 
 ### Terrain expansion
 
-For expansion, every tick, the program checks whether the 3 x 3 chunks surrounding the player are instantiated and the vbo data of these chunks are created or not. If not, the program instantiate the chunk and create the vbo data for it. Here, there is a member variable, called m_ChunkVBOs, storing all the vbos of the loaded chunks. The terrain.draw(...) iterates through the grid and draws the chunk if its vbo data is available.
+For expansion, every tick, the program checks whether the 3 x 3 chunks surrounding the player are instantiated and the vbo data of these chunks are created or not. If not, the program instantiate the chunk and create the vbo data for it. Here, there is a member variable, called `m_ChunkVBOs`, storing all the vbos of the loaded chunks. The terrain.draw(...) iterates through the grid and draws the chunk if its vbo data is available.
 
 ## Procedural Terrain Generation (Ankit Billa)
 
@@ -113,7 +113,7 @@ Pass animatable flag (1 or -1) to GPU and apply UV offset if the current process
 
 #### Time
 
-Set the processing number of frame as the time and pass it to GPU (u_Time). Apply u_Time with mod in uv offset for simulating the animation for animatable block (LAVA and WATER)
+Set the processing number of frame as the time and pass it to GPU (`u_Time`). Apply `u_Time` with mod in uv offset for simulating the animation for animatable block (`LAVA` and `WATER`)
 
 
 ## Multithreaded Terrain Generation (Chun-Fu Yeh)
@@ -132,7 +132,7 @@ If the zone is already created and the zone is not part of the previous visted z
 
 Basically, whenever each worker is about to finish its work, it needs to retrieve the lock and push the raw pointers of the chunks or the VBO data into the collections (in shared memory).
 
-### The Issue encountered when destroy VBOs
+### Issue encountered when destroying VBOs
 
 Each time, when doing the terrain expansion, some of the previously visited zones would be destroyed (their VBOs). If directly iterate through the chunks inside these zones, and then destroy the VBOs of those chunks without
 
@@ -228,7 +228,7 @@ The other camera is attached to the player and initially placed at the back of t
 
 The position of the first-person view camera is the center of the sphere for this third-person view camera. If the arrow keys are pressed or there is mouse movement, the player still changes his forward direction as usual. This simulates that the viewers can see how the player (model) explores the world.
 
-With key press "c", it can switch between the first-person view and the third-person view
+With key press `c`, it can switch between the first-person view and the third-person view.
 
 ### Player Model 
 
@@ -251,7 +251,7 @@ The first window is always shown on the bottom of the screen. The player can pla
 
 #### In-Container Window
 
-The player can open and close the second window via pressing key "I", and it can switch the place of stored items.
+The player can open and close the second window via pressing key `I`, and it can switch the place of stored items.
 The bottom row of container window is on hand window. The player can move the blocks from container to hand or vice versa via dragging with the mouse.
 
 ### Block Accessibility
@@ -269,7 +269,7 @@ Some of the blocks would be transformed after the player destroys it (e.g. stone
 
 #### Debug mode
 
-Once the user press key "P", all available blocks would be filled in the inventory.
+Once the user press key `P`, all available blocks would be filled in the inventory.
 
 ### Block movement
 
@@ -291,7 +291,7 @@ If the destination does not have the position. The block would be moved back to 
 
 ### Count
 
-The maximum capacity of each position in the widget is 64. Once the block is full, the same type of block would be stored in the new position until there is no empty position in inventory.
+The maximum capacity of each position in the widget is `64`. Once the block is full, the same type of block would be stored in the new position until there is no empty position in inventory.
 
 ## Additional Biomes (Ankit Billa)
 
@@ -336,9 +336,9 @@ To simulate being underwater, a fluid distortion noise using `FBM` and `Cubic No
 
 To simulate being under lava, a fluid distortion using a combination of multi-directional flows and worley noise was overlayed on the screen when a player goes below a lava block.
 
-### Frame Buffer & Variables Setup in GLSL (Chun-Fu Yeh)
+### Frame Buffer & Variable Setup in GLSL (Chun-Fu Yeh)
 
-Make experiments with the ways to make post-process frame buffer working in this code base. Moreover, debug for the post-process shaders, adding the needed uniform variables to those post-process shaders.
+Experimented with ways to make post-process frame buffer working in this code base. Moreover, debugged code for the post-process shaders, adding the needed uniform variables to those post-process shaders.
 
 
 ## Procedurally Placed Assets (Ankit Billa)
