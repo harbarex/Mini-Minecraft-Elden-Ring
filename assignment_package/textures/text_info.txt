@@ -61,3 +61,15 @@ P
 :
 0.6211 0.75
 
+# full heart
+# (16, 145) in grid system
+# use [ to represent full heart
+[
+0.0625 0.4336
+
+# half heart
+# (31, 145) in grid system
+# use ] to represent half heart
+]
+0.1211 0.4336
+
