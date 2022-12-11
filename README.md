@@ -116,7 +116,7 @@ Pass animatable flag (1 or -1) to GPU and apply UV offset if the current process
 Set the processing number of frame as the time and pass it to GPU (u_Time). Apply u_Time with mod in uv offset for simulating the animation for animatable block (LAVA and WATER)
 
 
-## Multithreaded Terrain Generation
+## Multithreaded Terrain Generation (Chun-Fu Yeh)
 
 ### FillBlocksWorker
 
@@ -162,7 +162,7 @@ To simulate being under lava, a fluid distortion using a combination of multi-di
 
 ### Liquid Collision (Meng-Chuan Chang)
 
-We would not set the velocity to 0 if the hit block is liquid (WATER, LAVA)
+In order to disable collision with liquids, we do not set the velocity to 0 if the hit block is liquid (WATER, LAVA).
 
 ### Velocity Adjustment (Meng-Chuan Chang)
 
@@ -268,6 +268,15 @@ If the destination does not have the position. The block would be moved back to 
 ### Count
 
 The maximum capacity of each position in the widget is 64. Once the block is full, the same type of block would be stored in the new position until there is no empty position in inventory.
+
+## Additional Biomes (Ankit Billa)
+
+## L-System Trees (Ankit Billa)
+
+## Procedurally Placed Assets (Ankit Billa)
+
+## Sounds (Ankit Billa)
+
 
 
 ### 
