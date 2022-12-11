@@ -1057,3 +1057,7 @@ glm::mat4 Player::getCameraViewProj() const
 {
     return tpv ? m_tpv_camera.getViewProj() : m_camera.getViewProj();
 }
+
+void Player::setPos(glm::vec3 pos) {
+    m_position = pos;
+}

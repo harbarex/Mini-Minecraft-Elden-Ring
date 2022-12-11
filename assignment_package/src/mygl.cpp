@@ -519,6 +519,8 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
         m_inputs.iPressed = true;
     } else if (e->key() == Qt::Key_C) {
         m_player.switchCameraView();
+    } else if (e->key() == Qt::Key_U) {
+        m_player.setPos(glm::vec3(62.f, 33.f, 270.f));
     }
 }
 

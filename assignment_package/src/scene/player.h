@@ -78,6 +78,8 @@ public:
     const Camera& mcr_camera;
     const PSCamera& mcr_tpv_camera;
 
+    void setPos(glm::vec3 pos);
+
     BlockType blockTouchingPlayer;
 
     Player(glm::vec3 pos, Terrain &terrain);
