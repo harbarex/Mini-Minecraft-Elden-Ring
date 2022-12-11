@@ -49,6 +49,15 @@ textWidthHeight
 9
 0.5625 0.755
 
+# (128, 78) in grid system
+H
+0.5 0.6945
 
+# (0, 94) in grid system
+P
+0 0.632
 
+# (159, 64) in grid system
+:
+0.6211 0.75
 

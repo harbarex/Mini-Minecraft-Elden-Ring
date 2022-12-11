@@ -64,7 +64,7 @@ private:
     float hp;
     float hp_max;
     glm::vec2 hp_top_left_pos;
-    float hp_text_height = 0.5;
+    float hp_text_height = 0.1;
     void computePlayerState(InputBundle &input);
     void hpChange(float amount);
     void drawPlayerState();
